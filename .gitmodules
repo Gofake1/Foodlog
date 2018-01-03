@@ -1,0 +1,6 @@
+[submodule "Submodules/Pulley"]
+	path = Submodules/Pulley
+	url = https://github.com/52inc/Pulley.git
+[submodule "Submodules/ExpandableCell"]
+	path = Submodules/ExpandableCell
+	url = https://github.com/younatics/ExpandableCell.git
