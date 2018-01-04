@@ -15,7 +15,14 @@ private let _dateFormatter: DateFormatter = {
     return df
 }()
 
+private let _datePicker: UIDatePicker = {
+    let dp = UIDatePicker()
+    dp.datePickerMode = .dateAndTime
+    return dp
+}()
+
 class AddFoodViewController: UIViewController {
+    @IBOutlet weak var scrollView: UIScrollView!
     @IBOutlet weak var foodNameLabel: UILabel!
     @IBOutlet weak var dateField: UITextField!
     @IBOutlet weak var servingsField: UITextField!
@@ -43,15 +50,19 @@ class AddFoodViewController: UIViewController {
     
     var addOrSearchVC: AddOrSearchViewController!
     var foodName: String!
+    private weak var activeTextField: UITextField?
     private weak var pulleyVC: PulleyViewController!
     
     override func viewDidLoad() {
         foodNameLabel.text = foodName
         dateField.text = _dateFormatter.string(from: Date())
-        let datePicker = UIDatePicker()
-        datePicker.datePickerMode = .dateAndTime
-        datePicker.addTarget(self, action: #selector(dateChanged(_:)), for: .valueChanged)
-        dateField.inputView = datePicker
+        _datePicker.addTarget(self, action: #selector(dateChanged(_:)), for: .valueChanged)
+        dateField.inputView = _datePicker
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWasShown(_:)),
+                                               name: .UIKeyboardDidShow, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillBeHidden(_:)),
+                                               name: .UIKeyboardWillHide, object: nil)
     }
     
     override func willMove(toParentViewController parent: UIViewController?) {
@@ -63,6 +74,28 @@ class AddFoodViewController: UIViewController {
         dateField.text = _dateFormatter.string(from: sender.date)
     }
     
+    @objc func keyboardWasShown(_ aNotifcation: NSNotification) {
+        guard let userInfo = aNotifcation.userInfo,
+            let keyboardFrame = userInfo[UIKeyboardFrameEndUserInfoKey] as? CGRect
+            else { return }
+        let insets = UIEdgeInsets(top: 0.0, left: 0.0, bottom: keyboardFrame.height, right: 0.0)
+        scrollView.contentInset = insets
+        scrollView.scrollIndicatorInsets = insets
+        
+        // Workaround: Text field frame is translated down by Pulley
+        let fixedTextFieldFrame = view.superview!.convert(activeTextField!.frame, to: nil)
+        // Workaround: `scrollRectToVisible` ignores `rect` parameter
+        // https://stackoverflow.com/questions/21434651/uiscrollview-scrollrecttovisibleanimated-not-taking-rect-into-account-on-ios7
+        DispatchQueue.main.async { [weak self] in
+            self?.scrollView.scrollRectToVisible(fixedTextFieldFrame, animated: true)
+        }
+    }
+    
+    @objc func keyboardWillBeHidden(_ aNotification: NSNotification) {
+        scrollView.contentInset = .zero
+        scrollView.scrollIndicatorInsets = .zero
+    }
+    
     @IBAction func addFoodToLog() {
         
     }
@@ -72,6 +105,17 @@ class AddFoodViewController: UIViewController {
     }
     
     deinit {
+        _datePicker.removeTarget(self, action: #selector(dateChanged(_:)), for: .valueChanged)
         NotificationCenter.default.removeObserver(self)
+    }
+}
+
+extension AddFoodViewController: UITextFieldDelegate {
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        activeTextField = textField
+    }
+    
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        activeTextField = nil
     }
 }
