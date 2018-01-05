@@ -110,9 +110,39 @@ class AddFoodViewController: UIViewController {
     }
 }
 
+extension AddFoodViewController: PulleyDelegate {
+    func drawerPositionDidChange(drawer: PulleyViewController, bottomSafeArea: CGFloat) {
+        switch drawer.drawerPosition {
+        case .closed:
+            fatalError("`drawerPosition` can not be `closed`")
+        case .collapsed:
+            view.endEditing(false)
+        case .open:
+            break
+        case .partiallyRevealed:
+            view.endEditing(false)
+        }
+    }
+}
+
+extension AddFoodViewController: PulleyDrawerViewControllerDelegate {
+    func collapsedDrawerHeight(bottomSafeArea: CGFloat) -> CGFloat {
+        return 60.0 + bottomSafeArea
+    }
+    
+    func partialRevealDrawerHeight(bottomSafeArea: CGFloat) -> CGFloat {
+        return 264.0 + bottomSafeArea
+    }
+    
+    func supportedDrawerPositions() -> [PulleyPosition] {
+        return [.collapsed, .open, .partiallyRevealed]
+    }
+}
+
 extension AddFoodViewController: UITextFieldDelegate {
     func textFieldDidBeginEditing(_ textField: UITextField) {
         activeTextField = textField
+        pulleyVC.setDrawerPosition(position: .open, animated: true)
     }
     
     func textFieldDidEndEditing(_ textField: UITextField) {
