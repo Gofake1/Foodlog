@@ -21,7 +21,7 @@ private let _datePicker: UIDatePicker = {
     return dp
 }()
 
-class AddFoodViewController: UIViewController {
+class AddFoodViewController: PulleyDrawerViewController {
     @IBOutlet weak var scrollView: UIScrollView!
     @IBOutlet weak var foodNameLabel: UILabel!
     @IBOutlet weak var dateField: UITextField!
@@ -48,10 +48,8 @@ class AddFoodViewController: UIViewController {
     @IBOutlet weak var calciumField: UITextField!
     @IBOutlet weak var ironField: UITextField!
     
-    var addOrSearchVC: AddOrSearchViewController!
     var foodName: String!
     private weak var activeTextField: UITextField?
-    private weak var pulleyVC: PulleyViewController!
     
     override func viewDidLoad() {
         foodNameLabel.text = foodName
@@ -63,11 +61,6 @@ class AddFoodViewController: UIViewController {
                                                name: .UIKeyboardDidShow, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillBeHidden(_:)),
                                                name: .UIKeyboardWillHide, object: nil)
-    }
-    
-    override func willMove(toParentViewController parent: UIViewController?) {
-        super.willMove(toParentViewController: parent)
-        pulleyVC = self.parent as! PulleyViewController
     }
     
     @objc func dateChanged(_ sender: UIDatePicker) {
@@ -101,16 +94,10 @@ class AddFoodViewController: UIViewController {
     }
     
     @IBAction func cancel() {
-        pulleyVC.setDrawerContentViewController(controller: addOrSearchVC)
+        assert(previousDrawerVC != nil)
+        pop()
     }
     
-    deinit {
-        _datePicker.removeTarget(self, action: #selector(dateChanged(_:)), for: .valueChanged)
-        NotificationCenter.default.removeObserver(self)
-    }
-}
-
-extension AddFoodViewController: PulleyDelegate {
     func drawerPositionDidChange(drawer: PulleyViewController, bottomSafeArea: CGFloat) {
         switch drawer.drawerPosition {
         case .closed:
@@ -123,19 +110,10 @@ extension AddFoodViewController: PulleyDelegate {
             view.endEditing(false)
         }
     }
-}
-
-extension AddFoodViewController: PulleyDrawerViewControllerDelegate {
-    func collapsedDrawerHeight(bottomSafeArea: CGFloat) -> CGFloat {
-        return 60.0 + bottomSafeArea
-    }
     
-    func partialRevealDrawerHeight(bottomSafeArea: CGFloat) -> CGFloat {
-        return 264.0 + bottomSafeArea
-    }
-    
-    func supportedDrawerPositions() -> [PulleyPosition] {
-        return [.collapsed, .open, .partiallyRevealed]
+    deinit {
+        _datePicker.removeTarget(self, action: #selector(dateChanged(_:)), for: .valueChanged)
+        NotificationCenter.default.removeObserver(self)
     }
 }
 

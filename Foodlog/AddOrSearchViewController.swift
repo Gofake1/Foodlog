@@ -8,16 +8,22 @@
 
 import UIKit
 
-class AddOrSearchViewController: UIViewController {
+class AddOrSearchViewController: PulleyDrawerViewController {
     @IBOutlet weak var scanBarcodeButton: UIButton!
     @IBOutlet weak var searchBar: UISearchBar!
     @IBOutlet weak var tableView: UITableView!
     
-    private weak var pulleyVC: PulleyViewController!
-    
-    override func willMove(toParentViewController parent: UIViewController?) {
-        super.willMove(toParentViewController: parent)
-        pulleyVC = self.parent as! PulleyViewController
+    func drawerPositionDidChange(drawer: PulleyViewController, bottomSafeArea: CGFloat) {
+        switch drawer.drawerPosition {
+        case .closed:
+            fatalError("`drawerPosition` can not be `closed`")
+        case .collapsed:
+            searchBar.resignFirstResponder()
+        case .open:
+            break
+        case .partiallyRevealed:
+            searchBar.resignFirstResponder()
+        }
     }
 }
 
@@ -41,42 +47,12 @@ class SuggestionTableViewCell: UITableViewCell {
     }
 }
 
-extension AddOrSearchViewController: PulleyDelegate {
-    func drawerPositionDidChange(drawer: PulleyViewController, bottomSafeArea: CGFloat) {
-        switch drawer.drawerPosition {
-        case .closed:
-            fatalError("`drawerPosition` can not be `closed`")
-        case .collapsed:
-            searchBar.resignFirstResponder()
-        case .open:
-            break
-        case .partiallyRevealed:
-            searchBar.resignFirstResponder()
-        }
-    }
-}
-
-extension AddOrSearchViewController: PulleyDrawerViewControllerDelegate {
-    func collapsedDrawerHeight(bottomSafeArea: CGFloat) -> CGFloat {
-        return 68.0 + bottomSafeArea
-    }
-    
-    func partialRevealDrawerHeight(bottomSafeArea: CGFloat) -> CGFloat {
-        return 264.0 + bottomSafeArea
-    }
-    
-    func supportedDrawerPositions() -> [PulleyPosition] {
-        return [.collapsed, .open, .partiallyRevealed]
-    }
-}
-
 extension AddOrSearchViewController: SuggestionTableViewCellDelegate {
     func suggestionAdded(_ name: String) {
-        let addFoodViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier:
+        let addFoodVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier:
             "AddFoodViewController") as! AddFoodViewController
-        addFoodViewController.addOrSearchVC = self
-        addFoodViewController.foodName = name
-        pulleyVC.setDrawerContentViewController(controller: addFoodViewController)
+        addFoodVC.foodName = name
+        push(addFoodVC)
     }
 }
 
