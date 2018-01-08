@@ -25,14 +25,17 @@ class AddOrSearchViewController: PulleyDrawerViewController {
             searchBar.resignFirstResponder()
         }
     }
-}
-
-@objc protocol SuggestionTableViewCellDelegate {
-    func suggestionAdded(_ name: String)
+    
+    func suggestionAdded(_ name: String) {
+        let addFoodVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier:
+            "AddFoodViewController") as! AddFoodViewController
+        addFoodVC.foodName = name
+        push(addFoodVC)
+    }
 }
 
 class SuggestionTableViewCell: UITableViewCell {
-    @IBOutlet weak var delegate: SuggestionTableViewCellDelegate!
+    @IBOutlet weak var addOrSearchViewController: AddOrSearchViewController!
     @IBOutlet weak var label: UILabel!
     
     var isInQuotations = false
@@ -43,16 +46,7 @@ class SuggestionTableViewCell: UITableViewCell {
     }
     
     @IBAction func add() {
-        delegate.suggestionAdded(suggestionName)
-    }
-}
-
-extension AddOrSearchViewController: SuggestionTableViewCellDelegate {
-    func suggestionAdded(_ name: String) {
-        let addFoodVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier:
-            "AddFoodViewController") as! AddFoodViewController
-        addFoodVC.foodName = name
-        push(addFoodVC)
+        addOrSearchViewController.suggestionAdded(suggestionName)
     }
 }
 

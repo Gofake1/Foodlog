@@ -109,7 +109,7 @@
             </objects>
             <point key="canvasLocation" x="761" y="132"/>
         </scene>
-        <!--Delegate-->
+        <!--Add Or Search View Controller-->
         <scene sceneID="DuT-6Z-VyP">
             <objects>
                 <viewController id="GXp-b9-hhh" customClass="AddOrSearchViewController" customModule="Foodlog" customModuleProvider="target" sceneMemberID="viewController">
@@ -172,7 +172,7 @@
                                             </subviews>
                                         </tableViewCellContentView>
                                         <connections>
-                                            <outlet property="delegate" destination="GXp-b9-hhh" id="7Kt-gw-3Q0"/>
+                                            <outlet property="addOrSearchViewController" destination="GXp-b9-hhh" id="7HV-CF-QK4"/>
                                             <outlet property="label" destination="VNn-ec-SWf" id="jaD-qd-a4N"/>
                                         </connections>
                                     </tableViewCell>
@@ -820,7 +820,7 @@
                                 </constraints>
                             </scrollView>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="94H-9w-ldl">
-                                <rect key="frame" x="276" y="16" width="28" height="28"/>
+                                <rect key="frame" x="276" y="15" width="30" height="30"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <state key="normal" image="Close"/>
