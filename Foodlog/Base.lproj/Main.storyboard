@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
     <device id="retina4_0" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
@@ -7,6 +7,7 @@
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
         <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -14,10 +15,6 @@
         <scene sceneID="tne-QT-ifu">
             <objects>
                 <viewController id="BYZ-38-t0r" customClass="PulleyViewController" customModule="Foodlog" customModuleProvider="target" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="N1o-Rf-ojs"/>
-                        <viewControllerLayoutGuide type="bottom" id="5Me-zL-dGf"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -41,13 +38,14 @@
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="seh-mk-hSq" firstAttribute="trailing" secondItem="8bC-Xf-vdC" secondAttribute="trailing" id="Bgx-Bb-Gut"/>
-                            <constraint firstItem="0mk-6D-lrR" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="IkS-vI-Oot"/>
-                            <constraint firstItem="5Me-zL-dGf" firstAttribute="top" secondItem="0mk-6D-lrR" secondAttribute="bottom" id="Ocv-Ca-vEt"/>
+                            <constraint firstItem="0mk-6D-lrR" firstAttribute="leading" secondItem="ZeW-RA-3az" secondAttribute="leading" id="IkS-vI-Oot"/>
+                            <constraint firstItem="ZeW-RA-3az" firstAttribute="bottom" secondItem="0mk-6D-lrR" secondAttribute="bottom" id="Ocv-Ca-vEt"/>
                             <constraint firstItem="seh-mk-hSq" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="top" id="YPK-LC-H3m"/>
-                            <constraint firstItem="5Me-zL-dGf" firstAttribute="top" secondItem="seh-mk-hSq" secondAttribute="bottom" id="guY-1j-2jM"/>
+                            <constraint firstItem="ZeW-RA-3az" firstAttribute="bottom" secondItem="seh-mk-hSq" secondAttribute="bottom" id="guY-1j-2jM"/>
                             <constraint firstItem="seh-mk-hSq" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="mr8-1k-nh2"/>
-                            <constraint firstItem="0mk-6D-lrR" firstAttribute="trailing" secondItem="8bC-Xf-vdC" secondAttribute="trailing" id="r50-Me-9YJ"/>
+                            <constraint firstItem="0mk-6D-lrR" firstAttribute="trailing" secondItem="ZeW-RA-3az" secondAttribute="trailing" id="r50-Me-9YJ"/>
                         </constraints>
+                        <viewLayoutGuide key="safeArea" id="ZeW-RA-3az"/>
                     </view>
                     <connections>
                         <outlet property="drawerContentContainerView" destination="0mk-6D-lrR" id="MyX-RZ-5KI"/>
@@ -62,10 +60,6 @@
         <scene sceneID="8Em-kR-J6d">
             <objects>
                 <viewController id="tlM-rw-hRr" customClass="LogViewController" customModule="Foodlog" customModuleProvider="target" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="q56-u1-GYI"/>
-                        <viewControllerLayoutGuide type="bottom" id="3ah-V6-Ebd"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="I8m-Wa-ucI">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -98,11 +92,12 @@
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="p4u-kq-wQp" firstAttribute="top" secondItem="q56-u1-GYI" secondAttribute="bottom" id="DFZ-P1-G9H"/>
-                            <constraint firstItem="3ah-V6-Ebd" firstAttribute="top" secondItem="p4u-kq-wQp" secondAttribute="bottom" id="Vcc-s1-bf7"/>
-                            <constraint firstAttribute="trailing" secondItem="p4u-kq-wQp" secondAttribute="trailing" id="fKB-fp-4cY"/>
-                            <constraint firstItem="p4u-kq-wQp" firstAttribute="leading" secondItem="I8m-Wa-ucI" secondAttribute="leading" id="wGA-7B-NMJ"/>
+                            <constraint firstItem="p4u-kq-wQp" firstAttribute="top" secondItem="iUA-Al-kYg" secondAttribute="top" id="DFZ-P1-G9H"/>
+                            <constraint firstItem="iUA-Al-kYg" firstAttribute="bottom" secondItem="p4u-kq-wQp" secondAttribute="bottom" id="Vcc-s1-bf7"/>
+                            <constraint firstItem="iUA-Al-kYg" firstAttribute="trailing" secondItem="p4u-kq-wQp" secondAttribute="trailing" id="fKB-fp-4cY"/>
+                            <constraint firstItem="p4u-kq-wQp" firstAttribute="leading" secondItem="iUA-Al-kYg" secondAttribute="leading" id="wGA-7B-NMJ"/>
                         </constraints>
+                        <viewLayoutGuide key="safeArea" id="iUA-Al-kYg"/>
                     </view>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="2tG-7D-m5V" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -113,10 +108,6 @@
         <scene sceneID="DuT-6Z-VyP">
             <objects>
                 <viewController id="GXp-b9-hhh" customClass="AddOrSearchViewController" customModule="Foodlog" customModuleProvider="target" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="gBt-LT-HYR"/>
-                        <viewControllerLayoutGuide type="bottom" id="ezV-be-YYD"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="RjI-x7-P8v">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="320"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -189,11 +180,12 @@
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="ndq-l0-xxC" firstAttribute="top" secondItem="gBt-LT-HYR" secondAttribute="bottom" constant="6" id="PHs-WN-9VP"/>
-                            <constraint firstItem="WQU-iN-OcL" firstAttribute="centerX" secondItem="RjI-x7-P8v" secondAttribute="centerX" id="VNy-ro-gfW"/>
-                            <constraint firstItem="WQU-iN-OcL" firstAttribute="top" secondItem="gBt-LT-HYR" secondAttribute="bottom" constant="61" id="uzW-7S-GDm"/>
-                            <constraint firstItem="ndq-l0-xxC" firstAttribute="centerX" secondItem="RjI-x7-P8v" secondAttribute="centerX" id="xME-Fa-ERd"/>
+                            <constraint firstItem="ndq-l0-xxC" firstAttribute="top" secondItem="FbL-5G-hY4" secondAttribute="top" constant="6" id="PHs-WN-9VP"/>
+                            <constraint firstItem="WQU-iN-OcL" firstAttribute="centerX" secondItem="FbL-5G-hY4" secondAttribute="centerX" id="VNy-ro-gfW"/>
+                            <constraint firstItem="WQU-iN-OcL" firstAttribute="top" secondItem="FbL-5G-hY4" secondAttribute="top" constant="61" id="uzW-7S-GDm"/>
+                            <constraint firstItem="ndq-l0-xxC" firstAttribute="centerX" secondItem="FbL-5G-hY4" secondAttribute="centerX" id="xME-Fa-ERd"/>
                         </constraints>
+                        <viewLayoutGuide key="safeArea" id="FbL-5G-hY4"/>
                     </view>
                     <connections>
                         <outlet property="scanBarcodeButton" destination="WQU-iN-OcL" id="DOI-Sc-yHS"/>
@@ -209,12 +201,8 @@
         <scene sceneID="ZDc-Kx-PbQ">
             <objects>
                 <viewController storyboardIdentifier="AddFoodViewController" id="c3i-y8-uTP" customClass="AddFoodViewController" customModule="Foodlog" customModuleProvider="target" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="WFJ-UM-jgC"/>
-                        <viewControllerLayoutGuide type="bottom" id="eDV-y4-9eM"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="CW6-qu-4Bn">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="1040"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="1050"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="jKh-zH-Rqa" customClass="PillView" customModule="Foodlog" customModuleProvider="target">
@@ -237,10 +225,10 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" keyboardDismissMode="onDrag" translatesAutoresizingMaskIntoConstraints="NO" id="toz-Tf-gAN">
-                                <rect key="frame" x="0.0" y="49" width="320" height="991"/>
+                                <rect key="frame" x="0.0" y="49" width="320" height="1001"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="be5-mP-RVr">
-                                        <rect key="frame" x="0.0" y="0.0" width="320" height="991"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="320" height="1001"/>
                                         <subviews>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="eh7-pQ-uKy">
                                                 <rect key="frame" x="20" y="0.0" width="280" height="53"/>
@@ -751,7 +739,7 @@
                                             <constraint firstAttribute="trailing" secondItem="SOw-FL-N8y" secondAttribute="trailing" constant="20" id="VuH-EJ-v4c"/>
                                             <constraint firstItem="r37-ZL-bPX" firstAttribute="leading" secondItem="be5-mP-RVr" secondAttribute="leading" constant="16" id="WMr-qr-9AN"/>
                                             <constraint firstItem="eh7-pQ-uKy" firstAttribute="leading" secondItem="be5-mP-RVr" secondAttribute="leading" constant="20" symbolic="YES" id="X0S-OT-nOh"/>
-                                            <constraint firstAttribute="bottom" secondItem="r37-ZL-bPX" secondAttribute="bottom" constant="33" id="YV2-eg-bjQ"/>
+                                            <constraint firstAttribute="bottom" secondItem="r37-ZL-bPX" secondAttribute="bottom" constant="43" id="YV2-eg-bjQ"/>
                                             <constraint firstItem="r37-ZL-bPX" firstAttribute="top" secondItem="xtD-1d-V2E" secondAttribute="bottom" constant="17" id="YZM-iK-qFE"/>
                                             <constraint firstAttribute="trailing" secondItem="de2-BY-ehG" secondAttribute="trailing" constant="20" id="ZQP-WO-xtY"/>
                                             <constraint firstItem="KqJ-fZ-1mf" firstAttribute="leading" secondItem="be5-mP-RVr" secondAttribute="leading" constant="16" id="ZjG-aF-bim"/>
@@ -760,7 +748,7 @@
                                             <constraint firstItem="cel-vG-be4" firstAttribute="leading" secondItem="be5-mP-RVr" secondAttribute="leading" constant="16" id="b3H-Ax-cDx"/>
                                             <constraint firstItem="cel-vG-be4" firstAttribute="centerY" secondItem="lHS-z8-AVo" secondAttribute="centerY" id="cMW-94-qtw"/>
                                             <constraint firstAttribute="trailing" secondItem="bEW-Of-I1z" secondAttribute="trailing" constant="20" id="cVj-b5-5oe"/>
-                                            <constraint firstAttribute="height" constant="991" placeholder="YES" id="cyu-su-R9X"/>
+                                            <constraint firstAttribute="height" constant="1001" placeholder="YES" id="cyu-su-R9X"/>
                                             <constraint firstAttribute="trailing" secondItem="eh7-pQ-uKy" secondAttribute="trailing" constant="20" symbolic="YES" id="dSm-tZ-cB0"/>
                                             <constraint firstItem="ryY-6L-7ry" firstAttribute="leading" secondItem="be5-mP-RVr" secondAttribute="leading" constant="16" id="dYS-lf-RYI"/>
                                             <constraint firstItem="dUc-Sh-22p" firstAttribute="top" secondItem="6rF-n0-R1E" secondAttribute="bottom" constant="17" id="da4-GR-DaN"/>
@@ -831,15 +819,16 @@
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="toz-Tf-gAN" firstAttribute="bottom" secondItem="CW6-qu-4Bn" secondAttribute="bottom" id="9ho-vg-T2w"/>
-                            <constraint firstItem="toz-Tf-gAN" firstAttribute="leading" secondItem="CW6-qu-4Bn" secondAttribute="leading" id="AUq-OF-cP1"/>
+                            <constraint firstItem="toz-Tf-gAN" firstAttribute="bottom" secondItem="Qxf-cm-Xqd" secondAttribute="bottom" id="9ho-vg-T2w"/>
+                            <constraint firstItem="toz-Tf-gAN" firstAttribute="leading" secondItem="Qxf-cm-Xqd" secondAttribute="leading" id="AUq-OF-cP1"/>
                             <constraint firstItem="jKh-zH-Rqa" firstAttribute="top" secondItem="CW6-qu-4Bn" secondAttribute="top" constant="6" id="BPN-Ad-OGx"/>
                             <constraint firstItem="toz-Tf-gAN" firstAttribute="top" secondItem="CW6-qu-4Bn" secondAttribute="top" constant="49" id="PYm-lv-Btk"/>
-                            <constraint firstItem="jKh-zH-Rqa" firstAttribute="centerX" secondItem="CW6-qu-4Bn" secondAttribute="centerX" id="Tt6-TJ-JKX"/>
-                            <constraint firstItem="toz-Tf-gAN" firstAttribute="trailing" secondItem="CW6-qu-4Bn" secondAttribute="trailing" id="fwa-Yo-9zr"/>
+                            <constraint firstItem="jKh-zH-Rqa" firstAttribute="centerX" secondItem="Qxf-cm-Xqd" secondAttribute="centerX" id="Tt6-TJ-JKX"/>
+                            <constraint firstItem="toz-Tf-gAN" firstAttribute="trailing" secondItem="Qxf-cm-Xqd" secondAttribute="trailing" id="fwa-Yo-9zr"/>
                         </constraints>
+                        <viewLayoutGuide key="safeArea" id="Qxf-cm-Xqd"/>
                     </view>
-                    <size key="freeformSize" width="320" height="1040"/>
+                    <size key="freeformSize" width="320" height="1050"/>
                     <connections>
                         <outlet property="calciumField" destination="SoW-g3-4Aj" id="hw1-ea-iI7"/>
                         <outlet property="caloriesField" destination="xAw-5J-Uzi" id="zWW-5R-PNp"/>
