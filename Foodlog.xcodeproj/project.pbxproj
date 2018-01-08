@@ -17,6 +17,7 @@
 		6385AF281FE0A435009E8483 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6385AF271FE0A435009E8483 /* AppDelegate.swift */; };
 		6385AF2A1FE0A436009E8483 /* LogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6385AF291FE0A436009E8483 /* LogViewController.swift */; };
 		6385AF2F1FE0A436009E8483 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6385AF2E1FE0A436009E8483 /* Assets.xcassets */; };
+		638C976C20030F8E00EC0D99 /* PillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 638C976B20030F8E00EC0D99 /* PillView.swift */; };
 		63AACA9C1FF329C600FE805F /* Realm.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63D970A11FE4B1E200AA0168 /* Realm.framework */; };
 		63AACA9D1FF329C600FE805F /* Realm.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 63D970A11FE4B1E200AA0168 /* Realm.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		63AB78D61FE77268009F9383 /* HealthKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63AB78D51FE77268009F9383 /* HealthKit.framework */; };
@@ -109,6 +110,7 @@
 		6385AF2E1FE0A436009E8483 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		6385AF311FE0A436009E8483 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		6385AF331FE0A436009E8483 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		638C976B20030F8E00EC0D99 /* PillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PillView.swift; sourceTree = "<group>"; };
 		63AB78D41FE77267009F9383 /* Foodlog.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Foodlog.entitlements; sourceTree = "<group>"; };
 		63AB78D51FE77268009F9383 /* HealthKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = HealthKit.framework; path = System/Library/Frameworks/HealthKit.framework; sourceTree = SDKROOT; };
 		63B696D81FF73BAE0023E76A /* .swift-version */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ".swift-version"; sourceTree = "<group>"; };
@@ -245,6 +247,7 @@
 				6385AF271FE0A435009E8483 /* AppDelegate.swift */,
 				6385AF291FE0A436009E8483 /* LogViewController.swift */,
 				63D9709B1FE4961700AA0168 /* Models.swift */,
+				638C976B20030F8E00EC0D99 /* PillView.swift */,
 				636E139C2000E19B005C8AD8 /* PulleyDrawerViewController.swift */,
 				6385AF2B1FE0A436009E8483 /* Main.storyboard */,
 				6385AF301FE0A436009E8483 /* LaunchScreen.storyboard */,
@@ -462,6 +465,7 @@
 				6385AF2A1FE0A436009E8483 /* LogViewController.swift in Sources */,
 				63D9709C1FE4961700AA0168 /* Models.swift in Sources */,
 				633E0C001FF87A4500290B61 /* AddFoodViewController.swift in Sources */,
+				638C976C20030F8E00EC0D99 /* PillView.swift in Sources */,
 				63B697061FF73BAE0023E76A /* ExpandableCell.swift in Sources */,
 				636E139D2000E19B005C8AD8 /* PulleyDrawerViewController.swift in Sources */,
 				63B697071FF73BAE0023E76A /* ExpandableDelegate.swift in Sources */,

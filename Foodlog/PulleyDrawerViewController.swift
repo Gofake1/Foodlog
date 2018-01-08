@@ -29,7 +29,7 @@ class PulleyDrawerViewController: UIViewController {
 
 extension PulleyDrawerViewController: PulleyDrawerViewControllerDelegate {
     func collapsedDrawerHeight(bottomSafeArea: CGFloat) -> CGFloat {
-        return 60.0 + bottomSafeArea
+        return 64.0 + bottomSafeArea
     }
     
     func partialRevealDrawerHeight(bottomSafeArea: CGFloat) -> CGFloat {
