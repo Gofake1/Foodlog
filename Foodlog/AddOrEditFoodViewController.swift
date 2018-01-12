@@ -6,6 +6,7 @@
 //  Copyright © 2017 Gofake1. All rights reserved.
 //
 
+import RealmSwift
 import UIKit
 
 private let _dateFormatter: DateFormatter = {
@@ -21,7 +22,7 @@ private let _datePicker: UIDatePicker = {
     return dp
 }()
 
-class AddFoodViewController: PulleyDrawerViewController {
+class AddOrEditFoodViewController: PulleyDrawerViewController {
     @IBOutlet weak var scrollView: UIScrollView!
     @IBOutlet weak var foodNameLabel: UILabel!
     @IBOutlet weak var dateField: UITextField!
@@ -47,13 +48,36 @@ class AddFoodViewController: PulleyDrawerViewController {
     @IBOutlet weak var vitaminKField: UITextField!
     @IBOutlet weak var calciumField: UITextField!
     @IBOutlet weak var ironField: UITextField!
+    @IBOutlet var nutritionInfoFields: [UITextField]!
     
-    var foodName: String!
+    var food: Food!
     private weak var activeTextField: UITextField?
     
     override func viewDidLoad() {
-        foodNameLabel.text = foodName
-        dateField.text = _dateFormatter.string(from: Date())
+        foodNameLabel.text              = food.name
+        caloriesField.text              = String(food.calcium)
+        totalFatField.text              = String(food.totalFat)
+        saturatedFatField.text          = String(food.saturatedFat)
+        monounsaturatedFatField.text    = String(food.monounsaturatedFat)
+        polyunsaturatedFatField.text    = String(food.polyunsaturatedFat)
+        transFatField.text              = String(food.transFat)
+        cholesterolField.text           = String(food.cholesterol)
+        sodiumField.text                = String(food.sodium)
+        totalCarbohydrateField.text     = String(food.totalCarbohydrate)
+        dietaryFiberField.text          = String(food.dietaryFiber)
+        sugarsField.text                = String(food.sugars)
+        proteinField.text               = String(food.protein)
+        vitaminAField.text              = String(food.vitaminA)
+        vitaminB6Field.text             = String(food.vitaminB6)
+        vitaminB12Field.text            = String(food.vitaminB12)
+        vitaminCField.text              = String(food.vitaminC)
+        vitaminDField.text              = String(food.vitaminD)
+        vitaminEField.text              = String(food.vitaminE)
+        vitaminKField.text              = String(food.vitaminK)
+        calciumField.text               = String(food.calcium)
+        ironField.text                  = String(food.iron)
+        
+        dateField.text = _dateFormatter.string(from: Date().roundedToNearestHalfHour)
         _datePicker.addTarget(self, action: #selector(dateChanged(_:)), for: .valueChanged)
         dateField.inputView = _datePicker
         
@@ -90,12 +114,28 @@ class AddFoodViewController: PulleyDrawerViewController {
     }
     
     @IBAction func addFoodToLog() {
-        
+        let foodEntry = FoodEntry()
+        foodEntry.food = food
+        do {
+            try Realm().add(foodEntry)
+        } catch {
+            
+        }
     }
     
     @IBAction func cancel() {
         assert(previousDrawerVC != nil)
         pop()
+    }
+    
+    @IBAction func beginEditingFoodInfo() {
+        nutritionInfoFields.forEach { $0.isEnabled = true }
+        
+    }
+    
+    @IBAction func finishEditingFoodInfo() {
+        nutritionInfoFields.forEach { $0.isEnabled = false }
+        
     }
     
     func drawerPositionDidChange(drawer: PulleyViewController, bottomSafeArea: CGFloat) {
@@ -117,7 +157,7 @@ class AddFoodViewController: PulleyDrawerViewController {
     }
 }
 
-extension AddFoodViewController: UITextFieldDelegate {
+extension AddOrEditFoodViewController: UITextFieldDelegate {
     func textFieldDidBeginEditing(_ textField: UITextField) {
         activeTextField = textField
         pulleyVC.setDrawerPosition(position: .open, animated: true)
@@ -125,5 +165,11 @@ extension AddFoodViewController: UITextFieldDelegate {
     
     func textFieldDidEndEditing(_ textField: UITextField) {
         activeTextField = nil
+    }
+}
+
+extension Date {
+    var roundedToNearestHalfHour: Date {
+        return self
     }
 }

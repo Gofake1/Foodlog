@@ -137,7 +137,7 @@
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="gray" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="SuggestionCell" id="8pf-Ew-eQb" customClass="SuggestionTableViewCell" customModule="Foodlog" customModuleProvider="target">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="gray" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="Suggestion" id="8pf-Ew-eQb" customClass="SuggestionTableViewCell" customModule="Foodlog" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="28" width="320" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="8pf-Ew-eQb" id="Vsq-Nx-N64">
@@ -197,10 +197,10 @@
             </objects>
             <point key="canvasLocation" x="-24.375" y="756.33802816901414"/>
         </scene>
-        <!--Add Food View Controller-->
+        <!--Add Or Edit Food View Controller-->
         <scene sceneID="ZDc-Kx-PbQ">
             <objects>
-                <viewController storyboardIdentifier="AddFoodViewController" id="c3i-y8-uTP" customClass="AddFoodViewController" customModule="Foodlog" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="AddOrEditFood" id="c3i-y8-uTP" customClass="AddOrEditFoodViewController" customModule="Foodlog" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="CW6-qu-4Bn">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="1050"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -855,11 +855,32 @@
                         <outlet property="vitaminDField" destination="3cq-cV-YKj" id="09y-Yg-Rej"/>
                         <outlet property="vitaminEField" destination="E1x-LZ-FZk" id="G4p-5b-NlM"/>
                         <outlet property="vitaminKField" destination="r8N-ES-KB9" id="Icz-4J-Xhg"/>
+                        <outletCollection property="nutritionInfoFields" destination="xAw-5J-Uzi" collectionClass="NSMutableArray" id="ZFZ-Lk-h0x"/>
+                        <outletCollection property="nutritionInfoFields" destination="bEW-Of-I1z" collectionClass="NSMutableArray" id="0F3-BV-XFV"/>
+                        <outletCollection property="nutritionInfoFields" destination="n3i-Ne-By1" collectionClass="NSMutableArray" id="B0t-hC-1TB"/>
+                        <outletCollection property="nutritionInfoFields" destination="OB0-i6-vV4" collectionClass="NSMutableArray" id="4fT-Yo-j8w"/>
+                        <outletCollection property="nutritionInfoFields" destination="0kc-Ak-gNk" collectionClass="NSMutableArray" id="v4a-xB-Pgv"/>
+                        <outletCollection property="nutritionInfoFields" destination="SOw-FL-N8y" collectionClass="NSMutableArray" id="1Hp-FL-Oj6"/>
+                        <outletCollection property="nutritionInfoFields" destination="eYj-4z-9Uk" collectionClass="NSMutableArray" id="hFE-qE-EY9"/>
+                        <outletCollection property="nutritionInfoFields" destination="b4e-I4-lyI" collectionClass="NSMutableArray" id="xXZ-Mg-Rqq"/>
+                        <outletCollection property="nutritionInfoFields" destination="IvP-cp-KKH" collectionClass="NSMutableArray" id="5A4-34-wCx"/>
+                        <outletCollection property="nutritionInfoFields" destination="de2-BY-ehG" collectionClass="NSMutableArray" id="IYI-Cp-Ehl"/>
+                        <outletCollection property="nutritionInfoFields" destination="XYS-dT-39s" collectionClass="NSMutableArray" id="atn-W9-ZYF"/>
+                        <outletCollection property="nutritionInfoFields" destination="Egr-kj-fPz" collectionClass="NSMutableArray" id="vu1-eI-Dwt"/>
+                        <outletCollection property="nutritionInfoFields" destination="Wxt-QN-ZRW" collectionClass="NSMutableArray" id="qkk-6u-V5h"/>
+                        <outletCollection property="nutritionInfoFields" destination="iT4-Hi-Ped" collectionClass="NSMutableArray" id="edK-hD-apm"/>
+                        <outletCollection property="nutritionInfoFields" destination="lHS-z8-AVo" collectionClass="NSMutableArray" id="SSR-Ud-UZC"/>
+                        <outletCollection property="nutritionInfoFields" destination="Y1D-en-SJD" collectionClass="NSMutableArray" id="Diw-g8-HW4"/>
+                        <outletCollection property="nutritionInfoFields" destination="3cq-cV-YKj" collectionClass="NSMutableArray" id="G5x-eP-I3e"/>
+                        <outletCollection property="nutritionInfoFields" destination="E1x-LZ-FZk" collectionClass="NSMutableArray" id="CC9-vi-uY9"/>
+                        <outletCollection property="nutritionInfoFields" destination="r8N-ES-KB9" collectionClass="NSMutableArray" id="aYc-CN-6rH"/>
+                        <outletCollection property="nutritionInfoFields" destination="SoW-g3-4Aj" collectionClass="NSMutableArray" id="OFL-Gr-iaJ"/>
+                        <outletCollection property="nutritionInfoFields" destination="NCy-xW-YlQ" collectionClass="NSMutableArray" id="7F8-Rv-pgf"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="pgC-jb-vsn" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="759" y="1137"/>
+            <point key="canvasLocation" x="759" y="1142"/>
         </scene>
     </scenes>
     <resources>

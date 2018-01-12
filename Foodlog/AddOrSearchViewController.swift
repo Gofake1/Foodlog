@@ -26,10 +26,12 @@ class AddOrSearchViewController: PulleyDrawerViewController {
         }
     }
     
-    func suggestionAdded(_ name: String) {
+    func suggestionAdded(_ suggestion: SuggestionType) {
         let addFoodVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier:
-            "AddFoodViewController") as! AddFoodViewController
-        addFoodVC.foodName = name
+            "AddOrEditFood") as! AddOrEditFoodViewController
+        if let food = suggestion as? Food {
+            addFoodVC.food = food
+        }
         push(addFoodVC)
     }
 }
@@ -38,15 +40,35 @@ class SuggestionTableViewCell: UITableViewCell {
     @IBOutlet weak var addOrSearchViewController: AddOrSearchViewController!
     @IBOutlet weak var label: UILabel!
     
-    var isInQuotations = false
-    var suggestionName = "" {
+    var suggestion: SuggestionType? {
         didSet {
-            label.text = isInQuotations ? "\"\(suggestionName)\"" : suggestionName
+            label.text = suggestion?.suggestionName
+        }
+    }
+    var newSuggestionName = "" {
+        didSet {
+            label.text = "\"\(newSuggestionName)\""
         }
     }
     
     @IBAction func add() {
-        addOrSearchViewController.suggestionAdded(suggestionName)
+        if let suggestion = suggestion {
+            addOrSearchViewController.suggestionAdded(suggestion)
+        } else {
+            let newFood = Food()
+            newFood.name = newSuggestionName
+            addOrSearchViewController.suggestionAdded(newFood)
+        }
+    }
+}
+
+protocol SuggestionType {
+    var suggestionName: String { get }
+}
+
+extension Food: SuggestionType {
+    var suggestionName: String {
+        return name
     }
 }
 
@@ -87,11 +109,10 @@ extension AddOrSearchViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "SuggestionCell", for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: "Suggestion", for: indexPath)
             as! SuggestionTableViewCell
         if indexPath.item == 0 {
-            cell.isInQuotations = true
-            cell.suggestionName = searchBar.text!
+            cell.newSuggestionName = searchBar.text!
         } else {
             //*
         }

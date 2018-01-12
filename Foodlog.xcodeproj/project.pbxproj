@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		6314B4DD1FF45A9100C08058 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6314B4DC1FF45A9100C08058 /* CloudKit.framework */; };
-		633E0C001FF87A4500290B61 /* AddFoodViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 633E0BFF1FF87A4500290B61 /* AddFoodViewController.swift */; };
+		633E0C001FF87A4500290B61 /* AddOrEditFoodViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 633E0BFF1FF87A4500290B61 /* AddOrEditFoodViewController.swift */; };
 		635972381FF479A500D5CC97 /* AddOrSearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 635972371FF479A500D5CC97 /* AddOrSearchViewController.swift */; };
 		636E139D2000E19B005C8AD8 /* PulleyDrawerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 636E139C2000E19B005C8AD8 /* PulleyDrawerViewController.swift */; };
 		637A344B1FF467AF00EA48BD /* PulleyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 637A342F1FF467AF00EA48BD /* PulleyViewController.swift */; };
@@ -81,7 +81,7 @@
 
 /* Begin PBXFileReference section */
 		6314B4DC1FF45A9100C08058 /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
-		633E0BFF1FF87A4500290B61 /* AddFoodViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddFoodViewController.swift; sourceTree = "<group>"; };
+		633E0BFF1FF87A4500290B61 /* AddOrEditFoodViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddOrEditFoodViewController.swift; sourceTree = "<group>"; };
 		633E0C051FF8923700290B61 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		635972371FF479A500D5CC97 /* AddOrSearchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddOrSearchViewController.swift; sourceTree = "<group>"; };
 		636E139C2000E19B005C8AD8 /* PulleyDrawerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PulleyDrawerViewController.swift; sourceTree = "<group>"; };
@@ -242,7 +242,7 @@
 		6385AF261FE0A435009E8483 /* Foodlog */ = {
 			isa = PBXGroup;
 			children = (
-				633E0BFF1FF87A4500290B61 /* AddFoodViewController.swift */,
+				633E0BFF1FF87A4500290B61 /* AddOrEditFoodViewController.swift */,
 				635972371FF479A500D5CC97 /* AddOrSearchViewController.swift */,
 				6385AF271FE0A435009E8483 /* AppDelegate.swift */,
 				6385AF291FE0A436009E8483 /* LogViewController.swift */,
@@ -460,7 +460,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				633E0C001FF87A4500290B61 /* AddFoodViewController.swift in Sources */,
+				633E0C001FF87A4500290B61 /* AddOrEditFoodViewController.swift in Sources */,
 				635972381FF479A500D5CC97 /* AddOrSearchViewController.swift in Sources */,
 				6385AF281FE0A435009E8483 /* AppDelegate.swift in Sources */,
 				6385AF2A1FE0A436009E8483 /* LogViewController.swift in Sources */,
