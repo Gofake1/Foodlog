@@ -56,6 +56,8 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
     @IBOutlet weak var vitaminKField: UITextField!
     @IBOutlet weak var calciumField: UITextField!
     @IBOutlet weak var ironField: UITextField!
+    @IBOutlet weak var magnesiumField: UITextField!
+    @IBOutlet weak var potassiumField: UITextField!
     
     var food: Food!
     var mode: Mode!
@@ -85,6 +87,8 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
             vitaminKField.isEnabled = false
             calciumField.isEnabled = false
             ironField.isEnabled = false
+            magnesiumField.isEnabled = false
+            potassiumField.isEnabled = false
         case .addNewFood:
             break
         case .editExistingFood:
@@ -115,6 +119,8 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
         vitaminKField.text              = String(food.vitaminK)
         calciumField.text               = String(food.calcium)
         ironField.text                  = String(food.iron)
+        magnesiumField.text             = String(food.magnesium)
+        potassiumField.text             = String(food.potassium)
         
         dateField.text = _dateFormatter.string(from: Date().roundedToNearestHalfHour)
         _datePicker.addTarget(self, action: #selector(dateChanged(_:)), for: .valueChanged)
@@ -153,9 +159,33 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
     }
     
     @IBAction func addFoodToLog() {
-        switch mode! {
-        case .addExistingFood: fallthrough
-        case .addNewFood:
+        func modifyFoodInfo(_ food: Food) {
+            food.calories           = Float(caloriesField.text!) ?? 0.0
+            food.totalFat           = Float(totalFatField.text!) ?? 0.0
+            food.saturatedFat       = Float(saturatedFatField.text!) ?? 0.0
+            food.monounsaturatedFat = Float(monounsaturatedFatField.text!) ?? 0.0
+            food.polyunsaturatedFat = Float(polyunsaturatedFatField.text!) ?? 0.0
+            food.transFat           = Float(transFatField.text!) ?? 0.0
+            food.cholesterol        = Float(cholesterolField.text!) ?? 0.0
+            food.sodium             = Float(sodiumField.text!) ?? 0.0
+            food.totalCarbohydrate  = Float(totalCarbohydrateField.text!) ?? 0.0
+            food.dietaryFiber       = Float(dietaryFiberField.text!) ?? 0.0
+            food.sugars             = Float(sugarsField.text!) ?? 0.0
+            food.protein            = Float(proteinField.text!) ?? 0.0
+            food.vitaminA           = Float(vitaminKField.text!) ?? 0.0
+            food.vitaminB6          = Float(vitaminB6Field.text!) ?? 0.0
+            food.vitaminB12         = Float(vitaminB12Field.text!) ?? 0.0
+            food.vitaminC           = Float(vitaminCField.text!) ?? 0.0
+            food.vitaminD           = Float(vitaminDField.text!) ?? 0.0
+            food.vitaminE           = Float(vitaminEField.text!) ?? 0.0
+            food.vitaminK           = Float(vitaminKField.text!) ?? 0.0
+            food.calcium            = Float(calciumField.text!) ?? 0.0
+            food.iron               = Float(ironField.text!) ?? 0.0
+            food.magnesium          = Float(magnesiumField.text!) ?? 0.0
+            food.potassium          = Float(potassiumField.text!) ?? 0.0
+        }
+        
+        func writeFoodEntry(_ food: Food) {
             let foodEntry = FoodEntry()
             foodEntry.food = food
             do {
@@ -163,7 +193,17 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
             } catch {
                 
             }
+        }
+        
+        switch mode! {
+        case .addNewFood:
+            modifyFoodInfo(food)
+            writeFoodEntry(food)
+        case .addExistingFood:
+            writeFoodEntry(food)
         case .editExistingFood:
+            modifyFoodInfo(food)
+            // TODO: update Realm
             break
         }
     }

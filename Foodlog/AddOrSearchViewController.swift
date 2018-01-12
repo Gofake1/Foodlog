@@ -27,11 +27,10 @@ class AddOrSearchViewController: PulleyDrawerViewController {
     }
     
     func suggestionAdded(_ suggestion: SuggestionType, isNew: Bool) {
+        guard let food = suggestion as? Food else { return }
         let addFoodVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier:
             "AddOrEditFood") as! AddOrEditFoodViewController
-        if let food = suggestion as? Food {
-            addFoodVC.food = food
-        }
+        addFoodVC.food = food
         addFoodVC.mode = isNew ? .addNewFood : .addExistingFood
         push(addFoodVC)
     }
