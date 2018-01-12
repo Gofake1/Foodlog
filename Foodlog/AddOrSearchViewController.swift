@@ -26,12 +26,13 @@ class AddOrSearchViewController: PulleyDrawerViewController {
         }
     }
     
-    func suggestionAdded(_ suggestion: SuggestionType) {
+    func suggestionAdded(_ suggestion: SuggestionType, isNew: Bool) {
         let addFoodVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier:
             "AddOrEditFood") as! AddOrEditFoodViewController
         if let food = suggestion as? Food {
             addFoodVC.food = food
         }
+        addFoodVC.mode = isNew ? .addNewFood : .addExistingFood
         push(addFoodVC)
     }
 }
@@ -53,11 +54,11 @@ class SuggestionTableViewCell: UITableViewCell {
     
     @IBAction func add() {
         if let suggestion = suggestion {
-            addOrSearchViewController.suggestionAdded(suggestion)
+            addOrSearchViewController.suggestionAdded(suggestion, isNew: false)
         } else {
             let newFood = Food()
             newFood.name = newSuggestionName
-            addOrSearchViewController.suggestionAdded(newFood)
+            addOrSearchViewController.suggestionAdded(newFood, isNew: true)
         }
     }
 }

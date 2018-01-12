@@ -23,8 +23,16 @@ private let _datePicker: UIDatePicker = {
 }()
 
 class AddOrEditFoodViewController: PulleyDrawerViewController {
+    enum Mode {
+        case addExistingFood
+        case addNewFood
+        case editExistingFood
+    }
+    
     @IBOutlet weak var scrollView: UIScrollView!
     @IBOutlet weak var foodNameLabel: UILabel!
+    @IBOutlet weak var foodNameField: UITextField!
+    @IBOutlet weak var addToLogButton: UIButton!
     @IBOutlet weak var dateField: UITextField!
     @IBOutlet weak var servingsField: UITextField!
     @IBOutlet weak var caloriesField: UITextField!
@@ -48,12 +56,43 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
     @IBOutlet weak var vitaminKField: UITextField!
     @IBOutlet weak var calciumField: UITextField!
     @IBOutlet weak var ironField: UITextField!
-    @IBOutlet var nutritionInfoFields: [UITextField]!
     
     var food: Food!
+    var mode: Mode!
     private weak var activeTextField: UITextField?
     
     override func viewDidLoad() {
+        switch mode! {
+        case .addExistingFood:
+            caloriesField.isEnabled = false
+            totalFatField.isEnabled = false
+            saturatedFatField.isEnabled = false
+            monounsaturatedFatField.isEnabled = false
+            polyunsaturatedFatField.isEnabled = false
+            transFatField.isEnabled = false
+            cholesterolField.isEnabled = false
+            sodiumField.isEnabled = false
+            totalCarbohydrateField.isEnabled = false
+            dietaryFiberField.isEnabled = false
+            sugarsField.isEnabled = false
+            proteinField.isEnabled = false
+            vitaminAField.isEnabled = false
+            vitaminB6Field.isEnabled = false
+            vitaminB12Field.isEnabled = false
+            vitaminCField.isEnabled = false
+            vitaminDField.isEnabled = false
+            vitaminEField.isEnabled = false
+            vitaminKField.isEnabled = false
+            calciumField.isEnabled = false
+            ironField.isEnabled = false
+        case .addNewFood:
+            break
+        case .editExistingFood:
+            foodNameLabel.isHidden = true
+            foodNameField.isHidden = false
+            addToLogButton.setTitle("Update Log", for: .normal)
+        }
+        
         foodNameLabel.text              = food.name
         caloriesField.text              = String(food.calcium)
         totalFatField.text              = String(food.totalFat)
@@ -114,28 +153,24 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
     }
     
     @IBAction func addFoodToLog() {
-        let foodEntry = FoodEntry()
-        foodEntry.food = food
-        do {
-            try Realm().add(foodEntry)
-        } catch {
-            
+        switch mode! {
+        case .addExistingFood: fallthrough
+        case .addNewFood:
+            let foodEntry = FoodEntry()
+            foodEntry.food = food
+            do {
+                try Realm().add(foodEntry)
+            } catch {
+                
+            }
+        case .editExistingFood:
+            break
         }
     }
     
     @IBAction func cancel() {
         assert(previousDrawerVC != nil)
         pop()
-    }
-    
-    @IBAction func beginEditingFoodInfo() {
-        nutritionInfoFields.forEach { $0.isEnabled = true }
-        
-    }
-    
-    @IBAction func finishEditingFoodInfo() {
-        nutritionInfoFields.forEach { $0.isEnabled = false }
-        
     }
     
     func drawerPositionDidChange(drawer: PulleyViewController, bottomSafeArea: CGFloat) {
