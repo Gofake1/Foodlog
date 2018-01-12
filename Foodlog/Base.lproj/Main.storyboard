@@ -878,4 +878,5 @@
     <resources>
         <image name="Close" width="24" height="24"/>
     </resources>
+    <color key="tintColor" red="0.0" green="0.53096664507772018" blue="0.01904661551" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
 </document>
