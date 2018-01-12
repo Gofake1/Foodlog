@@ -21,11 +21,6 @@
 		63AACA9C1FF329C600FE805F /* Realm.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63D970A11FE4B1E200AA0168 /* Realm.framework */; };
 		63AACA9D1FF329C600FE805F /* Realm.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 63D970A11FE4B1E200AA0168 /* Realm.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		63AB78D61FE77268009F9383 /* HealthKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63AB78D51FE77268009F9383 /* HealthKit.framework */; };
-		63B697051FF73BAE0023E76A /* ExpandableProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63B696DE1FF73BAE0023E76A /* ExpandableProcessor.swift */; };
-		63B697061FF73BAE0023E76A /* ExpandableCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63B696E01FF73BAE0023E76A /* ExpandableCell.swift */; };
-		63B697071FF73BAE0023E76A /* ExpandableDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63B696E11FF73BAE0023E76A /* ExpandableDelegate.swift */; };
-		63B697081FF73BAE0023E76A /* ExpandableStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63B696E21FF73BAE0023E76A /* ExpandableStyle.swift */; };
-		63B697091FF73BAE0023E76A /* ExpandableTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63B696E31FF73BAE0023E76A /* ExpandableTableView.swift */; };
 		63B697191FF73D010023E76A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6385AF2B1FE0A436009E8483 /* Main.storyboard */; };
 		63B6971A1FF73D060023E76A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6385AF301FE0A436009E8483 /* LaunchScreen.storyboard */; };
 		63D9709C1FE4961700AA0168 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63D9709B1FE4961700AA0168 /* Models.swift */; };
@@ -47,20 +42,6 @@
 			proxyType = 2;
 			remoteGlobalIDString = C6DF73CF1D2DE2B500735EBC;
 			remoteInfo = PulleyDemo;
-		};
-		63B696FB1FF73BAE0023E76A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 63B696E81FF73BAE0023E76A /* ExpandableCell.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 19EF94E91F3757AC00085BCA;
-			remoteInfo = ExpandableCell;
-		};
-		63B696FD1FF73BAE0023E76A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 63B696E81FF73BAE0023E76A /* ExpandableCell.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 19EF94F81F37580B00085BCA;
-			remoteInfo = ExpandableCellDemo;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -113,32 +94,6 @@
 		638C976B20030F8E00EC0D99 /* PillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PillView.swift; sourceTree = "<group>"; };
 		63AB78D41FE77267009F9383 /* Foodlog.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Foodlog.entitlements; sourceTree = "<group>"; };
 		63AB78D51FE77268009F9383 /* HealthKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = HealthKit.framework; path = System/Library/Frameworks/HealthKit.framework; sourceTree = SDKROOT; };
-		63B696D81FF73BAE0023E76A /* .swift-version */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ".swift-version"; sourceTree = "<group>"; };
-		63B696D91FF73BAE0023E76A /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
-		63B696DA1FF73BAE0023E76A /* ExpandableCell.podspec */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ExpandableCell.podspec; sourceTree = "<group>"; };
-		63B696DC1FF73BAE0023E76A /* ExpandableCell.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = ExpandableCell.gif; sourceTree = "<group>"; };
-		63B696DE1FF73BAE0023E76A /* ExpandableProcessor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExpandableProcessor.swift; sourceTree = "<group>"; };
-		63B696DF1FF73BAE0023E76A /* ExpandableCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ExpandableCell.h; sourceTree = "<group>"; };
-		63B696E01FF73BAE0023E76A /* ExpandableCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExpandableCell.swift; sourceTree = "<group>"; };
-		63B696E11FF73BAE0023E76A /* ExpandableDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExpandableDelegate.swift; sourceTree = "<group>"; };
-		63B696E21FF73BAE0023E76A /* ExpandableStyle.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExpandableStyle.swift; sourceTree = "<group>"; };
-		63B696E31FF73BAE0023E76A /* ExpandableTableView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExpandableTableView.swift; sourceTree = "<group>"; };
-		63B696E41FF73BAE0023E76A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		63B696E51FF73BAE0023E76A /* ExpandableCell.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = ExpandableCell.xcassets; sourceTree = "<group>"; };
-		63B696E61FF73BAE0023E76A /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		63B696E71FF73BAE0023E76A /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
-		63B696E81FF73BAE0023E76A /* ExpandableCell.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = ExpandableCell.xcodeproj; sourceTree = "<group>"; };
-		63B696EB1FF73BAE0023E76A /* Package.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
-		63B696ED1FF73BAE0023E76A /* ViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
-		63B696EE1FF73BAE0023E76A /* ExpandableCells.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExpandableCells.swift; sourceTree = "<group>"; };
-		63B696EF1FF73BAE0023E76A /* NormalCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = NormalCell.xib; sourceTree = "<group>"; };
-		63B696F01FF73BAE0023E76A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		63B696F11FF73BAE0023E76A /* ExpandedCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ExpandedCell.xib; sourceTree = "<group>"; };
-		63B696F31FF73BAE0023E76A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
-		63B696F51FF73BAE0023E76A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		63B696F61FF73BAE0023E76A /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		63B696F71FF73BAE0023E76A /* ExpandableCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ExpandableCell.xib; sourceTree = "<group>"; };
-		63B696F81FF73BAE0023E76A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		63D9709B1FE4961700AA0168 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		63D9709F1FE4981500AA0168 /* Cartfile */ = {isa = PBXFileReference; lastKnownFileType = text; path = Cartfile; sourceTree = "<group>"; };
 		63D970A11FE4B1E200AA0168 /* Realm.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Realm.framework; path = Carthage/Build/iOS/Realm.framework; sourceTree = "<group>"; };
@@ -163,7 +118,6 @@
 		637A342C1FF467AF00EA48BD /* Submodules */ = {
 			isa = PBXGroup;
 			children = (
-				63B696D71FF73BAE0023E76A /* ExpandableCell */,
 				637A342D1FF467AF00EA48BD /* Pulley */,
 			);
 			path = Submodules;
@@ -258,72 +212,6 @@
 			path = Foodlog;
 			sourceTree = "<group>";
 		};
-		63B696D71FF73BAE0023E76A /* ExpandableCell */ = {
-			isa = PBXGroup;
-			children = (
-				63B696D81FF73BAE0023E76A /* .swift-version */,
-				63B696D91FF73BAE0023E76A /* LICENSE */,
-				63B696DA1FF73BAE0023E76A /* ExpandableCell.podspec */,
-				63B696DB1FF73BAE0023E76A /* Images */,
-				63B696DD1FF73BAE0023E76A /* ExpandableCell */,
-				63B696E61FF73BAE0023E76A /* README.md */,
-				63B696E71FF73BAE0023E76A /* .gitignore */,
-				63B696E81FF73BAE0023E76A /* ExpandableCell.xcodeproj */,
-				63B696EB1FF73BAE0023E76A /* Package.swift */,
-				63B696EC1FF73BAE0023E76A /* ExpandableCellDemo */,
-			);
-			path = ExpandableCell;
-			sourceTree = "<group>";
-		};
-		63B696DB1FF73BAE0023E76A /* Images */ = {
-			isa = PBXGroup;
-			children = (
-				63B696DC1FF73BAE0023E76A /* ExpandableCell.gif */,
-			);
-			path = Images;
-			sourceTree = "<group>";
-		};
-		63B696DD1FF73BAE0023E76A /* ExpandableCell */ = {
-			isa = PBXGroup;
-			children = (
-				63B696DE1FF73BAE0023E76A /* ExpandableProcessor.swift */,
-				63B696DF1FF73BAE0023E76A /* ExpandableCell.h */,
-				63B696E01FF73BAE0023E76A /* ExpandableCell.swift */,
-				63B696E11FF73BAE0023E76A /* ExpandableDelegate.swift */,
-				63B696E21FF73BAE0023E76A /* ExpandableStyle.swift */,
-				63B696E31FF73BAE0023E76A /* ExpandableTableView.swift */,
-				63B696E41FF73BAE0023E76A /* Info.plist */,
-				63B696E51FF73BAE0023E76A /* ExpandableCell.xcassets */,
-			);
-			path = ExpandableCell;
-			sourceTree = "<group>";
-		};
-		63B696E91FF73BAE0023E76A /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				63B696FC1FF73BAE0023E76A /* ExpandableCell.framework */,
-				63B696FE1FF73BAE0023E76A /* ExpandableCellDemo.app */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		63B696EC1FF73BAE0023E76A /* ExpandableCellDemo */ = {
-			isa = PBXGroup;
-			children = (
-				63B696ED1FF73BAE0023E76A /* ViewController.swift */,
-				63B696EE1FF73BAE0023E76A /* ExpandableCells.swift */,
-				63B696EF1FF73BAE0023E76A /* NormalCell.xib */,
-				63B696F01FF73BAE0023E76A /* Assets.xcassets */,
-				63B696F11FF73BAE0023E76A /* ExpandedCell.xib */,
-				63B696F21FF73BAE0023E76A /* LaunchScreen.xib */,
-				63B696F41FF73BAE0023E76A /* Main.storyboard */,
-				63B696F61FF73BAE0023E76A /* AppDelegate.swift */,
-				63B696F71FF73BAE0023E76A /* ExpandableCell.xib */,
-				63B696F81FF73BAE0023E76A /* Info.plist */,
-			);
-			path = ExpandableCellDemo;
-			sourceTree = "<group>";
-		};
 		63D970A01FE4B1E200AA0168 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -396,10 +284,6 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = 63B696E91FF73BAE0023E76A /* Products */;
-					ProjectRef = 63B696E81FF73BAE0023E76A /* ExpandableCell.xcodeproj */;
-				},
-				{
 					ProductGroup = 637A34331FF467AF00EA48BD /* Products */;
 					ProjectRef = 637A34321FF467AF00EA48BD /* Pulley.xcodeproj */;
 				},
@@ -424,20 +308,6 @@
 			fileType = wrapper.application;
 			path = PulleyDemo.app;
 			remoteRef = 637A34491FF467AF00EA48BD /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		63B696FC1FF73BAE0023E76A /* ExpandableCell.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = ExpandableCell.framework;
-			remoteRef = 63B696FB1FF73BAE0023E76A /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		63B696FE1FF73BAE0023E76A /* ExpandableCellDemo.app */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.application;
-			path = ExpandableCellDemo.app;
-			remoteRef = 63B696FD1FF73BAE0023E76A /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -467,11 +337,6 @@
 				63D9709C1FE4961700AA0168 /* Models.swift in Sources */,
 				638C976C20030F8E00EC0D99 /* PillView.swift in Sources */,
 				636E139D2000E19B005C8AD8 /* PulleyDrawerViewController.swift in Sources */,
-				63B697061FF73BAE0023E76A /* ExpandableCell.swift in Sources */,
-				63B697071FF73BAE0023E76A /* ExpandableDelegate.swift in Sources */,
-				63B697051FF73BAE0023E76A /* ExpandableProcessor.swift in Sources */,
-				63B697081FF73BAE0023E76A /* ExpandableStyle.swift in Sources */,
-				63B697091FF73BAE0023E76A /* ExpandableTableView.swift in Sources */,
 				637A344B1FF467AF00EA48BD /* PulleyViewController.swift in Sources */,
 				637A344C1FF467AF00EA48BD /* PulleyPassthroughScrollView.swift in Sources */,
 				637A344D1FF467AF00EA48BD /* UIView+constrainToParent.swift in Sources */,
@@ -503,22 +368,6 @@
 				6385AF311FE0A436009E8483 /* Base */,
 			);
 			name = LaunchScreen.storyboard;
-			sourceTree = "<group>";
-		};
-		63B696F21FF73BAE0023E76A /* LaunchScreen.xib */ = {
-			isa = PBXVariantGroup;
-			children = (
-				63B696F31FF73BAE0023E76A /* Base */,
-			);
-			name = LaunchScreen.xib;
-			sourceTree = "<group>";
-		};
-		63B696F41FF73BAE0023E76A /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				63B696F51FF73BAE0023E76A /* Base */,
-			);
-			name = Main.storyboard;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
