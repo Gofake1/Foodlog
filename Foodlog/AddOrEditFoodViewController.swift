@@ -9,19 +9,6 @@
 import RealmSwift
 import UIKit
 
-private let _dateFormatter: DateFormatter = {
-    let df = DateFormatter()
-    df.dateStyle = .short
-    df.timeStyle = .short
-    return df
-}()
-
-private let _datePicker: UIDatePicker = {
-    let dp = UIDatePicker()
-    dp.datePickerMode = .dateAndTime
-    return dp
-}()
-
 class AddOrEditFoodViewController: PulleyDrawerViewController {
     enum Mode {
         case addExistingFood
@@ -61,6 +48,17 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
     
     var food: Food!
     var mode: Mode!
+    private static let dateFormatter: DateFormatter = {
+        let df = DateFormatter()
+        df.dateStyle = .short
+        df.timeStyle = .short
+        return df
+    }()
+    private static let datePicker: UIDatePicker = {
+        let dp = UIDatePicker()
+        dp.datePickerMode = .dateAndTime
+        return dp
+    }()
     private weak var activeTextField: UITextField?
     
     override func viewDidLoad() {
@@ -122,9 +120,10 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
         magnesiumField.text             = String(food.magnesium)
         potassiumField.text             = String(food.potassium)
         
-        dateField.text = _dateFormatter.string(from: Date().roundedToNearestHalfHour)
-        _datePicker.addTarget(self, action: #selector(dateChanged(_:)), for: .valueChanged)
-        dateField.inputView = _datePicker
+        dateField.text = AddOrEditFoodViewController.dateFormatter.string(from: Date().roundedToNearestHalfHour)
+        AddOrEditFoodViewController.datePicker.addTarget(self, action: #selector(dateChanged(_:)),
+                                                         for: .valueChanged)
+        dateField.inputView = AddOrEditFoodViewController.datePicker
         
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWasShown(_:)),
                                                name: .UIKeyboardDidShow, object: nil)
@@ -133,7 +132,7 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
     }
     
     @objc func dateChanged(_ sender: UIDatePicker) {
-        dateField.text = _dateFormatter.string(from: sender.date)
+        dateField.text = AddOrEditFoodViewController.dateFormatter.string(from: sender.date)
     }
     
     @objc func keyboardWasShown(_ aNotifcation: NSNotification) {
@@ -227,7 +226,8 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
     }
     
     deinit {
-        _datePicker.removeTarget(self, action: #selector(dateChanged(_:)), for: .valueChanged)
+        AddOrEditFoodViewController.datePicker.removeTarget(self, action: #selector(dateChanged(_:)),
+                                                            for: .valueChanged)
         NotificationCenter.default.removeObserver(self)
     }
 }
@@ -245,6 +245,21 @@ extension AddOrEditFoodViewController: UITextFieldDelegate {
 
 extension Date {
     var roundedToNearestHalfHour: Date {
-        return self
+        var dc = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: self)
+        guard let minute = dc.minute else { return self }
+        switch minute {
+        case 0, 30:
+            return self
+        case 1...15:
+            dc.minute = 0
+        case 16...44:
+            dc.minute = 30
+        case 45...59:
+            dc.minute = 0
+            dc.hour? += 1
+        default:
+            return self
+        }
+        return Calendar.current.date(from: dc) ?? self
     }
 }
