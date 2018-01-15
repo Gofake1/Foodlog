@@ -19,11 +19,20 @@ final class Tag: Object {
     }
 }
 
+enum MeasurementKind: Int {
+    case serving    = 0
+    case milligram  = 1
+    case gram       = 2
+    case ounce      = 3
+    case pound      = 4
+    case fluidOunce = 5
+}
+
 final class Food: Object {
     @objc dynamic var id = UUID().uuidString
     @objc dynamic var name = ""
+    @objc dynamic var measurementKindRaw = MeasurementKind.serving.rawValue
     @objc dynamic var picture: String? //*
-    @objc dynamic var healthKitStatus = 0 //*
     @objc dynamic var calories = Float(0.0)
     @objc dynamic var totalFat = Float(0.0)
     @objc dynamic var saturatedFat = Float(0.0)
@@ -76,11 +85,63 @@ final class Food: Object {
     }
 }
 
+protocol JSONCoderProvided {}
+
+private let _jsonDecoder = JSONDecoder()
+private let _jsonEncoder = JSONEncoder()
+
+extension JSONCoderProvided where Self: Codable {
+    static func decode(from data: Data) -> Self? {
+        return try? _jsonDecoder.decode(Self.self, from: data)
+    }
+    
+    func encode() -> Data? {
+        return try? _jsonEncoder.encode(self)
+    }
+}
+
+extension Float: JSONCoderProvided {}
+
+struct Fraction: Codable, JSONCoderProvided {
+    enum CodingKeys: String, CodingKey {
+        case numerator = "n"
+        case denominator = "d"
+    }
+    
+    var numerator: Int
+    var denominator: Int
+}
+
+extension Fraction: CustomStringConvertible {
+    var description: String {
+        if numerator == 0 {
+            return "0"
+        }
+        if denominator == 1 {
+            return "\(numerator)"
+        }
+        return "\(numerator)/\(denominator)"
+    }
+}
+
+enum MeasurementValueRepresentation: Int {
+    case fraction   = 0
+    case decimal    = 1
+}
+
+enum HealthKitStatus: Int {
+    case unwritten              = 0
+    case writtenAndUpToDate     = 1
+    case writtenAndNeedsUpdate  = 2
+}
+
 final class FoodEntry: Object {
     @objc dynamic var id = UUID().uuidString
     @objc dynamic var date = Date()
     @objc dynamic var food: Food?
-    @objc dynamic var numServings = Float(0.0)
+    @objc dynamic var measurementValueRepresentationRaw = MeasurementValueRepresentation.fraction.rawValue
+    @objc dynamic var measurementValue = Data()
+    @objc dynamic var healthKitStatus = HealthKitStatus.unwritten.rawValue
     let tags = List<Tag>()
     
     override static func primaryKey() -> String? {
