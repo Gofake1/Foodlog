@@ -25,6 +25,7 @@
 		63B697191FF73D010023E76A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6385AF2B1FE0A436009E8483 /* Main.storyboard */; };
 		63B6971A1FF73D060023E76A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6385AF301FE0A436009E8483 /* LaunchScreen.storyboard */; };
 		63D9709C1FE4961700AA0168 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63D9709B1FE4961700AA0168 /* Models.swift */; };
+		63DC132F200992C800A22983 /* DataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63DC132E200992C800A22983 /* DataStore.swift */; };
 		63EF95451FF33F9E00076825 /* RealmSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63D970A31FE4B1F400AA0168 /* RealmSwift.framework */; };
 		63EF95461FF33F9E00076825 /* RealmSwift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 63D970A31FE4B1F400AA0168 /* RealmSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
@@ -100,6 +101,7 @@
 		63D9709F1FE4981500AA0168 /* Cartfile */ = {isa = PBXFileReference; lastKnownFileType = text; path = Cartfile; sourceTree = "<group>"; };
 		63D970A11FE4B1E200AA0168 /* Realm.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Realm.framework; path = Carthage/Build/iOS/Realm.framework; sourceTree = "<group>"; };
 		63D970A31FE4B1F400AA0168 /* RealmSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RealmSwift.framework; path = Carthage/Build/iOS/RealmSwift.framework; sourceTree = "<group>"; };
+		63DC132E200992C800A22983 /* DataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStore.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -201,6 +203,7 @@
 				633E0BFF1FF87A4500290B61 /* AddOrEditFoodViewController.swift */,
 				635972371FF479A500D5CC97 /* AddOrSearchViewController.swift */,
 				6385AF271FE0A435009E8483 /* AppDelegate.swift */,
+				63DC132E200992C800A22983 /* DataStore.swift */,
 				636E13942000DC73005C8AD8 /* LogDetailViewController.swift */,
 				6385AF291FE0A436009E8483 /* LogViewController.swift */,
 				63D9709B1FE4961700AA0168 /* Models.swift */,
@@ -336,6 +339,7 @@
 				633E0C001FF87A4500290B61 /* AddOrEditFoodViewController.swift in Sources */,
 				635972381FF479A500D5CC97 /* AddOrSearchViewController.swift in Sources */,
 				6385AF281FE0A435009E8483 /* AppDelegate.swift in Sources */,
+				63DC132F200992C800A22983 /* DataStore.swift in Sources */,
 				636E13952000DC73005C8AD8 /* LogDetailViewController.swift in Sources */,
 				6385AF2A1FE0A436009E8483 /* LogViewController.swift in Sources */,
 				63D9709C1FE4961700AA0168 /* Models.swift in Sources */,

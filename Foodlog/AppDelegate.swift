@@ -41,3 +41,20 @@ extension AppDelegate: UIApplicationDelegate {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
     }
 }
+
+extension UIApplication {
+    func alert(error: Error) {
+        let alert = UIAlertController(title: "Error", message: error.localizedDescription, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        keyWindow?.rootViewController?.present(alert, animated: true, completion: nil)
+    }
+    
+    func alert(warning warningString: String, confirm userConfirmationHandler: @escaping () -> ()) {
+        let alert = UIAlertController(title: "Warning", message: warningString, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Confirm", style: .destructive, handler: { _ in
+            userConfirmationHandler()
+        }))
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        keyWindow?.rootViewController?.present(alert, animated: true, completion: nil)
+    }
+}
