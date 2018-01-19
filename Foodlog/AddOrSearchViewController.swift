@@ -30,7 +30,9 @@ class AddOrSearchViewController: PulleyDrawerViewController {
         guard let food = suggestion as? Food else { return }
         let addFoodVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier:
             "AddOrEditFood") as! AddOrEditFoodViewController
-        addFoodVC.food = food
+        let foodEntry = FoodEntry()
+        foodEntry.food = food
+        addFoodVC.foodEntry = foodEntry
         addFoodVC.mode = isNew ? .addNewFood : .addExistingFood
         push(addFoodVC)
     }

@@ -6,9 +6,19 @@
 //  Copyright © 2017 Gofake1. All rights reserved.
 //
 
-import RealmSwift
 import UIKit
 
+class MyScrollView: UIScrollView {
+    var shouldScroll = false
+
+    override func setContentOffset(_ contentOffset: CGPoint, animated: Bool) {
+        if shouldScroll {
+            super.setContentOffset(contentOffset, animated: animated)
+        }
+    }
+}
+
+// TODO: Convert nutrition info percentage value to real value
 class AddOrEditFoodViewController: PulleyDrawerViewController {
     enum Mode {
         case addExistingFood
@@ -16,114 +26,36 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
         case editExistingFood
     }
     
-    @IBOutlet weak var scrollView: UIScrollView!
-    @IBOutlet weak var foodNameLabel: UILabel!
-    @IBOutlet weak var foodNameField: UITextField!
-    @IBOutlet weak var addToLogButton: UIButton!
-    @IBOutlet weak var dateField: UITextField!
-    @IBOutlet weak var servingsField: UITextField!
-    @IBOutlet weak var caloriesField: UITextField!
-    @IBOutlet weak var totalFatField: UITextField!
-    @IBOutlet weak var saturatedFatField: UITextField!
-    @IBOutlet weak var monounsaturatedFatField: UITextField!
-    @IBOutlet weak var polyunsaturatedFatField: UITextField!
-    @IBOutlet weak var transFatField: UITextField!
-    @IBOutlet weak var cholesterolField: UITextField!
-    @IBOutlet weak var sodiumField: UITextField!
-    @IBOutlet weak var totalCarbohydrateField: UITextField!
-    @IBOutlet weak var dietaryFiberField: UITextField!
-    @IBOutlet weak var sugarsField: UITextField!
-    @IBOutlet weak var proteinField: UITextField!
-    @IBOutlet weak var vitaminAField: UITextField!
-    @IBOutlet weak var vitaminB6Field: UITextField!
-    @IBOutlet weak var vitaminB12Field: UITextField!
-    @IBOutlet weak var vitaminCField: UITextField!
-    @IBOutlet weak var vitaminDField: UITextField!
-    @IBOutlet weak var vitaminEField: UITextField!
-    @IBOutlet weak var vitaminKField: UITextField!
-    @IBOutlet weak var calciumField: UITextField!
-    @IBOutlet weak var ironField: UITextField!
-    @IBOutlet weak var magnesiumField: UITextField!
-    @IBOutlet weak var potassiumField: UITextField!
+    @IBOutlet weak var dateController:          DateController!
+    @IBOutlet weak var measurementController:   MeasurementController!
+    @IBOutlet weak var foodNutritionController: FoodNutritionController!
+    @IBOutlet weak var scrollView:              MyScrollView!
+    @IBOutlet weak var foodNameLabel:           UILabel!
+    @IBOutlet weak var foodNameField:           UITextField!
+    @IBOutlet weak var addToLogButton:          UIButton!
+
     
-    var food: Food!
+    weak var activeNutritionField: UITextField? {
+        didSet {
+            scrollToActiveField()
+        }
+    }
+    var userChangedFoodInfo = false
+    var foodEntry: FoodEntry!
     var mode: Mode!
-    private static let dateFormatter: DateFormatter = {
-        let df = DateFormatter()
-        df.dateStyle = .short
-        df.timeStyle = .short
-        return df
-    }()
-    private static let datePicker: UIDatePicker = {
-        let dp = UIDatePicker()
-        dp.datePickerMode = .dateAndTime
-        return dp
-    }()
-    private weak var activeTextField: UITextField?
     
     override func viewDidLoad() {
-        switch mode! {
-        case .addExistingFood:
-            caloriesField.isEnabled = false
-            totalFatField.isEnabled = false
-            saturatedFatField.isEnabled = false
-            monounsaturatedFatField.isEnabled = false
-            polyunsaturatedFatField.isEnabled = false
-            transFatField.isEnabled = false
-            cholesterolField.isEnabled = false
-            sodiumField.isEnabled = false
-            totalCarbohydrateField.isEnabled = false
-            dietaryFiberField.isEnabled = false
-            sugarsField.isEnabled = false
-            proteinField.isEnabled = false
-            vitaminAField.isEnabled = false
-            vitaminB6Field.isEnabled = false
-            vitaminB12Field.isEnabled = false
-            vitaminCField.isEnabled = false
-            vitaminDField.isEnabled = false
-            vitaminEField.isEnabled = false
-            vitaminKField.isEnabled = false
-            calciumField.isEnabled = false
-            ironField.isEnabled = false
-            magnesiumField.isEnabled = false
-            potassiumField.isEnabled = false
-        case .addNewFood:
-            break
-        case .editExistingFood:
+        if mode! == .editExistingFood {
             foodNameLabel.isHidden = true
             foodNameField.isHidden = false
             addToLogButton.setTitle("Update Log", for: .normal)
         }
         
-        foodNameLabel.text              = food.name
-        caloriesField.text              = String(food.calcium)
-        totalFatField.text              = String(food.totalFat)
-        saturatedFatField.text          = String(food.saturatedFat)
-        monounsaturatedFatField.text    = String(food.monounsaturatedFat)
-        polyunsaturatedFatField.text    = String(food.polyunsaturatedFat)
-        transFatField.text              = String(food.transFat)
-        cholesterolField.text           = String(food.cholesterol)
-        sodiumField.text                = String(food.sodium)
-        totalCarbohydrateField.text     = String(food.totalCarbohydrate)
-        dietaryFiberField.text          = String(food.dietaryFiber)
-        sugarsField.text                = String(food.sugars)
-        proteinField.text               = String(food.protein)
-        vitaminAField.text              = String(food.vitaminA)
-        vitaminB6Field.text             = String(food.vitaminB6)
-        vitaminB12Field.text            = String(food.vitaminB12)
-        vitaminCField.text              = String(food.vitaminC)
-        vitaminDField.text              = String(food.vitaminD)
-        vitaminEField.text              = String(food.vitaminE)
-        vitaminKField.text              = String(food.vitaminK)
-        calciumField.text               = String(food.calcium)
-        ironField.text                  = String(food.iron)
-        magnesiumField.text             = String(food.magnesium)
-        potassiumField.text             = String(food.potassium)
-        
-        dateField.text = AddOrEditFoodViewController.dateFormatter.string(from: Date().roundedToNearestHalfHour)
-        AddOrEditFoodViewController.datePicker.addTarget(self, action: #selector(dateChanged(_:)),
-                                                         for: .valueChanged)
-        dateField.inputView = AddOrEditFoodViewController.datePicker
+        foodNameLabel.text = foodEntry.food?.name
+
+        dateController.setup()
+        measurementController.setup()
+        foodNutritionController.setup(mode)
         
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWasShown(_:)),
                                                name: .UIKeyboardDidShow, object: nil)
@@ -131,25 +63,26 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
                                                name: .UIKeyboardWillHide, object: nil)
     }
     
-    @objc func dateChanged(_ sender: UIDatePicker) {
-        dateField.text = AddOrEditFoodViewController.dateFormatter.string(from: sender.date)
+    func scrollToActiveField() {
+        guard let textField = activeNutritionField else { return }
+        // Workaround: Text field frame is translated down by Pulley
+        let fixedTextFieldFrame = view.superview!.convert(textField.frame, to: nil)
+        // Workaround: `UIScrollView` scrolls to incorrect first responder frame
+        scrollView.shouldScroll = true
+        scrollView.scrollRectToVisible(fixedTextFieldFrame, animated: true)
+        scrollView.shouldScroll = false
     }
     
     @objc func keyboardWasShown(_ aNotifcation: NSNotification) {
+        pulleyVC.setDrawerPosition(position: .open, animated: true)
+        
         guard let userInfo = aNotifcation.userInfo,
             let keyboardFrame = userInfo[UIKeyboardFrameEndUserInfoKey] as? CGRect
             else { return }
         let insets = UIEdgeInsets(top: 0.0, left: 0.0, bottom: keyboardFrame.height, right: 0.0)
         scrollView.contentInset = insets
         scrollView.scrollIndicatorInsets = insets
-        
-        // Workaround: Text field frame is translated down by Pulley
-        let fixedTextFieldFrame = view.superview!.convert(activeTextField!.frame, to: nil)
-        // Workaround: `scrollRectToVisible` ignores `rect` parameter
-        // https://stackoverflow.com/questions/21434651/uiscrollview-scrollrecttovisibleanimated-not-taking-rect-into-account-on-ios7
-        DispatchQueue.main.async { [weak self] in
-            self?.scrollView.scrollRectToVisible(fixedTextFieldFrame, animated: true)
-        }
+        scrollToActiveField()
     }
     
     @objc func keyboardWillBeHidden(_ aNotification: NSNotification) {
@@ -157,53 +90,32 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
         scrollView.scrollIndicatorInsets = .zero
     }
     
-    @IBAction func addFoodToLog() {
-        func modifyFoodInfo(_ food: Food) {
-            food.calories           = Float(caloriesField.text!) ?? 0.0
-            food.totalFat           = Float(totalFatField.text!) ?? 0.0
-            food.saturatedFat       = Float(saturatedFatField.text!) ?? 0.0
-            food.monounsaturatedFat = Float(monounsaturatedFatField.text!) ?? 0.0
-            food.polyunsaturatedFat = Float(polyunsaturatedFatField.text!) ?? 0.0
-            food.transFat           = Float(transFatField.text!) ?? 0.0
-            food.cholesterol        = Float(cholesterolField.text!) ?? 0.0
-            food.sodium             = Float(sodiumField.text!) ?? 0.0
-            food.totalCarbohydrate  = Float(totalCarbohydrateField.text!) ?? 0.0
-            food.dietaryFiber       = Float(dietaryFiberField.text!) ?? 0.0
-            food.sugars             = Float(sugarsField.text!) ?? 0.0
-            food.protein            = Float(proteinField.text!) ?? 0.0
-            food.vitaminA           = Float(vitaminKField.text!) ?? 0.0
-            food.vitaminB6          = Float(vitaminB6Field.text!) ?? 0.0
-            food.vitaminB12         = Float(vitaminB12Field.text!) ?? 0.0
-            food.vitaminC           = Float(vitaminCField.text!) ?? 0.0
-            food.vitaminD           = Float(vitaminDField.text!) ?? 0.0
-            food.vitaminE           = Float(vitaminEField.text!) ?? 0.0
-            food.vitaminK           = Float(vitaminKField.text!) ?? 0.0
-            food.calcium            = Float(calciumField.text!) ?? 0.0
-            food.iron               = Float(ironField.text!) ?? 0.0
-            food.magnesium          = Float(magnesiumField.text!) ?? 0.0
-            food.potassium          = Float(potassiumField.text!) ?? 0.0
-        }
-        
-        func writeFoodEntry(_ food: Food) {
-            let foodEntry = FoodEntry()
-            foodEntry.food = food
-            do {
-                try Realm().add(foodEntry)
-            } catch {
-                
-            }
+    /// - postcondition: Writes to Realm
+    @IBAction func addFoodEntryToLog() {
+        func addAndPop(_ foodEntry: FoodEntry) {
+            DataStore.add(foodEntry)
+            pop()
         }
         
         switch mode! {
         case .addNewFood:
-            modifyFoodInfo(food)
-            writeFoodEntry(food)
+            addAndPop(foodEntry)
         case .addExistingFood:
-            writeFoodEntry(food)
+            addAndPop(foodEntry)
         case .editExistingFood:
-            modifyFoodInfo(food)
-            // TODO: update Realm
-            break
+            if userChangedFoodInfo {
+                func warningString(_ count: UInt) -> String {
+                    return "Editing this food item will affect \(count) entries. This cannot be undone."
+                }
+                
+                UIApplication.shared.alert(warning: warningString(0/* TODO: Get count of `FoodEntry`'s with this Food*/)) { [weak self] in
+                    guard let foodEntry = self?.foodEntry else { return }
+                    // TODO: Update all affected `FoodEntry`'s `healthKitStatus`
+                    addAndPop(foodEntry)
+                }
+            } else {
+                addAndPop(foodEntry)
+            }
         }
     }
     
@@ -226,40 +138,6 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
     }
     
     deinit {
-        AddOrEditFoodViewController.datePicker.removeTarget(self, action: #selector(dateChanged(_:)),
-                                                            for: .valueChanged)
         NotificationCenter.default.removeObserver(self)
-    }
-}
-
-extension AddOrEditFoodViewController: UITextFieldDelegate {
-    func textFieldDidBeginEditing(_ textField: UITextField) {
-        activeTextField = textField
-        pulleyVC.setDrawerPosition(position: .open, animated: true)
-    }
-    
-    func textFieldDidEndEditing(_ textField: UITextField) {
-        activeTextField = nil
-    }
-}
-
-extension Date {
-    var roundedToNearestHalfHour: Date {
-        var dc = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: self)
-        guard let minute = dc.minute else { return self }
-        switch minute {
-        case 0, 30:
-            return self
-        case 1...15:
-            dc.minute = 0
-        case 16...44:
-            dc.minute = 30
-        case 45...59:
-            dc.minute = 0
-            dc.hour? += 1
-        default:
-            return self
-        }
-        return Calendar.current.date(from: dc) ?? self
     }
 }
