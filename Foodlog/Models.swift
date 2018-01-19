@@ -19,19 +19,10 @@ final class Tag: Object {
     }
 }
 
-enum MeasurementKind: Int {
-    case serving    = 0
-    case milligram  = 1
-    case gram       = 2
-    case ounce      = 3
-    case pound      = 4
-    case fluidOunce = 5
-}
-
 final class Food: Object {
     @objc dynamic var id = UUID().uuidString
     @objc dynamic var name = ""
-    @objc dynamic var measurementKindRaw = MeasurementKind.serving.rawValue
+    @objc dynamic var measurementRepresentationRaw = MeasurementRepresentation.serving.rawValue
     @objc dynamic var picture: String? //*
     @objc dynamic var calories = Float(0.0)
     @objc dynamic var totalFat = Float(0.0)
@@ -100,52 +91,40 @@ extension JSONCoderProvided where Self: Codable {
     }
 }
 
-extension Float: JSONCoderProvided {}
-
-struct Fraction: Codable, JSONCoderProvided {
-    enum CodingKeys: String, CodingKey {
-        case numerator = "n"
-        case denominator = "d"
-    }
-    
-    var numerator: Int
-    var denominator: Int
-}
-
-extension Fraction: CustomStringConvertible {
-    var description: String {
-        if numerator == 0 {
-            return "0"
-        }
-        if denominator == 1 {
-            return "\(numerator)"
-        }
-        return "\(numerator)/\(denominator)"
-    }
-}
-
-enum MeasurementValueRepresentation: Int {
-    case fraction   = 0
-    case decimal    = 1
-}
-
-enum HealthKitStatus: Int {
-    case unwritten              = 0
-    case writtenAndUpToDate     = 1
-    case writtenAndNeedsUpdate  = 2
-}
+extension Fraction: JSONCoderProvided {}
 
 final class FoodEntry: Object {
     @objc dynamic var id = UUID().uuidString
-    @objc dynamic var date = Date()
+    @objc dynamic var date = Date().roundedToNearestHalfHour
     @objc dynamic var food: Food?
-    @objc dynamic var measurementValueRepresentationRaw = MeasurementValueRepresentation.fraction.rawValue
+    @objc dynamic var measurementValueRepresentationRaw = MeasurementValueRepresentation.decimal.rawValue
     @objc dynamic var measurementValue = Data()
     @objc dynamic var healthKitStatus = HealthKitStatus.unwritten.rawValue
     let tags = List<Tag>()
     
     override static func primaryKey() -> String? {
         return "id"
+    }
+}
+
+extension Date {
+    var roundedToNearestHalfHour: Date {
+        var dc = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: self)
+        guard let minute = dc.minute else { return self }
+        switch minute {
+        case 0, 30:
+            return self
+        case 1...15:
+            dc.minute = 0
+        case 16...44:
+            dc.minute = 30
+        case 45...59:
+            dc.minute = 0
+            dc.hour? += 1
+        default:
+            return self
+        }
+        return Calendar.current.date(from: dc) ?? self
     }
 }
 

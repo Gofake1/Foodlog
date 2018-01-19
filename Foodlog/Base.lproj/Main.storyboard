@@ -198,7 +198,7 @@
             </objects>
             <point key="canvasLocation" x="0.0" y="605"/>
         </scene>
-        <!--Add Or Edit Food View Controller-->
+        <!--Add Or EditVC-->
         <scene sceneID="ZDc-Kx-PbQ">
             <objects>
                 <viewController storyboardIdentifier="AddOrEditFood" id="c3i-y8-uTP" customClass="AddOrEditFoodViewController" customModule="Foodlog" customModuleProvider="target" sceneMemberID="viewController">
@@ -232,7 +232,7 @@
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                                 <textInputTraits key="textInputTraits"/>
                             </textField>
-                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" showsHorizontalScrollIndicator="NO" keyboardDismissMode="onDrag" translatesAutoresizingMaskIntoConstraints="NO" id="toz-Tf-gAN">
+                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" showsHorizontalScrollIndicator="NO" bouncesZoom="NO" keyboardDismissMode="onDrag" translatesAutoresizingMaskIntoConstraints="NO" id="toz-Tf-gAN" customClass="MyScrollView" customModule="Foodlog" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="49" width="320" height="1067"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="be5-mP-RVr">
@@ -246,7 +246,7 @@
                                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                 <state key="normal" title="Add to Log"/>
                                                 <connections>
-                                                    <action selector="addFoodToLog" destination="c3i-y8-uTP" eventType="touchUpInside" id="HLC-xX-Md4"/>
+                                                    <action selector="addFoodEntryToLog" destination="c3i-y8-uTP" eventType="touchUpInside" id="HLC-xX-Md4"/>
                                                 </connections>
                                             </button>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Date" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2VQ-eT-Ibj">
@@ -264,15 +264,17 @@
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                 <textInputTraits key="textInputTraits"/>
                                                 <connections>
-                                                    <outlet property="delegate" destination="c3i-y8-uTP" id="HKg-os-CV6"/>
+                                                    <outlet property="delegate" destination="whg-DM-Meq" id="ife-pa-iX4"/>
                                                 </connections>
                                             </textField>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Servings" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ryY-6L-7ry">
-                                                <rect key="frame" x="16" y="84" width="66.5" height="21"/>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="u6J-Cy-IcG">
+                                                <rect key="frame" x="15" y="77.5" width="67" height="33"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                <nil key="textColor"/>
-                                                <nil key="highlightedColor"/>
-                                            </label>
+                                                <state key="normal" title="Servings"/>
+                                                <connections>
+                                                    <action selector="showRepresentationsMenu" destination="BML-iM-zdH" eventType="touchUpInside" id="DfW-EC-qxC"/>
+                                                </connections>
+                                            </button>
                                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="hNC-Ki-coh">
                                                 <rect key="frame" x="172" y="79" width="128" height="30"/>
                                                 <constraints>
@@ -282,7 +284,7 @@
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                 <textInputTraits key="textInputTraits" keyboardType="decimalPad"/>
                                                 <connections>
-                                                    <outlet property="delegate" destination="c3i-y8-uTP" id="VXK-du-BYq"/>
+                                                    <outlet property="delegate" destination="BML-iM-zdH" id="41O-1m-eKA"/>
                                                 </connections>
                                             </textField>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Information Per Serving" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KqJ-fZ-1mf">
@@ -291,16 +293,6 @@
                                                 <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="CE3-Qh-pJl">
-                                                <rect key="frame" x="229" y="117" width="71" height="29"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="71" id="All-OI-ldC"/>
-                                                </constraints>
-                                                <segments>
-                                                    <segment title="%"/>
-                                                    <segment title="g"/>
-                                                </segments>
-                                            </segmentedControl>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Calories" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QcN-g1-hgH">
                                                 <rect key="frame" x="16" y="157" width="62.5" height="21"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
@@ -316,7 +308,7 @@
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                 <textInputTraits key="textInputTraits" keyboardType="decimalPad"/>
                                                 <connections>
-                                                    <outlet property="delegate" destination="c3i-y8-uTP" id="uz9-Zo-jtB"/>
+                                                    <outlet property="delegate" destination="1Xv-DH-p0u" id="hcW-d2-hy6"/>
                                                 </connections>
                                             </textField>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Total Fat" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="6rF-n0-R1E">
@@ -325,7 +317,7 @@
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="bEW-Of-I1z">
+                                            <textField opaque="NO" tag="1" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="bEW-Of-I1z">
                                                 <rect key="frame" x="172" y="190" width="128" height="30"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="128" id="2ub-0Z-8rG"/>
@@ -334,7 +326,7 @@
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                 <textInputTraits key="textInputTraits" keyboardType="decimalPad"/>
                                                 <connections>
-                                                    <outlet property="delegate" destination="c3i-y8-uTP" id="NRL-SX-Pfu"/>
+                                                    <outlet property="delegate" destination="1Xv-DH-p0u" id="O8F-PO-mhh"/>
                                                 </connections>
                                             </textField>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Saturated Fat" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dUc-Sh-22p">
@@ -343,7 +335,7 @@
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="n3i-Ne-By1">
+                                            <textField opaque="NO" tag="2" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="n3i-Ne-By1">
                                                 <rect key="frame" x="172" y="228" width="128" height="30"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="128" id="HMY-fT-NIL"/>
@@ -352,7 +344,7 @@
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                 <textInputTraits key="textInputTraits" keyboardType="decimalPad"/>
                                                 <connections>
-                                                    <outlet property="delegate" destination="c3i-y8-uTP" id="9y8-nI-OPT"/>
+                                                    <outlet property="delegate" destination="1Xv-DH-p0u" id="Hcz-2N-fvo"/>
                                                 </connections>
                                             </textField>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Monounsaturated Fat" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Acl-eO-RS1">
@@ -361,7 +353,7 @@
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="OB0-i6-vV4">
+                                            <textField opaque="NO" tag="3" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="OB0-i6-vV4">
                                                 <rect key="frame" x="172" y="266" width="128" height="30"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="128" id="jR8-IP-Wl7"/>
@@ -370,7 +362,7 @@
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                 <textInputTraits key="textInputTraits" keyboardType="decimalPad"/>
                                                 <connections>
-                                                    <outlet property="delegate" destination="c3i-y8-uTP" id="uAf-f6-YVM"/>
+                                                    <outlet property="delegate" destination="1Xv-DH-p0u" id="lpm-qv-DQG"/>
                                                 </connections>
                                             </textField>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Polyunsaturated Fat" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="o1v-bG-0u9">
@@ -379,7 +371,7 @@
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="0kc-Ak-gNk">
+                                            <textField opaque="NO" tag="4" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="0kc-Ak-gNk">
                                                 <rect key="frame" x="172" y="304" width="128" height="30"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="128" id="M38-vL-EFO"/>
@@ -388,7 +380,7 @@
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                 <textInputTraits key="textInputTraits" keyboardType="decimalPad"/>
                                                 <connections>
-                                                    <outlet property="delegate" destination="c3i-y8-uTP" id="F17-0e-SnY"/>
+                                                    <outlet property="delegate" destination="1Xv-DH-p0u" id="fBO-yd-oe3"/>
                                                 </connections>
                                             </textField>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Trans Fat" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="BVl-tl-Dqd">
@@ -397,7 +389,7 @@
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="SOw-FL-N8y">
+                                            <textField opaque="NO" tag="5" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="SOw-FL-N8y">
                                                 <rect key="frame" x="172" y="342" width="128" height="30"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="128" id="frv-3t-eL1"/>
@@ -406,7 +398,7 @@
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                 <textInputTraits key="textInputTraits" keyboardType="decimalPad"/>
                                                 <connections>
-                                                    <outlet property="delegate" destination="c3i-y8-uTP" id="YFe-7X-lU5"/>
+                                                    <outlet property="delegate" destination="1Xv-DH-p0u" id="UDx-Yy-WRJ"/>
                                                 </connections>
                                             </textField>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Cholesterol" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="GP3-NY-AeU">
@@ -415,7 +407,7 @@
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="eYj-4z-9Uk">
+                                            <textField opaque="NO" tag="6" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="eYj-4z-9Uk">
                                                 <rect key="frame" x="172" y="380" width="128" height="30"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="128" id="bEJ-ps-gn8"/>
@@ -424,7 +416,7 @@
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                 <textInputTraits key="textInputTraits" keyboardType="decimalPad"/>
                                                 <connections>
-                                                    <outlet property="delegate" destination="c3i-y8-uTP" id="Kcz-sy-TVV"/>
+                                                    <outlet property="delegate" destination="1Xv-DH-p0u" id="svr-dm-wbv"/>
                                                 </connections>
                                             </textField>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Sodium" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="6Et-Tc-34c">
@@ -433,7 +425,7 @@
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="b4e-I4-lyI">
+                                            <textField opaque="NO" tag="7" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="b4e-I4-lyI">
                                                 <rect key="frame" x="172" y="418" width="128" height="30"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="128" id="E3e-nE-CVH"/>
@@ -442,7 +434,7 @@
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                 <textInputTraits key="textInputTraits" keyboardType="decimalPad"/>
                                                 <connections>
-                                                    <outlet property="delegate" destination="c3i-y8-uTP" id="bZW-TG-0g6"/>
+                                                    <outlet property="delegate" destination="1Xv-DH-p0u" id="1Tp-u2-FUX"/>
                                                 </connections>
                                             </textField>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Total Carbohydrate" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="YKh-le-XHF">
@@ -451,7 +443,7 @@
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="IvP-cp-KKH">
+                                            <textField opaque="NO" tag="8" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="IvP-cp-KKH">
                                                 <rect key="frame" x="172" y="456" width="128" height="30"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="128" id="brQ-lI-yur"/>
@@ -460,7 +452,7 @@
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                 <textInputTraits key="textInputTraits" keyboardType="decimalPad"/>
                                                 <connections>
-                                                    <outlet property="delegate" destination="c3i-y8-uTP" id="fjK-Nm-k9Y"/>
+                                                    <outlet property="delegate" destination="1Xv-DH-p0u" id="xrs-UT-zCe"/>
                                                 </connections>
                                             </textField>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Dietary Fiber" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cGB-PL-OaZ">
@@ -469,7 +461,7 @@
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="de2-BY-ehG">
+                                            <textField opaque="NO" tag="9" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="de2-BY-ehG">
                                                 <rect key="frame" x="172" y="494" width="128" height="30"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="128" id="v51-ul-nAx"/>
@@ -478,7 +470,7 @@
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                 <textInputTraits key="textInputTraits" keyboardType="decimalPad"/>
                                                 <connections>
-                                                    <outlet property="delegate" destination="c3i-y8-uTP" id="jaj-dz-f2B"/>
+                                                    <outlet property="delegate" destination="1Xv-DH-p0u" id="9KS-XV-fVO"/>
                                                 </connections>
                                             </textField>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Sugars" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fDf-kq-LOV">
@@ -487,7 +479,7 @@
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="XYS-dT-39s">
+                                            <textField opaque="NO" tag="10" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="XYS-dT-39s">
                                                 <rect key="frame" x="172" y="532" width="128" height="30"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="128" id="y8b-6Z-Hf0"/>
@@ -496,7 +488,7 @@
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                 <textInputTraits key="textInputTraits" keyboardType="decimalPad"/>
                                                 <connections>
-                                                    <outlet property="delegate" destination="c3i-y8-uTP" id="IaH-xu-L4f"/>
+                                                    <outlet property="delegate" destination="1Xv-DH-p0u" id="A5r-sM-5PX"/>
                                                 </connections>
                                             </textField>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Protein" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ijQ-lN-rdR">
@@ -505,7 +497,7 @@
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="Egr-kj-fPz">
+                                            <textField opaque="NO" tag="11" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="Egr-kj-fPz">
                                                 <rect key="frame" x="172" y="570" width="128" height="30"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="128" id="ICy-HS-XyN"/>
@@ -514,7 +506,7 @@
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                 <textInputTraits key="textInputTraits" keyboardType="decimalPad"/>
                                                 <connections>
-                                                    <outlet property="delegate" destination="c3i-y8-uTP" id="3N4-EA-9zh"/>
+                                                    <outlet property="delegate" destination="1Xv-DH-p0u" id="RZQ-MW-yvX"/>
                                                 </connections>
                                             </textField>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Vitamin A" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1tw-kr-49N">
@@ -523,7 +515,7 @@
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="Wxt-QN-ZRW">
+                                            <textField opaque="NO" tag="12" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="Wxt-QN-ZRW">
                                                 <rect key="frame" x="172" y="608" width="128" height="30"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="128" id="ysU-yP-Jw8"/>
@@ -532,7 +524,7 @@
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                 <textInputTraits key="textInputTraits" keyboardType="decimalPad"/>
                                                 <connections>
-                                                    <outlet property="delegate" destination="c3i-y8-uTP" id="YpP-fm-urF"/>
+                                                    <outlet property="delegate" destination="1Xv-DH-p0u" id="mML-jB-iKc"/>
                                                 </connections>
                                             </textField>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Vitamin B6" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KCI-lf-ppY">
@@ -541,7 +533,7 @@
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="iT4-Hi-Ped">
+                                            <textField opaque="NO" tag="13" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="iT4-Hi-Ped">
                                                 <rect key="frame" x="172" y="646" width="128" height="30"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="128" id="DXa-Wb-kS5"/>
@@ -550,7 +542,7 @@
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                 <textInputTraits key="textInputTraits" keyboardType="decimalPad"/>
                                                 <connections>
-                                                    <outlet property="delegate" destination="c3i-y8-uTP" id="QJL-aL-ch5"/>
+                                                    <outlet property="delegate" destination="1Xv-DH-p0u" id="iqE-S6-UoP"/>
                                                 </connections>
                                             </textField>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Vitamin B12" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cel-vG-be4">
@@ -559,7 +551,7 @@
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="lHS-z8-AVo">
+                                            <textField opaque="NO" tag="14" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="lHS-z8-AVo">
                                                 <rect key="frame" x="172" y="684" width="128" height="30"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="128" id="wh0-di-zEF"/>
@@ -568,7 +560,7 @@
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                 <textInputTraits key="textInputTraits" keyboardType="decimalPad"/>
                                                 <connections>
-                                                    <outlet property="delegate" destination="c3i-y8-uTP" id="5rX-w4-fxx"/>
+                                                    <outlet property="delegate" destination="1Xv-DH-p0u" id="cA1-ik-iIB"/>
                                                 </connections>
                                             </textField>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Vitamin C" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3p1-rU-V5S">
@@ -577,7 +569,7 @@
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="Y1D-en-SJD">
+                                            <textField opaque="NO" tag="15" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="Y1D-en-SJD">
                                                 <rect key="frame" x="172" y="722" width="128" height="30"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="128" id="KFx-cK-o2a"/>
@@ -586,7 +578,7 @@
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                 <textInputTraits key="textInputTraits" keyboardType="decimalPad"/>
                                                 <connections>
-                                                    <outlet property="delegate" destination="c3i-y8-uTP" id="u9X-nL-LqO"/>
+                                                    <outlet property="delegate" destination="1Xv-DH-p0u" id="7SN-TS-Yts"/>
                                                 </connections>
                                             </textField>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Vitamin D" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aJE-nj-cG5">
@@ -595,7 +587,7 @@
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="3cq-cV-YKj">
+                                            <textField opaque="NO" tag="16" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="3cq-cV-YKj">
                                                 <rect key="frame" x="172" y="760" width="128" height="30"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="128" id="VsG-C9-tFt"/>
@@ -604,7 +596,7 @@
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                 <textInputTraits key="textInputTraits" keyboardType="decimalPad"/>
                                                 <connections>
-                                                    <outlet property="delegate" destination="c3i-y8-uTP" id="SlV-YP-SsT"/>
+                                                    <outlet property="delegate" destination="1Xv-DH-p0u" id="fT7-6w-3Ex"/>
                                                 </connections>
                                             </textField>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Vitamin E" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="HhW-WC-p2z">
@@ -613,7 +605,7 @@
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="E1x-LZ-FZk">
+                                            <textField opaque="NO" tag="17" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="E1x-LZ-FZk">
                                                 <rect key="frame" x="172" y="798" width="128" height="30"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="128" id="c7A-pb-k4S"/>
@@ -622,7 +614,7 @@
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                 <textInputTraits key="textInputTraits" keyboardType="decimalPad"/>
                                                 <connections>
-                                                    <outlet property="delegate" destination="c3i-y8-uTP" id="17C-2H-xTd"/>
+                                                    <outlet property="delegate" destination="1Xv-DH-p0u" id="l27-Fl-tn8"/>
                                                 </connections>
                                             </textField>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Vitamin K" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="oIH-TM-AJh">
@@ -631,7 +623,7 @@
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="r8N-ES-KB9">
+                                            <textField opaque="NO" tag="18" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="r8N-ES-KB9">
                                                 <rect key="frame" x="172" y="836" width="128" height="30"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="128" id="mLh-O5-v3Z"/>
@@ -640,7 +632,7 @@
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                 <textInputTraits key="textInputTraits" keyboardType="decimalPad"/>
                                                 <connections>
-                                                    <outlet property="delegate" destination="c3i-y8-uTP" id="Bnl-Tt-Xk7"/>
+                                                    <outlet property="delegate" destination="1Xv-DH-p0u" id="qFh-YU-NCK"/>
                                                 </connections>
                                             </textField>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Calcium" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xtD-1d-V2E">
@@ -649,7 +641,7 @@
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="SoW-g3-4Aj">
+                                            <textField opaque="NO" tag="19" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="SoW-g3-4Aj">
                                                 <rect key="frame" x="172" y="874" width="128" height="30"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="128" id="KgS-Ca-gVl"/>
@@ -658,7 +650,7 @@
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                 <textInputTraits key="textInputTraits" keyboardType="decimalPad"/>
                                                 <connections>
-                                                    <outlet property="delegate" destination="c3i-y8-uTP" id="CHa-1v-In4"/>
+                                                    <outlet property="delegate" destination="1Xv-DH-p0u" id="JOW-rc-eNC"/>
                                                 </connections>
                                             </textField>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Iron" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="r37-ZL-bPX">
@@ -667,7 +659,7 @@
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="NCy-xW-YlQ">
+                                            <textField opaque="NO" tag="20" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="NCy-xW-YlQ">
                                                 <rect key="frame" x="172" y="912" width="128" height="30"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="128" id="sZ2-j1-wel"/>
@@ -676,7 +668,7 @@
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                 <textInputTraits key="textInputTraits" keyboardType="decimalPad"/>
                                                 <connections>
-                                                    <outlet property="delegate" destination="c3i-y8-uTP" id="tAr-d7-u1E"/>
+                                                    <outlet property="delegate" destination="1Xv-DH-p0u" id="ZEz-T7-ZZq"/>
                                                 </connections>
                                             </textField>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Magnesium" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="IvI-jm-QW0">
@@ -685,7 +677,7 @@
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="erd-Nr-brp">
+                                            <textField opaque="NO" tag="21" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="erd-Nr-brp">
                                                 <rect key="frame" x="172" y="951" width="128" height="30"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="128" id="aYh-b6-94D"/>
@@ -694,7 +686,7 @@
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                 <textInputTraits key="textInputTraits" keyboardType="decimalPad"/>
                                                 <connections>
-                                                    <outlet property="delegate" destination="c3i-y8-uTP" id="2es-Xp-s4K"/>
+                                                    <outlet property="delegate" destination="1Xv-DH-p0u" id="hK7-wJ-KG0"/>
                                                 </connections>
                                             </textField>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Potassium" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qvU-qH-ax3">
@@ -703,7 +695,7 @@
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="fcb-Qd-wEz">
+                                            <textField opaque="NO" tag="22" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="right" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="fcb-Qd-wEz">
                                                 <rect key="frame" x="172" y="989" width="128" height="30"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="128" id="C1l-YH-Cdx"/>
@@ -712,7 +704,7 @@
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                 <textInputTraits key="textInputTraits" keyboardType="decimalPad"/>
                                                 <connections>
-                                                    <outlet property="delegate" destination="c3i-y8-uTP" id="fvC-YS-41j"/>
+                                                    <outlet property="delegate" destination="1Xv-DH-p0u" id="9Bl-AU-hFg"/>
                                                 </connections>
                                             </textField>
                                         </subviews>
@@ -720,16 +712,15 @@
                                         <constraints>
                                             <constraint firstItem="xtD-1d-V2E" firstAttribute="top" secondItem="oIH-TM-AJh" secondAttribute="bottom" constant="17" id="0qD-Eg-t0i"/>
                                             <constraint firstItem="cel-vG-be4" firstAttribute="top" secondItem="KCI-lf-ppY" secondAttribute="bottom" constant="17" id="2RQ-b4-XUE"/>
-                                            <constraint firstItem="KqJ-fZ-1mf" firstAttribute="top" secondItem="ryY-6L-7ry" secondAttribute="bottom" constant="17" id="3An-vX-RlW"/>
                                             <constraint firstItem="YKh-le-XHF" firstAttribute="centerY" secondItem="IvP-cp-KKH" secondAttribute="centerY" id="3f5-RQ-eLq"/>
                                             <constraint firstItem="KCI-lf-ppY" firstAttribute="leading" secondItem="be5-mP-RVr" secondAttribute="leading" constant="16" id="3iX-9T-MdH"/>
+                                            <constraint firstAttribute="trailing" relation="lessThanOrEqual" secondItem="KqJ-fZ-1mf" secondAttribute="trailing" constant="143" id="3k5-1Q-f8e"/>
                                             <constraint firstItem="cGB-PL-OaZ" firstAttribute="top" secondItem="YKh-le-XHF" secondAttribute="bottom" constant="17" id="3ni-1M-d2A"/>
                                             <constraint firstAttribute="trailing" secondItem="hNC-Ki-coh" secondAttribute="trailing" constant="20" symbolic="YES" id="56j-4D-eCe"/>
                                             <constraint firstItem="GP3-NY-AeU" firstAttribute="top" secondItem="BVl-tl-Dqd" secondAttribute="bottom" constant="17" id="5Fy-d6-n9E"/>
                                             <constraint firstItem="Acl-eO-RS1" firstAttribute="top" secondItem="dUc-Sh-22p" secondAttribute="bottom" constant="17" id="5Rf-49-ruw"/>
                                             <constraint firstItem="Acl-eO-RS1" firstAttribute="leading" secondItem="be5-mP-RVr" secondAttribute="leading" constant="16" id="5bE-D6-g8E"/>
                                             <constraint firstItem="QcN-g1-hgH" firstAttribute="leading" secondItem="be5-mP-RVr" secondAttribute="leading" constant="16" id="6HT-56-0yj"/>
-                                            <constraint firstItem="ryY-6L-7ry" firstAttribute="centerY" secondItem="hNC-Ki-coh" secondAttribute="centerY" id="6m5-Vi-AVP"/>
                                             <constraint firstAttribute="trailing" secondItem="r8N-ES-KB9" secondAttribute="trailing" constant="20" id="6n1-3S-xA3"/>
                                             <constraint firstItem="1tw-kr-49N" firstAttribute="trailing" relation="lessThanOrEqual" secondItem="Wxt-QN-ZRW" secondAttribute="leading" id="7Nf-Hq-vxF"/>
                                             <constraint firstItem="QcN-g1-hgH" firstAttribute="top" secondItem="KqJ-fZ-1mf" secondAttribute="bottom" constant="17" id="7Qs-aV-7pZ"/>
@@ -750,7 +741,6 @@
                                             <constraint firstAttribute="trailing" secondItem="IvP-cp-KKH" secondAttribute="trailing" constant="20" id="FvR-rX-zAs"/>
                                             <constraint firstItem="cel-vG-be4" firstAttribute="trailing" relation="lessThanOrEqual" secondItem="lHS-z8-AVo" secondAttribute="leading" id="Gp6-7u-Tbc"/>
                                             <constraint firstItem="YKh-le-XHF" firstAttribute="top" secondItem="6Et-Tc-34c" secondAttribute="bottom" constant="17" id="IGH-Vx-ao6"/>
-                                            <constraint firstItem="ryY-6L-7ry" firstAttribute="trailing" relation="lessThanOrEqual" secondItem="hNC-Ki-coh" secondAttribute="leading" constant="8" symbolic="YES" id="IIT-YE-2AW"/>
                                             <constraint firstAttribute="trailing" secondItem="Y1D-en-SJD" secondAttribute="trailing" constant="20" id="ILI-W8-Dno"/>
                                             <constraint firstItem="dUc-Sh-22p" firstAttribute="trailing" relation="lessThanOrEqual" secondItem="n3i-Ne-By1" secondAttribute="leading" constant="8" symbolic="YES" id="Ifb-jD-xHV"/>
                                             <constraint firstItem="cGB-PL-OaZ" firstAttribute="leading" secondItem="be5-mP-RVr" secondAttribute="leading" constant="16" id="JBp-Op-F8o"/>
@@ -759,13 +749,14 @@
                                             <constraint firstItem="YKh-le-XHF" firstAttribute="leading" secondItem="be5-mP-RVr" secondAttribute="leading" constant="16" id="LIZ-Tc-udi"/>
                                             <constraint firstAttribute="trailing" secondItem="n3i-Ne-By1" secondAttribute="trailing" constant="20" id="LKC-e2-TbM"/>
                                             <constraint firstAttribute="trailing" secondItem="iT4-Hi-Ped" secondAttribute="trailing" constant="20" id="Lhh-iI-dtz"/>
+                                            <constraint firstItem="u6J-Cy-IcG" firstAttribute="leading" secondItem="be5-mP-RVr" secondAttribute="leading" constant="15" id="Ljy-jf-g32"/>
                                             <constraint firstAttribute="trailing" secondItem="SoW-g3-4Aj" secondAttribute="trailing" constant="20" id="Lnn-Le-1JC"/>
                                             <constraint firstAttribute="trailing" secondItem="xAw-5J-Uzi" secondAttribute="trailing" constant="20" id="Lqh-0f-Cun"/>
                                             <constraint firstItem="KCI-lf-ppY" firstAttribute="centerY" secondItem="iT4-Hi-Ped" secondAttribute="centerY" id="M7b-gZ-CGF"/>
                                             <constraint firstItem="2VQ-eT-Ibj" firstAttribute="trailing" relation="lessThanOrEqual" secondItem="zTw-OU-Ca5" secondAttribute="leading" constant="8" symbolic="YES" id="Mb8-oQ-P2f"/>
+                                            <constraint firstItem="u6J-Cy-IcG" firstAttribute="top" secondItem="2VQ-eT-Ibj" secondAttribute="bottom" constant="10.5" id="Mm2-aB-ZQI"/>
                                             <constraint firstItem="QcN-g1-hgH" firstAttribute="centerY" secondItem="xAw-5J-Uzi" secondAttribute="centerY" id="Mms-iN-JtS"/>
                                             <constraint firstItem="6Et-Tc-34c" firstAttribute="top" secondItem="GP3-NY-AeU" secondAttribute="bottom" constant="17" id="NU0-tF-9gF"/>
-                                            <constraint firstAttribute="trailing" secondItem="CE3-Qh-pJl" secondAttribute="trailing" constant="20" id="NcT-oa-65W"/>
                                             <constraint firstItem="QcN-g1-hgH" firstAttribute="trailing" relation="lessThanOrEqual" secondItem="xAw-5J-Uzi" secondAttribute="leading" constant="8" symbolic="YES" id="Nue-UM-ZdJ"/>
                                             <constraint firstItem="6rF-n0-R1E" firstAttribute="centerY" secondItem="bEW-Of-I1z" secondAttribute="centerY" id="O7t-y5-DVL"/>
                                             <constraint firstAttribute="trailing" secondItem="erd-Nr-brp" secondAttribute="trailing" constant="20" id="O9M-sA-imD"/>
@@ -774,10 +765,10 @@
                                             <constraint firstAttribute="trailing" secondItem="3cq-cV-YKj" secondAttribute="trailing" constant="20" id="OsW-Pg-jpE"/>
                                             <constraint firstItem="oIH-TM-AJh" firstAttribute="centerY" secondItem="r8N-ES-KB9" secondAttribute="centerY" id="P2o-sc-dZp"/>
                                             <constraint firstItem="ijQ-lN-rdR" firstAttribute="trailing" relation="lessThanOrEqual" secondItem="Egr-kj-fPz" secondAttribute="leading" id="Pl0-16-7NN"/>
+                                            <constraint firstItem="u6J-Cy-IcG" firstAttribute="trailing" relation="lessThanOrEqual" secondItem="hNC-Ki-coh" secondAttribute="leading" constant="8" symbolic="YES" id="Pwh-Pi-UMR"/>
                                             <constraint firstAttribute="trailing" secondItem="fcb-Qd-wEz" secondAttribute="trailing" constant="20" id="QBw-De-K2g"/>
                                             <constraint firstItem="r37-ZL-bPX" firstAttribute="centerY" secondItem="NCy-xW-YlQ" secondAttribute="centerY" id="QQC-eB-gwl"/>
                                             <constraint firstItem="qvU-qH-ax3" firstAttribute="leading" secondItem="be5-mP-RVr" secondAttribute="leading" constant="16" id="QeU-Zc-9t9"/>
-                                            <constraint firstItem="ryY-6L-7ry" firstAttribute="top" secondItem="2VQ-eT-Ibj" secondAttribute="bottom" constant="17" id="QwO-u3-mSS"/>
                                             <constraint firstItem="Acl-eO-RS1" firstAttribute="centerY" secondItem="OB0-i6-vV4" secondAttribute="centerY" id="RG2-2p-nxJ"/>
                                             <constraint firstItem="aJE-nj-cG5" firstAttribute="centerY" secondItem="3cq-cV-YKj" secondAttribute="centerY" id="TaM-qx-TG7"/>
                                             <constraint firstItem="oIH-TM-AJh" firstAttribute="top" secondItem="HhW-WC-p2z" secondAttribute="bottom" constant="17" id="Tbr-hy-wcz"/>
@@ -794,13 +785,13 @@
                                             <constraint firstItem="r37-ZL-bPX" firstAttribute="top" secondItem="xtD-1d-V2E" secondAttribute="bottom" constant="17" id="YZM-iK-qFE"/>
                                             <constraint firstAttribute="trailing" secondItem="de2-BY-ehG" secondAttribute="trailing" constant="20" id="ZQP-WO-xtY"/>
                                             <constraint firstItem="KqJ-fZ-1mf" firstAttribute="leading" secondItem="be5-mP-RVr" secondAttribute="leading" constant="16" id="ZjG-aF-bim"/>
+                                            <constraint firstItem="KqJ-fZ-1mf" firstAttribute="top" secondItem="u6J-Cy-IcG" secondAttribute="bottom" constant="11.5" id="Zy6-Gx-UR5"/>
                                             <constraint firstItem="Acl-eO-RS1" firstAttribute="trailing" relation="lessThanOrEqual" secondItem="OB0-i6-vV4" secondAttribute="leading" id="a6g-wh-rqI"/>
                                             <constraint firstItem="GP3-NY-AeU" firstAttribute="leading" secondItem="be5-mP-RVr" secondAttribute="leading" constant="16" id="ala-t1-0E0"/>
                                             <constraint firstItem="cel-vG-be4" firstAttribute="leading" secondItem="be5-mP-RVr" secondAttribute="leading" constant="16" id="b3H-Ax-cDx"/>
                                             <constraint firstItem="cel-vG-be4" firstAttribute="centerY" secondItem="lHS-z8-AVo" secondAttribute="centerY" id="cMW-94-qtw"/>
                                             <constraint firstAttribute="trailing" secondItem="bEW-Of-I1z" secondAttribute="trailing" constant="20" id="cVj-b5-5oe"/>
                                             <constraint firstAttribute="trailing" secondItem="eh7-pQ-uKy" secondAttribute="trailing" constant="20" symbolic="YES" id="dSm-tZ-cB0"/>
-                                            <constraint firstItem="ryY-6L-7ry" firstAttribute="leading" secondItem="be5-mP-RVr" secondAttribute="leading" constant="16" id="dYS-lf-RYI"/>
                                             <constraint firstItem="dUc-Sh-22p" firstAttribute="top" secondItem="6rF-n0-R1E" secondAttribute="bottom" constant="17" id="da4-GR-DaN"/>
                                             <constraint firstItem="1tw-kr-49N" firstAttribute="centerY" secondItem="Wxt-QN-ZRW" secondAttribute="centerY" id="e3t-p6-1cc"/>
                                             <constraint firstAttribute="trailing" secondItem="E1x-LZ-FZk" secondAttribute="trailing" constant="20" id="eck-4c-l7e"/>
@@ -825,6 +816,7 @@
                                             <constraint firstItem="o1v-bG-0u9" firstAttribute="top" secondItem="Acl-eO-RS1" secondAttribute="bottom" constant="17" id="kmD-IB-no8"/>
                                             <constraint firstItem="6rF-n0-R1E" firstAttribute="leading" secondItem="be5-mP-RVr" secondAttribute="leading" constant="16" id="ljb-8f-fux"/>
                                             <constraint firstItem="cGB-PL-OaZ" firstAttribute="centerY" secondItem="de2-BY-ehG" secondAttribute="centerY" id="mQt-AN-LIT"/>
+                                            <constraint firstItem="u6J-Cy-IcG" firstAttribute="centerY" secondItem="hNC-Ki-coh" secondAttribute="centerY" id="n8Y-Jd-2NI"/>
                                             <constraint firstAttribute="trailing" secondItem="b4e-I4-lyI" secondAttribute="trailing" constant="20" id="nN5-ij-Soo"/>
                                             <constraint firstItem="r37-ZL-bPX" firstAttribute="trailing" relation="lessThanOrEqual" secondItem="NCy-xW-YlQ" secondAttribute="leading" id="ncS-z6-Fml"/>
                                             <constraint firstItem="fDf-kq-LOV" firstAttribute="trailing" relation="lessThanOrEqual" secondItem="XYS-dT-39s" secondAttribute="leading" id="o5S-oL-Pxq"/>
@@ -836,7 +828,6 @@
                                             <constraint firstAttribute="trailing" secondItem="0kc-Ak-gNk" secondAttribute="trailing" constant="20" id="tHm-eA-KnW"/>
                                             <constraint firstAttribute="trailing" secondItem="Wxt-QN-ZRW" secondAttribute="trailing" constant="20" id="tfw-hW-IX1"/>
                                             <constraint firstItem="1tw-kr-49N" firstAttribute="leading" secondItem="be5-mP-RVr" secondAttribute="leading" constant="16" id="tmH-3P-ym7"/>
-                                            <constraint firstItem="KqJ-fZ-1mf" firstAttribute="trailing" relation="lessThanOrEqual" secondItem="CE3-Qh-pJl" secondAttribute="leading" constant="8" symbolic="YES" id="tnA-mC-DDv"/>
                                             <constraint firstItem="fDf-kq-LOV" firstAttribute="top" secondItem="cGB-PL-OaZ" secondAttribute="bottom" constant="17" id="tpB-iL-2rP"/>
                                             <constraint firstItem="dUc-Sh-22p" firstAttribute="leading" secondItem="be5-mP-RVr" secondAttribute="leading" constant="16" id="u3a-A4-rlr"/>
                                             <constraint firstItem="BVl-tl-Dqd" firstAttribute="top" secondItem="o1v-bG-0u9" secondAttribute="bottom" constant="17" id="ueB-Zv-qtj"/>
@@ -846,7 +837,6 @@
                                             <constraint firstItem="fDf-kq-LOV" firstAttribute="leading" secondItem="be5-mP-RVr" secondAttribute="leading" constant="16" id="wji-cT-du5"/>
                                             <constraint firstItem="HhW-WC-p2z" firstAttribute="trailing" relation="lessThanOrEqual" secondItem="E1x-LZ-FZk" secondAttribute="leading" id="y0Z-Va-30E"/>
                                             <constraint firstItem="xtD-1d-V2E" firstAttribute="trailing" relation="lessThanOrEqual" secondItem="SoW-g3-4Aj" secondAttribute="leading" id="yPp-o2-3Eh"/>
-                                            <constraint firstItem="KqJ-fZ-1mf" firstAttribute="centerY" secondItem="CE3-Qh-pJl" secondAttribute="centerY" id="yQL-pX-MLe"/>
                                             <constraint firstItem="IvI-jm-QW0" firstAttribute="top" secondItem="r37-ZL-bPX" secondAttribute="bottom" constant="17" id="yeA-nN-Z9O"/>
                                             <constraint firstItem="IvI-jm-QW0" firstAttribute="leading" secondItem="be5-mP-RVr" secondAttribute="leading" constant="16" id="yvL-q2-Tbm"/>
                                             <constraint firstItem="ijQ-lN-rdR" firstAttribute="leading" secondItem="be5-mP-RVr" secondAttribute="leading" constant="16" id="zCs-Ig-ZFI"/>
@@ -888,37 +878,123 @@
                     <size key="freeformSize" width="320" height="1116"/>
                     <connections>
                         <outlet property="addToLogButton" destination="eh7-pQ-uKy" id="A55-n6-2G0"/>
-                        <outlet property="calciumField" destination="SoW-g3-4Aj" id="hw1-ea-iI7"/>
-                        <outlet property="caloriesField" destination="xAw-5J-Uzi" id="zWW-5R-PNp"/>
-                        <outlet property="cholesterolField" destination="eYj-4z-9Uk" id="Mde-cb-euN"/>
-                        <outlet property="dateField" destination="zTw-OU-Ca5" id="fsp-Io-dKi"/>
-                        <outlet property="dietaryFiberField" destination="de2-BY-ehG" id="efS-oG-gMp"/>
+                        <outlet property="dateController" destination="whg-DM-Meq" id="679-W2-GiV"/>
                         <outlet property="foodNameField" destination="qqo-Yv-lUD" id="5ve-2d-31M"/>
                         <outlet property="foodNameLabel" destination="aiY-KY-BvR" id="PZO-0n-05p"/>
-                        <outlet property="ironField" destination="NCy-xW-YlQ" id="VWi-mQ-HnN"/>
-                        <outlet property="magnesiumField" destination="erd-Nr-brp" id="eWW-RZ-cZ1"/>
-                        <outlet property="monounsaturatedFatField" destination="OB0-i6-vV4" id="Xp6-rb-DCX"/>
-                        <outlet property="polyunsaturatedFatField" destination="0kc-Ak-gNk" id="WgX-iI-buF"/>
-                        <outlet property="potassiumField" destination="fcb-Qd-wEz" id="kQR-DR-l8n"/>
-                        <outlet property="proteinField" destination="Egr-kj-fPz" id="v1E-DD-Wxi"/>
-                        <outlet property="saturatedFatField" destination="n3i-Ne-By1" id="n4m-64-afb"/>
-                        <outlet property="scrollView" destination="toz-Tf-gAN" id="5ty-y1-0xW"/>
-                        <outlet property="servingsField" destination="hNC-Ki-coh" id="33L-fo-yC7"/>
-                        <outlet property="sodiumField" destination="b4e-I4-lyI" id="Vx0-k2-A1k"/>
-                        <outlet property="sugarsField" destination="XYS-dT-39s" id="JdZ-97-d46"/>
-                        <outlet property="totalCarbohydrateField" destination="IvP-cp-KKH" id="tek-Z0-1Fc"/>
-                        <outlet property="totalFatField" destination="bEW-Of-I1z" id="0uk-rt-CY8"/>
-                        <outlet property="transFatField" destination="SOw-FL-N8y" id="IM6-lJ-3Ia"/>
-                        <outlet property="vitaminAField" destination="Wxt-QN-ZRW" id="TgC-dj-sJN"/>
-                        <outlet property="vitaminB12Field" destination="lHS-z8-AVo" id="SmM-sE-qYN"/>
-                        <outlet property="vitaminB6Field" destination="iT4-Hi-Ped" id="Dh9-l0-hep"/>
-                        <outlet property="vitaminCField" destination="Y1D-en-SJD" id="81c-1S-yZV"/>
-                        <outlet property="vitaminDField" destination="3cq-cV-YKj" id="09y-Yg-Rej"/>
-                        <outlet property="vitaminEField" destination="E1x-LZ-FZk" id="G4p-5b-NlM"/>
-                        <outlet property="vitaminKField" destination="r8N-ES-KB9" id="Icz-4J-Xhg"/>
+                        <outlet property="foodNutritionController" destination="1Xv-DH-p0u" id="QKY-3O-1y7"/>
+                        <outlet property="measurementController" destination="BML-iM-zdH" id="HFx-XB-qvB"/>
+                        <outlet property="scrollView" destination="toz-Tf-gAN" id="Yyx-jC-5TA"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="pgC-jb-vsn" userLabel="First Responder" sceneMemberID="firstResponder"/>
+                <customObject id="whg-DM-Meq" customClass="DateController" customModule="Foodlog" customModuleProvider="target">
+                    <connections>
+                        <outlet property="addOrEditVC" destination="c3i-y8-uTP" id="jht-uj-bze"/>
+                        <outlet property="field" destination="zTw-OU-Ca5" id="9rd-B4-gRQ"/>
+                    </connections>
+                </customObject>
+                <customObject id="BML-iM-zdH" customClass="MeasurementController" customModule="Foodlog" customModuleProvider="target">
+                    <connections>
+                        <outlet property="addOrEditVC" destination="c3i-y8-uTP" id="DKQ-97-cl1"/>
+                        <outlet property="field" destination="hNC-Ki-coh" id="MwS-BU-56O"/>
+                        <outlet property="perRepresentationLabel" destination="KqJ-fZ-1mf" id="zxk-aH-WHy"/>
+                        <outlet property="representationButton" destination="u6J-Cy-IcG" id="DY5-5m-1fj"/>
+                        <outlet property="toolbar" destination="qwg-oS-vsP" id="Zee-fg-iQT"/>
+                        <outlet property="valueRepresentationControl" destination="NYk-QD-1EU" id="YCP-Wi-oJa"/>
+                    </connections>
+                </customObject>
+                <customObject id="1Xv-DH-p0u" customClass="FoodNutritionController" customModule="Foodlog" customModuleProvider="target">
+                    <connections>
+                        <outlet property="addOrEditVC" destination="c3i-y8-uTP" id="RF6-P7-sXF"/>
+                        <outlet property="calciumField" destination="SoW-g3-4Aj" id="N0Z-7Q-9ZY"/>
+                        <outlet property="caloriesField" destination="xAw-5J-Uzi" id="v5f-9X-kEy"/>
+                        <outlet property="cholesterolField" destination="eYj-4z-9Uk" id="7NA-FU-APw"/>
+                        <outlet property="dietaryFiberField" destination="de2-BY-ehG" id="hlz-J1-oZX"/>
+                        <outlet property="ironField" destination="NCy-xW-YlQ" id="nBu-oE-sWo"/>
+                        <outlet property="magnesiumField" destination="erd-Nr-brp" id="DQI-zt-6Q9"/>
+                        <outlet property="monounsaturatedFatField" destination="OB0-i6-vV4" id="a8A-Wg-3O3"/>
+                        <outlet property="polyunsaturatedFatField" destination="0kc-Ak-gNk" id="m3q-hQ-fta"/>
+                        <outlet property="potassiumField" destination="fcb-Qd-wEz" id="iHr-Ww-Hei"/>
+                        <outlet property="proteinField" destination="Egr-kj-fPz" id="a8n-JW-bu6"/>
+                        <outlet property="saturatedFatField" destination="n3i-Ne-By1" id="t41-3O-08j"/>
+                        <outlet property="sodiumField" destination="b4e-I4-lyI" id="iVo-1q-a38"/>
+                        <outlet property="sugarsField" destination="XYS-dT-39s" id="puE-y3-o8T"/>
+                        <outlet property="toolbar" destination="LBE-O1-97n" id="0XE-Qh-SD3"/>
+                        <outlet property="totalCarbohydrateField" destination="IvP-cp-KKH" id="Oqv-IC-veJ"/>
+                        <outlet property="totalFatField" destination="bEW-Of-I1z" id="HVf-37-z7V"/>
+                        <outlet property="transFatField" destination="SOw-FL-N8y" id="sjf-y6-FTO"/>
+                        <outlet property="valueRepresentationControl" destination="seE-oI-rKq" id="cyf-hu-Bfz"/>
+                        <outlet property="vitaminAField" destination="Wxt-QN-ZRW" id="HO9-6V-6bU"/>
+                        <outlet property="vitaminB12Field" destination="lHS-z8-AVo" id="mGd-pN-N6h"/>
+                        <outlet property="vitaminB6Field" destination="iT4-Hi-Ped" id="9bA-E9-2ce"/>
+                        <outlet property="vitaminCField" destination="Y1D-en-SJD" id="ieN-Iz-Lla"/>
+                        <outlet property="vitaminDField" destination="3cq-cV-YKj" id="467-1p-KAQ"/>
+                        <outlet property="vitaminEField" destination="E1x-LZ-FZk" id="7CE-Wm-PUC"/>
+                        <outlet property="vitaminKField" destination="r8N-ES-KB9" id="MrL-mM-6ir"/>
+                    </connections>
+                </customObject>
+                <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="qwg-oS-vsP">
+                    <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                    <items>
+                        <barButtonItem style="plain" id="gaC-FM-3nB">
+                            <segmentedControl key="customView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="bar" selectedSegmentIndex="0" id="NYk-QD-1EU">
+                                <rect key="frame" x="16" y="7" width="125" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <segments>
+                                    <segment title="decimal"/>
+                                    <segment title="fraction"/>
+                                </segments>
+                                <connections>
+                                    <action selector="chooseValueRepresentation:" destination="BML-iM-zdH" eventType="valueChanged" id="8Do-Hs-M8s"/>
+                                </connections>
+                            </segmentedControl>
+                        </barButtonItem>
+                        <barButtonItem systemItem="flexibleSpace" id="v3j-m1-xkD"/>
+                        <barButtonItem style="done" systemItem="done" id="uWK-QI-klk">
+                            <connections>
+                                <action selector="doneEditing" destination="BML-iM-zdH" id="IUa-eg-3ez"/>
+                            </connections>
+                        </barButtonItem>
+                    </items>
+                </toolbar>
+                <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="LBE-O1-97n">
+                    <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                    <items>
+                        <barButtonItem image="ChevronUp" id="bJ8-7r-Ri9">
+                            <connections>
+                                <action selector="moveToPreviousNutritionField" destination="1Xv-DH-p0u" id="OVh-D8-Fym"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem width="8" style="plain" systemItem="fixedSpace" id="10J-j2-2RR"/>
+                        <barButtonItem image="ChevronDown" id="9qo-5x-T4k">
+                            <connections>
+                                <action selector="moveToNextNutritionField" destination="1Xv-DH-p0u" id="34m-CC-6vh"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem style="plain" systemItem="flexibleSpace" id="gkl-rK-Gar"/>
+                        <barButtonItem style="plain" id="qup-12-6XS">
+                            <segmentedControl key="customView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="bar" selectedSegmentIndex="0" id="seE-oI-rKq">
+                                <rect key="frame" x="127" y="7" width="121" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <segments>
+                                    <segment title="%"/>
+                                    <segment title="g"/>
+                                </segments>
+                                <connections>
+                                    <action selector="chooseValueRepresentation:" destination="1Xv-DH-p0u" eventType="valueChanged" id="f1L-rJ-1GB"/>
+                                </connections>
+                            </segmentedControl>
+                        </barButtonItem>
+                        <barButtonItem style="plain" systemItem="flexibleSpace" id="rAN-ji-QJ6"/>
+                        <barButtonItem style="done" systemItem="done" id="eto-If-wXd">
+                            <connections>
+                                <action selector="doneEditing" destination="1Xv-DH-p0u" id="3Ke-69-uwW"/>
+                            </connections>
+                        </barButtonItem>
+                    </items>
+                </toolbar>
             </objects>
             <point key="canvasLocation" x="760" y="1025"/>
         </scene>
@@ -1035,10 +1111,12 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="lDt-Ma-HKQ" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1509.0" y="605.0"/>
+            <point key="canvasLocation" x="1509" y="605"/>
         </scene>
     </scenes>
     <resources>
+        <image name="ChevronDown" width="24" height="24"/>
+        <image name="ChevronUp" width="24" height="24"/>
         <image name="Close" width="24" height="24"/>
     </resources>
     <color key="tintColor" red="0.0" green="0.53096664507772018" blue="0.01904661551" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
