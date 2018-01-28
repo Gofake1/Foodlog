@@ -227,6 +227,36 @@ enum NutritionKind {
     }
 }
 
+extension NutritionKind: CustomStringConvertible {
+    var description: String {
+        switch self {
+        case .calories:             return "Calories"
+        case .totalFat:             return "Total Fat"
+        case .saturatedFat:         return "Saturated Fat"
+        case .monounsaturatedFat:   return "Monounsaturated Fat"
+        case .polyunsaturatedFat:   return "Polyunsaturated Fat"
+        case .transFat:             return "Trans Fat"
+        case .cholesterol:          return "Cholesterol"
+        case .sodium:               return "Sodium"
+        case .totalCarbohydrate:    return "Total Carbohydrate"
+        case .dietaryFiber:         return "Dietary Fiber"
+        case .sugars:               return "Sugars"
+        case .protein:              return "Protein"
+        case .vitaminA:             return "Vitamin A"
+        case .vitaminB6:            return "Vitamin B6"
+        case .vitaminB12:           return "Vitamin B12"
+        case .vitaminC:             return "Vitamin C"
+        case .vitaminD:             return "Vitamin D"
+        case .vitaminE:             return "Vitamin E"
+        case .vitaminK:             return "Vitamin K"
+        case .calcium:              return "Calcium"
+        case .iron:                 return "Iron"
+        case .magnesium:            return "Magnesium"
+        case .potassium:            return "Potassium"
+        }
+    }
+}
+
 extension String {
     init<A: FloatingPoint>(dropDecimalIfZero floatingPoint: A) {
         if floatingPoint.truncatingRemainder(dividingBy: 1).isZero {

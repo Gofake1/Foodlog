@@ -14,27 +14,38 @@ class LogDetailViewController: PulleyDrawerViewController {
     @IBOutlet weak var textView: UITextView!
     @IBOutlet weak var textViewHeightConstraint: NSLayoutConstraint!
     
-    var detailPresentable: LogDetailPresentable!
-    private static var stringAttributes: [NSAttributedStringKey: Any]!
+    var detailPresentable: LogDetailPresentable?
+    fileprivate static let dateFormatter: DateFormatter = {
+        let df = DateFormatter()
+        df.dateStyle = .medium
+        df.timeStyle = .short
+        return df
+    }()
+    private var viewBounds = CGRect()
     
     override func viewDidLoad() {
-        titleLabel.text = detailPresentable.logDetailTitle
-        subtitleLabel.text = detailPresentable.logDetailSubtitle
+        titleLabel.text = detailPresentable?.logDetailTitle
+        subtitleLabel.text = detailPresentable?.logDetailSubtitle
+    }
+    
+    override func viewDidLayoutSubviews() {
+        // Workaround: Multiple calls to `viewDidLayoutSubviews` will cause `attributes(_:_:)` to throw exception
+        guard viewBounds != view.bounds else { return }
+        viewBounds = view.bounds
         
-        if LogDetailViewController.stringAttributes == nil {
-            var attributes = textView.attributedText.attributes(at: 0, longestEffectiveRange: nil, in:
-                NSRange(location: 0, length: textView.attributedText.length))
-            let paragraphStyle = NSParagraphStyle.default.mutableCopy() as! NSMutableParagraphStyle
-            let location = textView.textContainer.size.width - textView.textContainer.lineFragmentPadding * 2
-            paragraphStyle.tabStops = [NSTextTab(textAlignment: .right, location: location)]
-            attributes[.paragraphStyle] = paragraphStyle
-            LogDetailViewController.stringAttributes = attributes
-        }
-        textView.attributedText = NSAttributedString(string: detailPresentable.logDetailText,
-                                                     attributes: LogDetailViewController.stringAttributes)
+        // Workaround: `textView` constraints don't update width
+        textView.bounds.size.width = view.bounds.width - 22
+        
+        var attributes = textView.attributedText.attributes(at: 0, effectiveRange: nil)
+        let paragraphStyle = NSParagraphStyle.default.mutableCopy() as! NSMutableParagraphStyle
+        let location = textView.bounds.width - textView.textContainer.lineFragmentPadding * 2
+        paragraphStyle.tabStops = [NSTextTab(textAlignment: .right, location: location)]
+        attributes[.paragraphStyle] = paragraphStyle
+        let textViewString = detailPresentable?.logDetailText ?? "Error: No information found for this entry."
+        textView.attributedText = NSAttributedString(string: textViewString, attributes: attributes)
         
         textViewHeightConstraint.constant = textView.sizeThatFits(
-            CGSize(width: textView.frame.size.width, height: CGFloat.greatestFiniteMagnitude)).height
+            CGSize(width: 0, height: CGFloat.greatestFiniteMagnitude)).height
     }
     
     @IBAction func cancel() {
@@ -55,33 +66,40 @@ extension FoodEntry: LogDetailPresentable {
     }
     
     var logDetailSubtitle: String {
-        return "\(date)"
+        return LogDetailViewController.dateFormatter.string(from: date)
     }
     
     var logDetailText: String {
+        func detailString(_ value: Float, _ kind: NutritionKind) -> String {
+            guard value != 0.0 else { return "" }
+            return "\(kind)\t\(value.pretty!)\(kind.unit.short)\n"
+        }
+        
         guard let food = food else { return "Error: No information found for this entry's food." }
         var str = ""
-        str += food.calories == 0           ? "" : "Calories\t\(food.calories)\n"
-        str += food.totalFat == 0           ? "" : "Total Fat\t\(food.totalFat)\n"
-        str += food.saturatedFat == 0       ? "" : "Saturated Fat\t\(food.saturatedFat)\n"
-        str += food.monounsaturatedFat == 0 ? "" : "Monounsaturated Fat\t\(food.monounsaturatedFat)\n"
-        str += food.polyunsaturatedFat == 0 ? "" : "Polyunsaturated Fat\t\(food.polyunsaturatedFat)\n"
-        str += food.transFat == 0           ? "" : "Trans Fat\t\(food.transFat)\n"
-        str += food.cholesterol == 0        ? "" : "Cholesterol\t\(food.cholesterol)\n"
-        str += food.sodium == 0             ? "" : "Sodium\t\(food.sodium)\n"
-        str += food.totalCarbohydrate == 0  ? "" : "Total Carbohydrate\t\(food.totalCarbohydrate)\n"
-        str += food.dietaryFiber == 0       ? "" : "Dietary Fiber\t\(food.dietaryFiber)\n"
-        str += food.sugars == 0             ? "" : "Sugars\t\(food.sugars)\n"
-        str += food.protein == 0            ? "" : "Protein\t\(food.protein)\n"
-        str += food.vitaminA == 0           ? "" : "Vitamin A\t\(food.vitaminA)\n"
-        str += food.vitaminB6 == 0          ? "" : "Vitamin B6\t\(food.vitaminB6)\n"
-        str += food.vitaminB12 == 0         ? "" : "Vitamin B12\t\(food.vitaminB12)\n"
-        str += food.vitaminC == 0           ? "" : "Vitamin C\t\(food.vitaminC)\n"
-        str += food.vitaminD == 0           ? "" : "Vitamin D\t\(food.vitaminD)\n"
-        str += food.vitaminE == 0           ? "" : "Vitamin E\t\(food.vitaminE)\n"
-        str += food.vitaminK == 0           ? "" : "Vitamin K\t\(food.vitaminK)\n"
-        str += food.calcium == 0            ? "" : "Calcium\t\(food.calcium)\n"
-        str += food.iron == 0               ? "" : "Iron\t\(food.iron)\n"
+        str += detailString(food.calories, .calories)
+        str += detailString(food.totalFat, .totalFat)
+        str += detailString(food.saturatedFat, .saturatedFat)
+        str += detailString(food.monounsaturatedFat, .monounsaturatedFat)
+        str += detailString(food.polyunsaturatedFat, .polyunsaturatedFat)
+        str += detailString(food.transFat, .transFat)
+        str += detailString(food.cholesterol, .cholesterol)
+        str += detailString(food.sodium, .sodium)
+        str += detailString(food.totalCarbohydrate, .totalCarbohydrate)
+        str += detailString(food.dietaryFiber, .dietaryFiber)
+        str += detailString(food.sugars, .sugars)
+        str += detailString(food.protein, .protein)
+        str += detailString(food.vitaminA, .vitaminA)
+        str += detailString(food.vitaminB6, .vitaminB6)
+        str += detailString(food.vitaminB12, .vitaminB12)
+        str += detailString(food.vitaminC, .vitaminC)
+        str += detailString(food.vitaminD, .vitaminD)
+        str += detailString(food.vitaminE, .vitaminE)
+        str += detailString(food.vitaminK, .vitaminK)
+        str += detailString(food.calcium, .calcium)
+        str += detailString(food.iron, .iron)
+        str += detailString(food.magnesium, .magnesium)
+        str += detailString(food.potassium, .potassium)
         return str
     }
 }
