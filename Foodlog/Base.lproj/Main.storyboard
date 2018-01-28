@@ -117,7 +117,7 @@
             </objects>
             <point key="canvasLocation" x="760" y="0.0"/>
         </scene>
-        <!--Add Or Search View Controller-->
+        <!--Add Or SearchVC-->
         <scene sceneID="DuT-6Z-VyP">
             <objects>
                 <viewController id="GXp-b9-hhh" customClass="AddOrSearchViewController" customModule="Foodlog" customModuleProvider="target" sceneMemberID="viewController">
@@ -145,7 +145,29 @@
                                     </userDefinedRuntimeAttribute>
                                 </userDefinedRuntimeAttributes>
                             </view>
-                            <tableView hidden="YES" clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="GaF-W9-zaw">
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="UHz-ef-vcg">
+                                <rect key="frame" x="0.0" y="63" width="320" height="257"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="WQU-iN-OcL">
+                                        <rect key="frame" x="106" y="2" width="107" height="33"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <state key="normal" title="Scan Barcode"/>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="tVb-Hz-3Ci">
+                                        <rect key="frame" x="118.5" y="43" width="83" height="33"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <state key="normal" title="Settings ▶︎"/>
+                                    </button>
+                                </subviews>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstItem="tVb-Hz-3Ci" firstAttribute="centerX" secondItem="UHz-ef-vcg" secondAttribute="centerX" id="6ej-p4-YUY"/>
+                                    <constraint firstItem="WQU-iN-OcL" firstAttribute="centerX" secondItem="UHz-ef-vcg" secondAttribute="centerX" id="UEh-YM-n7L"/>
+                                    <constraint firstItem="tVb-Hz-3Ci" firstAttribute="top" secondItem="WQU-iN-OcL" secondAttribute="bottom" constant="8" symbolic="YES" id="YKn-I1-Ksb"/>
+                                    <constraint firstItem="WQU-iN-OcL" firstAttribute="top" secondItem="UHz-ef-vcg" secondAttribute="top" constant="2" id="aee-C6-Xfs"/>
+                                </constraints>
+                            </view>
+                            <tableView hidden="YES" clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" alwaysBounceVertical="YES" keyboardDismissMode="interactive" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="GaF-W9-zaw">
                                 <rect key="frame" x="0.0" y="63" width="320" height="257"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -164,8 +186,8 @@
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="right" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="JAq-kT-Pye">
-                                                    <rect key="frame" x="259" y="6" width="46" height="33"/>
+                                                <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="JAq-kT-Pye">
+                                                    <rect key="frame" x="267" y="1" width="46" height="41"/>
                                                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <state key="normal" title="Add"/>
@@ -176,37 +198,41 @@
                                             </subviews>
                                         </tableViewCellContentView>
                                         <connections>
-                                            <outlet property="addOrSearchViewController" destination="GXp-b9-hhh" id="7HV-CF-QK4"/>
+                                            <outlet property="addButton" destination="JAq-kT-Pye" id="jtU-Nd-TPR"/>
+                                            <outlet property="addOrSearchVC" destination="GXp-b9-hhh" id="7HV-CF-QK4"/>
                                             <outlet property="label" destination="VNn-ec-SWf" id="jaD-qd-a4N"/>
                                         </connections>
                                     </tableViewCell>
                                 </prototypes>
                                 <connections>
-                                    <outlet property="dataSource" destination="GXp-b9-hhh" id="hSD-uq-aDk"/>
+                                    <outlet property="dataSource" destination="gQb-oc-Mcp" id="u82-Ti-jI3"/>
                                 </connections>
                             </tableView>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="WQU-iN-OcL">
-                                <rect key="frame" x="106.5" y="61" width="107" height="33"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <state key="normal" title="Scan Barcode"/>
-                            </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
+                            <constraint firstItem="UHz-ef-vcg" firstAttribute="bottom" secondItem="FbL-5G-hY4" secondAttribute="bottom" id="CZe-X2-SW7"/>
+                            <constraint firstItem="UHz-ef-vcg" firstAttribute="top" secondItem="RjI-x7-P8v" secondAttribute="top" constant="63" id="G9g-gd-Xql"/>
                             <constraint firstItem="ndq-l0-xxC" firstAttribute="top" secondItem="FbL-5G-hY4" secondAttribute="top" constant="6" id="PHs-WN-9VP"/>
-                            <constraint firstItem="WQU-iN-OcL" firstAttribute="centerX" secondItem="FbL-5G-hY4" secondAttribute="centerX" id="VNy-ro-gfW"/>
-                            <constraint firstItem="WQU-iN-OcL" firstAttribute="top" secondItem="FbL-5G-hY4" secondAttribute="top" constant="61" id="uzW-7S-GDm"/>
+                            <constraint firstItem="UHz-ef-vcg" firstAttribute="leading" secondItem="FbL-5G-hY4" secondAttribute="leading" id="bhW-QS-R0Z"/>
+                            <constraint firstItem="UHz-ef-vcg" firstAttribute="trailing" secondItem="FbL-5G-hY4" secondAttribute="trailing" id="g7M-Ad-lNE"/>
                             <constraint firstItem="ndq-l0-xxC" firstAttribute="centerX" secondItem="FbL-5G-hY4" secondAttribute="centerX" id="xME-Fa-ERd"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="FbL-5G-hY4"/>
                     </view>
                     <connections>
-                        <outlet property="scanBarcodeButton" destination="WQU-iN-OcL" id="DOI-Sc-yHS"/>
+                        <outlet property="buttonsView" destination="UHz-ef-vcg" id="5C3-mK-CTY"/>
                         <outlet property="searchBar" destination="Bp7-zS-1Cq" id="Kug-Kb-QWF"/>
+                        <outlet property="suggestionTableController" destination="gQb-oc-Mcp" id="9le-tz-az7"/>
                         <outlet property="tableView" destination="GaF-W9-zaw" id="P3R-eu-gpu"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="MoG-Kn-GOt" userLabel="First Responder" sceneMemberID="firstResponder"/>
+                <customObject id="gQb-oc-Mcp" customClass="SuggestionTableController" customModule="Foodlog" customModuleProvider="target">
+                    <connections>
+                        <outlet property="tableView" destination="GaF-W9-zaw" id="AsS-Fk-2Qu"/>
+                    </connections>
+                </customObject>
             </objects>
             <point key="canvasLocation" x="0.0" y="605"/>
         </scene>

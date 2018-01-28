@@ -6,12 +6,37 @@
 //  Copyright © 2017 Gofake1. All rights reserved.
 //
 
+import RealmSwift
 import UIKit
 
+protocol SuggestionType {
+    var canBeAddedToLog: Bool { get }
+    var isPlaceholder: Bool { get }
+    var suggestionName: String { get }
+}
+
+extension Food: SuggestionType {
+    var canBeAddedToLog: Bool {
+        return true
+    }
+    var isPlaceholder: Bool {
+        return false
+    }
+    var suggestionName: String {
+        return name
+    }
+}
+
+// TODO: iPhone X UI
 class AddOrSearchViewController: PulleyDrawerViewController {
-    @IBOutlet weak var scanBarcodeButton: UIButton!
+    @IBOutlet weak var suggestionTableController: SuggestionTableController!
+    @IBOutlet weak var buttonsView: UIView!
     @IBOutlet weak var searchBar: UISearchBar!
     @IBOutlet weak var tableView: UITableView!
+    
+    override func viewDidLoad() {
+        suggestionTableController.update()
+    }
     
     func drawerPositionDidChange(drawer: PulleyViewController, bottomSafeArea: CGFloat) {
         switch drawer.drawerPosition {
@@ -38,57 +63,22 @@ class AddOrSearchViewController: PulleyDrawerViewController {
     }
 }
 
-class SuggestionTableViewCell: UITableViewCell {
-    @IBOutlet weak var addOrSearchViewController: AddOrSearchViewController!
-    @IBOutlet weak var label: UILabel!
-    
-    var suggestion: SuggestionType? {
-        didSet {
-            label.text = suggestion?.suggestionName
-        }
-    }
-    var newSuggestionName = "" {
-        didSet {
-            label.text = "\"\(newSuggestionName)\""
-        }
-    }
-    
-    @IBAction func add() {
-        if let suggestion = suggestion {
-            addOrSearchViewController.suggestionAdded(suggestion, isNew: false)
-        } else {
-            let newFood = Food()
-            newFood.name = newSuggestionName
-            addOrSearchViewController.suggestionAdded(newFood, isNew: true)
-        }
-    }
-}
-
-protocol SuggestionType {
-    var suggestionName: String { get }
-}
-
-extension Food: SuggestionType {
-    var suggestionName: String {
-        return name
-    }
-}
-
 extension AddOrSearchViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        tableView.reloadData()
+        guard let searchText = searchBar.text else { return }
+        suggestionTableController.searchText = searchText
     }
     
     func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
         pulleyVC.setDrawerPosition(position: .open, animated: true)
-        scanBarcodeButton.isHidden = true
+        buttonsView.isHidden = true
         searchBar.setShowsCancelButton(true, animated: true)
         tableView.isHidden = false
     }
     
     func searchBarTextDidEndEditing(_ searchBar: UISearchBar) {
         if searchBar.text == "" {
-            scanBarcodeButton.isHidden = false
+            buttonsView.isHidden = false
             tableView.isHidden = true
         }
         searchBar.setShowsCancelButton(false, animated: true)
@@ -104,20 +94,103 @@ extension AddOrSearchViewController: UISearchBarDelegate {
     }
 }
 
-extension AddOrSearchViewController: UITableViewDataSource {
+class SuggestionTableController: NSObject {
+    struct NewFoodPlaceholder: SuggestionType {
+        var name: String
+        var canBeAddedToLog: Bool {
+            return true
+        }
+        var isPlaceholder: Bool {
+            return true
+        }
+        var suggestionName: String {
+            return name
+        }
+    }
+    
+    @IBOutlet weak var tableView: UITableView!
+    
+    var searchText = "" {
+        didSet {
+            update()
+        }
+    }
+    private var suggestions = [SuggestionType]()
+    
+    func update() {
+        if searchText == "" {
+            guard let foodEntries = DataStore.objects(FoodEntry.self) else { return }
+            var foods = Set<Food>()
+            for foodEntry in foodEntries {
+                if foods.count >= 5 {
+                    break
+                }
+                guard let food = foodEntry.food else { continue }
+                foods.insert(food)
+            }
+            suggestions = Array(foods)
+        } else {
+            guard let tags = DataStore.objects(Tag.self)?.filter("name BEGINSWITH %@", searchText),
+                let foods = DataStore.objects(Food.self)?.filter("name BEGINSWITH %@", searchText),
+                let groups = DataStore.objects(FoodGroupingTemplate.self)?.filter("name BEGINSWITH %@", searchText)
+                else { return }
+            var results: [SuggestionType] = [NewFoodPlaceholder(name: searchText)]
+            for tag in tags {
+                if results.count >= 5 {
+                    break
+                }
+                results.append(tag)
+            }
+            for food in foods {
+                if results.count >= 15 {
+                    break
+                }
+                results.append(food)
+            }
+            for group in groups {
+                if results.count >= 20 {
+                    break
+                }
+                results.append(group)
+            }
+            suggestions = results
+        }
+        tableView.reloadData()
+    }
+}
+
+extension SuggestionTableController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        guard let searchText = searchBar.text else { return 0 }
-        return searchText == "" ? 0 : 1 + 1 //*
+        return suggestions.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Suggestion", for: indexPath)
             as! SuggestionTableViewCell
-        if indexPath.item == 0 {
-            cell.newSuggestionName = searchBar.text!
-        } else {
-            //*
-        }
+        cell.suggestion = suggestions[indexPath.item]
         return cell
+    }
+}
+
+class SuggestionTableViewCell: UITableViewCell {
+    @IBOutlet weak var addOrSearchVC: AddOrSearchViewController!
+    @IBOutlet weak var label: UILabel!
+    @IBOutlet weak var addButton: UIButton!
+    
+    var suggestion: SuggestionType! {
+        didSet {
+            label.text = suggestion.isPlaceholder ? "\"\(suggestion.suggestionName)\"" : suggestion.suggestionName
+            addButton.isHidden = !suggestion.canBeAddedToLog
+        }
+    }
+    
+    @IBAction func add() {
+        if suggestion.isPlaceholder {
+            let newFood = Food()
+            newFood.name = suggestion.suggestionName
+            addOrSearchVC.suggestionAdded(newFood, isNew: true)
+        } else {
+            addOrSearchVC.suggestionAdded(suggestion, isNew: false)
+        }
     }
 }

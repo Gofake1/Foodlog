@@ -23,6 +23,10 @@ class DataStore {
         return objects?[indexPath.item]
     }
     
+    static func objects<A: Object>(_ type: A.Type) -> Results<A>? {
+        return read { $0.objects(type) }
+    }
+    
     static func count<A: Object>(_ type: A.Type) -> Int {
         return read { $0.objects(type).count } ?? 0
     }
