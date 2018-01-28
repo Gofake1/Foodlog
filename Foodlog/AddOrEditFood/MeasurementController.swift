@@ -62,8 +62,8 @@ class MeasurementController: NSObject {
         representationButton.setTitle(measurementRepresentation.plural, for: .normal)
         field.inputAccessoryView = toolbar
         switch measurementValueRepresentation {
+        case .decimal:  field.text = measurementValue.to(Float.self).pretty
         case .fraction: field.text = (Fraction.decode(from: measurementValue) ?? Fraction()).description
-        case .decimal:  field.text = "\(measurementValue.to(Float.self))"
         }
         perRepresentationLabel.text = "Information Per \(measurementRepresentation)"
     }

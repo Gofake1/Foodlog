@@ -98,7 +98,7 @@ final class FoodEntry: Object {
     @objc dynamic var date = Date().roundedToNearestHalfHour
     @objc dynamic var food: Food?
     @objc dynamic var measurementValueRepresentationRaw = MeasurementValueRepresentation.decimal.rawValue
-    @objc dynamic var measurementValue = Data()
+    @objc dynamic var measurementValue = Data(Float(0.0))
     @objc dynamic var healthKitStatus = HealthKitStatus.unwritten.rawValue
     let tags = List<Tag>()
     
