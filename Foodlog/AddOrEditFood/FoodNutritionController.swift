@@ -200,8 +200,8 @@ class FoodNutritionController: NSObject {
                     else { $1.field.text = "?%"; return }
                 $1.field.text = pretty+"%"
             case .real:
-                guard let pretty = value.pretty else { $1.field.text = "? "+$1.kind.unit.labelTitle; return }
-                $1.field.text = pretty+" "+$1.kind.unit.labelTitle
+                guard let pretty = value.pretty else { $1.field.text = "?"+$1.kind.unit.short; return }
+                $1.field.text = pretty+$1.kind.unit.short
             }
         }
     }
@@ -238,16 +238,23 @@ class FoodNutritionController: NSObject {
 extension FoodNutritionController: UITextFieldDelegate {
     func textFieldDidBeginEditing(_ textField: UITextField) {
         addOrEditVC.activeNutritionField = textField
-        if let index = fields[textField.tag]?.representation.rawValue {
-            valueRepresentationControl.selectedSegmentIndex = index
-        }
-        if let title = fields[textField.tag]?.kind.unit.buttonTitle {
-            valueRepresentationControl.setTitle(title, forSegmentAt: 1)
-        }
-        if textField.text! == "0" {
+        guard let fieldInfo = fields[textField.tag] else { return }
+        valueRepresentationControl.selectedSegmentIndex = fieldInfo.representation.rawValue
+        valueRepresentationControl.setTitle(fieldInfo.kind.unit.buttonTitle, forSegmentAt: 1)
+        if let value = fieldInfo.get() {
+            if value == 0.0 {
+                textField.text = ""
+            } else {
+                switch fields[textField.tag]?.representation {
+                case .percentage?:
+                    textField.text = value.dailyValuePercentageFromReal(fieldInfo.kind)?.pretty
+                case .real?: fallthrough
+                case .none:
+                    textField.text = value.pretty
+                }
+            }
+        } else {
             textField.text = ""
-        } else if let index = textField.text!.index(of: "%") {
-            textField.text?.remove(at: index)
         }
     }
     
@@ -287,7 +294,7 @@ extension FoodNutritionController: UITextFieldDelegate {
             guard let pretty = value.pretty else { return }
             switch representation {
             case .percentage:   textField.text = pretty+"%"
-            case .real:         textField.text = pretty+" \(kind.unit.labelTitle)"
+            case .real:         textField.text = pretty+kind.unit.short
             }
         }
     }
@@ -297,15 +304,6 @@ extension NutritionKind.Unit {
     var buttonTitle: String {
         switch self {
         case .calorie:      return "kcal"
-        case .gram:         return "g"
-        case .milligram:    return "mg"
-        case .microgram:    return "mcg"
-        }
-    }
-    
-    var labelTitle: String {
-        switch self {
-        case .calorie:      return ""
         case .gram:         return "g"
         case .milligram:    return "mg"
         case .microgram:    return "mcg"

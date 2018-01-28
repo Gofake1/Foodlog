@@ -135,6 +135,15 @@ enum NutritionKind {
         case gram       = 1
         case milligram  = 2
         case microgram  = 3
+        
+        var short: String {
+            switch self {
+            case .calorie:      return ""
+            case .gram:         return " g"
+            case .milligram:    return " mg"
+            case .microgram:    return " mcg"
+            }
+        }
     }
     
     case calories
