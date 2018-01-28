@@ -18,7 +18,6 @@ class MyScrollView: UIScrollView {
     }
 }
 
-// TODO: Convert nutrition info percentage value to real value
 class AddOrEditFoodViewController: PulleyDrawerViewController {
     enum Mode {
         case addExistingFood
@@ -34,7 +33,6 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
     @IBOutlet weak var foodNameField:           UITextField!
     @IBOutlet weak var addToLogButton:          UIButton!
 
-    
     weak var activeNutritionField: UITextField? {
         didSet {
             scrollToActiveField()
@@ -45,14 +43,21 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
     var mode: Mode!
     
     override func viewDidLoad() {
-        if mode! == .editExistingFood {
+        switch mode! {
+        case .addExistingFood: fallthrough
+        case .addNewFood:
+            foodNameLabel.text = foodEntry.food?.name
+        case .editExistingFood:
+            // Make unmanaged versions of model objects
+            foodEntry = FoodEntry(value: foodEntry)
+            foodEntry.food = Food(value: foodEntry.food!)
+            
             foodNameLabel.isHidden = true
             foodNameField.isHidden = false
+            foodNameField.text = foodEntry.food?.name
             addToLogButton.setTitle("Update Log", for: .normal)
         }
         
-        foodNameLabel.text = foodEntry.food?.name
-
         dateController.setup()
         measurementController.setup()
         foodNutritionController.setup(mode)
@@ -63,7 +68,7 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
                                                name: .UIKeyboardWillHide, object: nil)
     }
     
-    func scrollToActiveField() {
+    private func scrollToActiveField() {
         guard let textField = activeNutritionField else { return }
         // Workaround: Text field frame is translated down by Pulley
         let fixedTextFieldFrame = view.superview!.convert(textField.frame, to: nil)
@@ -90,31 +95,43 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
         scrollView.scrollIndicatorInsets = .zero
     }
     
+    @IBAction func foodNameChanged(_ sender: UITextField) {
+        guard let newName = sender.text else { return }
+        foodEntry.food?.name = newName
+        userChangedFoodInfo = true
+    }
+    
     /// - postcondition: Writes to Realm
     @IBAction func addFoodEntryToLog() {
-        func addAndPop(_ foodEntry: FoodEntry) {
-            DataStore.add(foodEntry)
+        func addAndPop(_ foodEntry: FoodEntry, update: Bool) {
+            if update {
+                DataStore.update(foodEntry)
+            } else {
+                DataStore.add(foodEntry)
+            }
             pop()
         }
         
+        view.endEditing(false)
+        
         switch mode! {
         case .addNewFood:
-            addAndPop(foodEntry)
+            addAndPop(foodEntry, update: false)
         case .addExistingFood:
-            addAndPop(foodEntry)
+            addAndPop(foodEntry, update: false)
         case .editExistingFood:
             if userChangedFoodInfo {
-                func warningString(_ count: UInt) -> String {
+                func warningString(_ count: Int) -> String {
                     return "Editing this food item will affect \(count) entries. This cannot be undone."
                 }
                 
                 UIApplication.shared.alert(warning: warningString(0/* TODO: Get count of `FoodEntry`'s with this Food*/)) { [weak self] in
                     guard let foodEntry = self?.foodEntry else { return }
                     // TODO: Update all affected `FoodEntry`'s `healthKitStatus`
-                    addAndPop(foodEntry)
+                    addAndPop(foodEntry, update: true)
                 }
             } else {
-                addAndPop(foodEntry)
+                addAndPop(foodEntry, update: true)
             }
         }
     }

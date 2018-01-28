@@ -48,6 +48,19 @@ class LogDetailViewController: PulleyDrawerViewController {
             CGSize(width: 0, height: CGFloat.greatestFiniteMagnitude)).height
     }
     
+    @IBAction func edit() {
+        switch detailPresentable {
+        case let foodEntry as FoodEntry:
+            let editFoodVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier:
+                "AddOrEditFood") as! AddOrEditFoodViewController
+            editFoodVC.foodEntry = foodEntry
+            editFoodVC.mode = .editExistingFood
+            push(editFoodVC)
+        default:
+            return
+        }
+    }
+    
     @IBAction func cancel() {
         assert(previousDrawerVC != nil)
         pop()
