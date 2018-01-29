@@ -76,23 +76,6 @@ final class Food: Object {
     }
 }
 
-protocol JSONCoderProvided {}
-
-private let _jsonDecoder = JSONDecoder()
-private let _jsonEncoder = JSONEncoder()
-
-extension JSONCoderProvided where Self: Codable {
-    static func decode(from data: Data) -> Self? {
-        return try? _jsonDecoder.decode(Self.self, from: data)
-    }
-    
-    func encode() -> Data? {
-        return try? _jsonEncoder.encode(self)
-    }
-}
-
-extension Fraction: JSONCoderProvided {}
-
 final class FoodEntry: Object {
     @objc dynamic var id = UUID().uuidString
     @objc dynamic var date = Date().roundedToNearestHalfHour
@@ -101,6 +84,10 @@ final class FoodEntry: Object {
     @objc dynamic var measurementValue = Data(Float(0.0))
     @objc dynamic var healthKitStatus = HealthKitStatus.unwritten.rawValue
     let tags = List<Tag>()
+    
+    override static func indexedProperties() -> [String] {
+        return ["date", "healthKitStatus"]
+    }
     
     override static func primaryKey() -> String? {
         return "id"

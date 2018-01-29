@@ -18,8 +18,8 @@ class DataStore {
         }
     }()
     
-    static func object<A: Object>(_ type: A.Type, at indexPath: IndexPath) -> A? {
-        let objects = read { $0.objects(type) }
+    static func object<A: Object>(_ type: A.Type, sortedBy keyPath: String, at indexPath: IndexPath) -> A? {
+        let objects = read { $0.objects(type).sorted(byKeyPath: keyPath, ascending: false) }
         return objects?[indexPath.item]
     }
     

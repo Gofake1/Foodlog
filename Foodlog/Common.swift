@@ -13,6 +13,21 @@ func &&=(lhs: inout Bool, rhs: Bool) {
     lhs = lhs && rhs
 }
 
+protocol JSONCoderProvided {}
+
+private let _jsonDecoder = JSONDecoder()
+private let _jsonEncoder = JSONEncoder()
+
+extension JSONCoderProvided where Self: Codable {
+    static func decode(from data: Data) -> Self? {
+        return try? _jsonDecoder.decode(Self.self, from: data)
+    }
+    
+    func encode() -> Data? {
+        return try? _jsonEncoder.encode(self)
+    }
+}
+
 extension Data {
     init<T>(_ value: T) {
         var value = value
@@ -95,6 +110,8 @@ extension Fraction: CustomStringConvertible {
         return "\(numerator)/\(denominator)"
     }
 }
+
+extension Fraction: JSONCoderProvided {}
 
 enum HealthKitStatus: Int {
     case unwritten              = 0

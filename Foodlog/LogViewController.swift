@@ -54,7 +54,7 @@ extension LogViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Food", for: indexPath)
-        let foodEntry = DataStore.object(FoodEntry.self, at: indexPath)
+        let foodEntry = DataStore.object(FoodEntry.self, sortedBy: #keyPath(FoodEntry.date), at: indexPath)
         cell.textLabel?.text = foodEntry?.food?.name ?? "Unnamed"
         cell.detailTextLabel?.text = "?"
         if let valueRepresentationRaw = foodEntry?.measurementValueRepresentationRaw,
@@ -80,7 +80,8 @@ extension LogViewController: UITableViewDataSource {
 
 extension LogViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        guard let foodEntry = DataStore.object(FoodEntry.self, at: indexPath) else { return }
+        guard let foodEntry = DataStore.object(FoodEntry.self, sortedBy: #keyPath(FoodEntry.date), at: indexPath)
+            else { return }
         VCController.selectFoodEntry(foodEntry)
     }
 }
