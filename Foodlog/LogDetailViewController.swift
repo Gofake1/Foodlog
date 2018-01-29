@@ -54,6 +54,7 @@ class LogDetailViewController: PulleyDrawerViewController {
     }
     
     @IBAction func cancel() {
+        VCController.clearLogSelection()
         VCController.pop()
     }
 }

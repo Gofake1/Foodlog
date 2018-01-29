@@ -56,6 +56,10 @@ final class VCController {
         }
     }
     
+    static func clearLogSelection() {
+        logVC.clearTableSelection()
+    }
+    
     static func push(_ newDrawerVC: PulleyDrawerViewController, _ newDrawerState: DrawerState) {
         drawers.append(newDrawerVC)
         drawerState.append(newDrawerState)

@@ -13,7 +13,6 @@ class LogViewController: UIViewController {
     @IBOutlet weak var tableView: UITableView!
     
     private var notificationToken: NotificationToken?
-    private weak var pulleyVC: PulleyViewController!
     
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
@@ -38,8 +37,9 @@ class LogViewController: UIViewController {
         }
     }
     
-    override func willMove(toParentViewController parent: UIViewController?) {
-        pulleyVC = parent as? PulleyViewController
+    func clearTableSelection() {
+        guard let indexPath = tableView.indexPathForSelectedRow else { return }
+        tableView.deselectRow(at: indexPath, animated: true)
     }
     
     deinit {
@@ -47,7 +47,6 @@ class LogViewController: UIViewController {
     }
 }
 
-// TODO: Deselect cell when detail VC is popped
 extension LogViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return DataStore.count(FoodEntry.self)
