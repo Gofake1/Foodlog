@@ -12,6 +12,7 @@ final class VCController {
     enum Kind: String {
         case addOrEditFood  = "AddOrEditFood"
         case logDetail      = "LogDetail"
+        case pulley         = "Pulley"
     }
     
     enum DrawerState {
@@ -24,7 +25,9 @@ final class VCController {
     static var drawers = [PulleyDrawerViewController]()
     static var drawerState = [DrawerState]()
     static var logVC: LogViewController!
-    static var pulleyVC: PulleyViewController!
+    static var pulleyVC: PulleyViewController = {
+        return makeVC(.pulley)
+    }()
     private static let storyboard = UIStoryboard(name: "Main", bundle: nil)
     
     static func addFoodEntry(_ foodEntry: FoodEntry, isNew: Bool) {

@@ -39,13 +39,7 @@ class AddOrSearchViewController: PulleyDrawerViewController {
         VCController.drawerState.append(.addOrSearch)
         suggestionTableController.update()
     }
-    
-    override func willMove(toParentViewController parent: UIViewController?) {
-        // TODO: set `pulleyVC` somewhere else
-        guard VCController.pulleyVC == nil else { return }
-        VCController.pulleyVC = parent as? PulleyViewController
-    }
-    
+        
     func drawerPositionDidChange(drawer: PulleyViewController, bottomSafeArea: CGFloat) {
         switch drawer.drawerPosition {
         case .closed:
