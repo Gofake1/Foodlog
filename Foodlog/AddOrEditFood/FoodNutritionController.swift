@@ -234,6 +234,7 @@ extension FoodNutritionController: UITextFieldDelegate {
     func textFieldDidBeginEditing(_ textField: UITextField) {
         addOrEditVC.activeNutritionField = textField
         guard let fieldInfo = fields[textField.tag] else { return }
+        valueRepresentationControl.isEnabled = fieldInfo.kind.dailyValueReal != nil
         valueRepresentationControl.selectedSegmentIndex = fieldInfo.representation.rawValue
         valueRepresentationControl.setTitle(fieldInfo.kind.unit.buttonTitle, forSegmentAt: 1)
         if let value = fieldInfo.get() {
