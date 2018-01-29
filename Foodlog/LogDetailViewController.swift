@@ -21,7 +21,9 @@ class LogDetailViewController: PulleyDrawerViewController {
         df.timeStyle = .short
         return df
     }()
+    private var detailTextAttributes: [NSAttributedStringKey: Any]!
     private var viewBounds = CGRect()
+    private var valueRepresentation = NutritionKind.ValueRepresentation.real
     
     override func viewDidLoad() {
         titleLabel.text = detailPresentable?.logDetailTitle
@@ -36,13 +38,13 @@ class LogDetailViewController: PulleyDrawerViewController {
         // Workaround: `textView` constraints don't update width
         textView.bounds.size.width = view.bounds.width - 22
         
-        var attributes = textView.attributedText.attributes(at: 0, effectiveRange: nil)
+        detailTextAttributes = textView.attributedText.attributes(at: 0, effectiveRange: nil)
         let paragraphStyle = NSParagraphStyle.default.mutableCopy() as! NSMutableParagraphStyle
         let location = textView.bounds.width - textView.textContainer.lineFragmentPadding * 2
         paragraphStyle.tabStops = [NSTextTab(textAlignment: .right, location: location)]
-        attributes[.paragraphStyle] = paragraphStyle
-        let textViewString = detailPresentable?.logDetailText ?? "Error: No information found for this entry."
-        textView.attributedText = NSAttributedString(string: textViewString, attributes: attributes)
+        detailTextAttributes[.paragraphStyle] = paragraphStyle
+        
+        resetLogDetailText()
         
         textViewHeightConstraint.constant = textView.sizeThatFits(
             CGSize(width: 0, height: CGFloat.greatestFiniteMagnitude)).height
@@ -56,6 +58,20 @@ class LogDetailViewController: PulleyDrawerViewController {
     @IBAction func cancel() {
         VCController.clearLogSelection()
         VCController.pop()
+    }
+    
+    @IBAction func toggleValueRepresentation(_ sender: UITapGestureRecognizer) {
+        switch valueRepresentation {
+        case .percentage:   valueRepresentation = .real
+        case .real:         valueRepresentation = .percentage
+        }
+        resetLogDetailText()
+    }
+    
+    private func resetLogDetailText() {
+        let textViewString = detailPresentable?.logDetailText(valueRepresentation)
+            ?? "Error: No information found for this entry."
+        textView.attributedText = NSAttributedString(string: textViewString, attributes: detailTextAttributes)
     }
 }
 
@@ -74,10 +90,19 @@ extension FoodEntry /*: LogDetailPresentable*/ {
         return LogDetailViewController.dateFormatter.string(from: date)
     }
     
-    var logDetailText: String {
-        func detailString(_ value: Float, _ kind: NutritionKind) -> String {
-            guard value != 0.0 else { return "" }
-            return "\(kind)\t\(value.pretty!)\(kind.unit.short)\n"
+    func logDetailText(_ representation: NutritionKind.ValueRepresentation) -> String {
+        func detailString(_ real: Float, _ kind: NutritionKind) -> String {
+            guard real != 0.0 else { return "" }
+            switch representation {
+            case .percentage:
+                if let percentage = real.dailyValuePercentageFromReal(kind)?.pretty {
+                    return "\(kind)\t\(percentage)%\n"
+                } else {
+                    return "\(kind)\t\(real.pretty!)\(kind.unit.short)\n"
+                }
+            case .real:
+                return "\(kind)\t\(real.pretty!)\(kind.unit.short)\n"
+            }
         }
         
         guard let food = food else { return "Error: No information found for this entry's food." }

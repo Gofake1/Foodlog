@@ -9,11 +9,6 @@
 import UIKit
 
 class FoodNutritionController: NSObject {
-    enum ValueRepresentation: Int {
-        case percentage = 0
-        case real       = 1
-    }
-    
     @IBOutlet weak var addOrEditVC:                 AddOrEditFoodViewController!
     @IBOutlet weak var toolbar:                     UIToolbar!
     @IBOutlet weak var valueRepresentationControl:  UISegmentedControl!
@@ -134,7 +129,7 @@ class FoodNutritionController: NSObject {
         set { addOrEditVC.foodEntry.food?.potassium = newValue!}
     }
     typealias Info = (field: UITextField, get: () -> Float?, set: (Float) -> (), kind: NutritionKind,
-        representation: ValueRepresentation)
+        representation: NutritionKind.ValueRepresentation)
     private lazy var fields: [Int: Info] = {
         return [
             0:  Info(caloriesField, { [weak self] in return self?.calories },
@@ -208,7 +203,7 @@ class FoodNutritionController: NSObject {
     
     @IBAction func chooseValueRepresentation(_ sender: UISegmentedControl) {
         guard let textField = addOrEditVC.activeNutritionField else { return }
-        fields[textField.tag]?.representation = ValueRepresentation(rawValue: sender.selectedSegmentIndex)!
+        fields[textField.tag]?.representation = NutritionKind.ValueRepresentation(rawValue: sender.selectedSegmentIndex)!
     }
     
     private func moveToNutritionField(_ calculate: (Int) -> Int) {
@@ -245,11 +240,10 @@ extension FoodNutritionController: UITextFieldDelegate {
             if value == 0.0 {
                 textField.text = ""
             } else {
-                switch fields[textField.tag]?.representation {
-                case .percentage?:
+                switch fieldInfo.representation {
+                case .percentage:
                     textField.text = value.dailyValuePercentageFromReal(fieldInfo.kind)?.pretty
-                case .real?: fallthrough
-                case .none:
+                case .real:
                     textField.text = value.pretty
                 }
             }

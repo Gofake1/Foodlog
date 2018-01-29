@@ -1089,8 +1089,9 @@
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="CgA-rX-K9W">
                                         <rect key="frame" x="0.0" y="0.0" width="320" height="265"/>
                                         <subviews>
-                                            <textView opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" bounces="NO" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" bouncesZoom="NO" editable="NO" usesAttributedText="YES" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="LBS-qe-ezn">
+                                            <textView opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" bounces="NO" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" delaysContentTouches="NO" canCancelContentTouches="NO" bouncesZoom="NO" editable="NO" usesAttributedText="YES" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="LBS-qe-ezn">
                                                 <rect key="frame" x="11" y="0.0" width="298" height="36.5"/>
+                                                <gestureRecognizers/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="36.5" id="gu9-5p-nYt"/>
                                                 </constraints>
@@ -1103,6 +1104,9 @@
                                                     </fragment>
                                                 </attributedString>
                                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                                <connections>
+                                                    <outletCollection property="gestureRecognizers" destination="TNx-lA-y1M" appends="YES" id="hYh-Qr-Wkr"/>
+                                                </connections>
                                             </textView>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4NO-V9-pMw">
                                                 <rect key="frame" x="145" y="44.5" width="30" height="33"/>
@@ -1154,6 +1158,11 @@
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="lDt-Ma-HKQ" userLabel="First Responder" sceneMemberID="firstResponder"/>
+                <tapGestureRecognizer id="TNx-lA-y1M">
+                    <connections>
+                        <action selector="toggleValueRepresentation:" destination="WyM-gV-M3l" id="Uhq-Lx-ZDI"/>
+                    </connections>
+                </tapGestureRecognizer>
             </objects>
             <point key="canvasLocation" x="1509" y="605"/>
         </scene>

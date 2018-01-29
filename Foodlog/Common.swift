@@ -146,6 +146,11 @@ enum NutritionKind {
         }
     }
     
+    enum ValueRepresentation: Int {
+        case percentage = 0
+        case real       = 1
+    }
+    
     case calories
     case totalFat
     case saturatedFat
