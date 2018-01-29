@@ -13,6 +13,7 @@
 		6339CFBD200DE01500481E0D /* MeasurementController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6339CFBC200DE01500481E0D /* MeasurementController.swift */; };
 		633E0C001FF87A4500290B61 /* AddOrEditFoodViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 633E0BFF1FF87A4500290B61 /* AddOrEditFoodViewController.swift */; };
 		635972381FF479A500D5CC97 /* AddOrSearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 635972371FF479A500D5CC97 /* AddOrSearchViewController.swift */; };
+		6361320B201EAB46009F3EDB /* ViewControllerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6361320A201EAB46009F3EDB /* ViewControllerController.swift */; };
 		636E13952000DC73005C8AD8 /* LogDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 636E13942000DC73005C8AD8 /* LogDetailViewController.swift */; };
 		636E139D2000E19B005C8AD8 /* PulleyDrawerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 636E139C2000E19B005C8AD8 /* PulleyDrawerViewController.swift */; };
 		637A344B1FF467AF00EA48BD /* PulleyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 637A342F1FF467AF00EA48BD /* PulleyViewController.swift */; };
@@ -74,6 +75,7 @@
 		633E0BFF1FF87A4500290B61 /* AddOrEditFoodViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddOrEditFoodViewController.swift; sourceTree = "<group>"; };
 		633E0C051FF8923700290B61 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		635972371FF479A500D5CC97 /* AddOrSearchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddOrSearchViewController.swift; sourceTree = "<group>"; };
+		6361320A201EAB46009F3EDB /* ViewControllerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewControllerController.swift; sourceTree = "<group>"; };
 		636E13942000DC73005C8AD8 /* LogDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogDetailViewController.swift; sourceTree = "<group>"; };
 		636E139C2000E19B005C8AD8 /* PulleyDrawerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PulleyDrawerViewController.swift; sourceTree = "<group>"; };
 		637A342F1FF467AF00EA48BD /* PulleyViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PulleyViewController.swift; sourceTree = "<group>"; };
@@ -229,6 +231,7 @@
 				63D9709B1FE4961700AA0168 /* Models.swift */,
 				638C976B20030F8E00EC0D99 /* PillView.swift */,
 				636E139C2000E19B005C8AD8 /* PulleyDrawerViewController.swift */,
+				6361320A201EAB46009F3EDB /* ViewControllerController.swift */,
 				6385AF301FE0A436009E8483 /* LaunchScreen.storyboard */,
 				6385AF2B1FE0A436009E8483 /* Main.storyboard */,
 				6385AF2E1FE0A436009E8483 /* Assets.xcassets */,
@@ -366,6 +369,7 @@
 				63D9709C1FE4961700AA0168 /* Models.swift in Sources */,
 				638C976C20030F8E00EC0D99 /* PillView.swift in Sources */,
 				636E139D2000E19B005C8AD8 /* PulleyDrawerViewController.swift in Sources */,
+				6361320B201EAB46009F3EDB /* ViewControllerController.swift in Sources */,
 				6339CFBB200DDFF700481E0D /* DateController.swift in Sources */,
 				6339CFBD200DE01500481E0D /* MeasurementController.swift in Sources */,
 				6339CFB5200DDF2B00481E0D /* FoodNutritionController.swift in Sources */,
@@ -511,7 +515,6 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 11.2;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
-				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				VALIDATE_PRODUCT = YES;
 			};

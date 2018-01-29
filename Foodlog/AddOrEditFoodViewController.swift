@@ -79,7 +79,7 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
     }
     
     @objc func keyboardWasShown(_ aNotifcation: NSNotification) {
-        pulleyVC.setDrawerPosition(position: .open, animated: true)
+        VCController.pulleyVC.setDrawerPosition(position: .open, animated: true)
         
         guard let userInfo = aNotifcation.userInfo,
             let keyboardFrame = userInfo[UIKeyboardFrameEndUserInfoKey] as? CGRect
@@ -109,7 +109,7 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
             } else {
                 DataStore.add(foodEntry)
             }
-            pop()
+            VCController.pop()
         }
         
         view.endEditing(false)
@@ -137,8 +137,7 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
     }
     
     @IBAction func cancel() {
-        assert(previousDrawerVC != nil)
-        pop()
+        VCController.pop()
     }
     
     func drawerPositionDidChange(drawer: PulleyViewController, bottomSafeArea: CGFloat) {

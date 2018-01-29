@@ -35,7 +35,15 @@ class AddOrSearchViewController: PulleyDrawerViewController {
     @IBOutlet weak var tableView: UITableView!
     
     override func viewDidLoad() {
+        VCController.drawers.append(self)
+        VCController.drawerState.append(.addOrSearch)
         suggestionTableController.update()
+    }
+    
+    override func willMove(toParentViewController parent: UIViewController?) {
+        // TODO: set `pulleyVC` somewhere else
+        guard VCController.pulleyVC == nil else { return }
+        VCController.pulleyVC = parent as? PulleyViewController
     }
     
     func drawerPositionDidChange(drawer: PulleyViewController, bottomSafeArea: CGFloat) {
@@ -53,13 +61,9 @@ class AddOrSearchViewController: PulleyDrawerViewController {
     
     func suggestionAdded(_ suggestion: SuggestionType, isNew: Bool) {
         guard let food = suggestion as? Food else { return }
-        let addFoodVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier:
-            "AddOrEditFood") as! AddOrEditFoodViewController
         let foodEntry = FoodEntry()
         foodEntry.food = food
-        addFoodVC.foodEntry = foodEntry
-        addFoodVC.mode = isNew ? .addNewFood : .addExistingFood
-        push(addFoodVC)
+        VCController.addFoodEntry(foodEntry, isNew: isNew)
     }
 }
 
@@ -70,7 +74,7 @@ extension AddOrSearchViewController: UISearchBarDelegate {
     }
     
     func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
-        pulleyVC.setDrawerPosition(position: .open, animated: true)
+        VCController.pulleyVC.setDrawerPosition(position: .open, animated: true)
         buttonsView.isHidden = true
         searchBar.setShowsCancelButton(true, animated: true)
         tableView.isHidden = false

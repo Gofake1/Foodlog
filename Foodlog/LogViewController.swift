@@ -15,6 +15,11 @@ class LogViewController: UIViewController {
     private var notificationToken: NotificationToken?
     private weak var pulleyVC: PulleyViewController!
     
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+        VCController.logVC = self
+    }
+    
     override func viewDidLoad() {
         notificationToken = DataStore.onChange(FoodEntry.self) { [weak self] (changes) in
             guard let tableView = self?.tableView else { return }
@@ -76,11 +81,8 @@ extension LogViewController: UITableViewDataSource {
 
 extension LogViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        // TODO: Reuse LogDetailViewController if one is displayed
-        let logDetailVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier:
-            "LogDetail") as! LogDetailViewController
-        logDetailVC.detailPresentable = DataStore.object(FoodEntry.self, at: indexPath)
-        (pulleyVC.drawerContentViewController as! PulleyDrawerViewController).push(logDetailVC)
+        guard let foodEntry = DataStore.object(FoodEntry.self, at: indexPath) else { return }
+        VCController.selectFoodEntry(foodEntry)
     }
 }
 

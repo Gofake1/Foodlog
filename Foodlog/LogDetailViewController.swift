@@ -14,7 +14,7 @@ class LogDetailViewController: PulleyDrawerViewController {
     @IBOutlet weak var textView: UITextView!
     @IBOutlet weak var textViewHeightConstraint: NSLayoutConstraint!
     
-    var detailPresentable: LogDetailPresentable?
+    var detailPresentable: FoodEntry? //LogDetailPresentable?
     fileprivate static let dateFormatter: DateFormatter = {
         let df = DateFormatter()
         df.dateStyle = .medium
@@ -49,31 +49,22 @@ class LogDetailViewController: PulleyDrawerViewController {
     }
     
     @IBAction func edit() {
-        switch detailPresentable {
-        case let foodEntry as FoodEntry:
-            let editFoodVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier:
-                "AddOrEditFood") as! AddOrEditFoodViewController
-            editFoodVC.foodEntry = foodEntry
-            editFoodVC.mode = .editExistingFood
-            push(editFoodVC)
-        default:
-            return
-        }
+        guard let foodEntry = detailPresentable else { return }
+        VCController.editFoodEntry(foodEntry)
     }
     
     @IBAction func cancel() {
-        assert(previousDrawerVC != nil)
-        pop()
+        VCController.pop()
     }
 }
 
-protocol LogDetailPresentable {
-    var logDetailTitle: String { get }
-    var logDetailSubtitle: String { get }
-    var logDetailText: String { get }
-}
+//protocol LogDetailPresentable {
+//    var logDetailTitle: String { get }
+//    var logDetailSubtitle: String { get }
+//    var logDetailText: String { get }
+//}
 
-extension FoodEntry: LogDetailPresentable {
+extension FoodEntry /*: LogDetailPresentable*/ {
     var logDetailTitle: String {
         return food?.name ?? "Unnamed"
     }

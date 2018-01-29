@@ -8,24 +8,7 @@
 
 import UIKit
 
-class PulleyDrawerViewController: UIViewController {
-    var previousDrawerVC: PulleyDrawerViewController?
-    weak var pulleyVC: PulleyViewController!
-    
-    override func willMove(toParentViewController parent: UIViewController?) {
-        pulleyVC = parent as? PulleyViewController
-    }
-    
-    func push(_ newDrawerVC: PulleyDrawerViewController) {
-        newDrawerVC.previousDrawerVC = self
-        pulleyVC.setDrawerContentViewController(controller: newDrawerVC)
-    }
-    
-    func pop() {
-        guard let previousDrawerVC = previousDrawerVC else { return }
-        pulleyVC.setDrawerContentViewController(controller: previousDrawerVC)
-    }
-}
+class PulleyDrawerViewController: UIViewController {}
 
 extension PulleyDrawerViewController: PulleyDrawerViewControllerDelegate {
     func collapsedDrawerHeight(bottomSafeArea: CGFloat) -> CGFloat {
