@@ -18,13 +18,16 @@ class DataStore {
         }
     }()
     
-    static func object<A: Object>(_ type: A.Type, sortedBy keyPath: String, at indexPath: IndexPath) -> A? {
-        let objects = read { $0.objects(type).sorted(byKeyPath: keyPath, ascending: false) }
-        return objects?[indexPath.item]
-    }
-    
     static func objects<A: Object>(_ type: A.Type) -> Results<A>? {
         return read { $0.objects(type) }
+    }
+    
+    static func objects<A: Object>(_ type: A.Type, filteredBy predicate: NSPredicate) -> Results<A>? {
+        return read { $0.objects(type).filter(predicate) }
+    }
+    
+    static func objects<A: Object>(_ type: A.Type, sortedBy keyPath: String) -> Results<A>? {
+        return read { $0.objects(type).sorted(byKeyPath: keyPath, ascending: false) }
     }
     
     static func count<A: Object>(_ type: A.Type) -> Int {
@@ -37,12 +40,6 @@ class DataStore {
     
     static func update(_ object: Object) {
         write { $0.add(object, update: true) }
-    }
-    
-    static func onChange<A: Object>(_ type: A.Type, _ block: @escaping (RealmCollectionChange<Results<A>>) -> ())
-        -> NotificationToken? {
-        guard let results = read({ $0.objects(type) }) else { return nil }
-        return results.observe(block)
     }
     
     private static func read<A>(_ block: (Realm) -> (A)) -> A? {
