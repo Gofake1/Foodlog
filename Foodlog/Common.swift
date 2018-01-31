@@ -8,9 +8,9 @@
 
 import Foundation
 
-infix operator &&=: AssignmentPrecedence
-func &&=(lhs: inout Bool, rhs: Bool) {
-    lhs = lhs && rhs
+infix operator ||=: AssignmentPrecedence
+func ||=(lhs: inout Bool, rhs: Bool) {
+    lhs = lhs || rhs
 }
 
 protocol JSONCoderProvided {}

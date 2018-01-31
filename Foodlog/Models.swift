@@ -94,24 +94,19 @@ final class FoodEntry: Object {
     }
 }
 
-extension Date {
-    var roundedToNearestHalfHour: Date {
-        var dc = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: self)
-        guard let minute = dc.minute else { return self }
-        switch minute {
-        case 0, 30:
-            return self
-        case 1...15:
-            dc.minute = 0
-        case 16...44:
-            dc.minute = 30
-        case 45...59:
-            dc.minute = 0
-            dc.hour? += 1
-        default:
-            return self
-        }
-        return Calendar.current.date(from: dc) ?? self
+final class Day: Object {
+    @objc dynamic var id = 0
+    @objc dynamic var startOfDay = Date()
+    let foodEntries = List<FoodEntry>()
+    
+    convenience init(_ date: Date) {
+        self.init()
+        id = date.hashValue
+        startOfDay = date
+    }
+    
+    override static func primaryKey() -> String? {
+        return "id"
     }
 }
 
@@ -131,5 +126,29 @@ final class FoodGroupingTemplate: Object {
     
     override static func primaryKey() -> String? {
         return "id"
+    }
+}
+
+extension Date {
+    var roundedToNearestHalfHour: Date {
+        var dc = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: self)
+        if let minute = dc.minute {
+            switch minute {
+            case 0, 30:
+                break
+            case 1...15:
+                dc.minute = 0
+            case 16...44:
+                dc.minute = 30
+            case 45...59:
+                dc.minute = 0
+                dc.hour? += 1
+            default:
+                dc.minute = 0
+            }
+        } else {
+            dc.minute = 0
+        }
+        return Calendar.current.date(from: dc) ?? self
     }
 }

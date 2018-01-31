@@ -32,7 +32,7 @@ final class VCController {
         assert(drawerState.last == .addOrSearch)
         let addFoodVC: AddOrEditFoodViewController = makeVC(.addOrEditFood)
         addFoodVC.foodEntry = foodEntry
-        addFoodVC.mode = isNew ? .addNewFood : .addExistingFood
+        addFoodVC.mode = isNew ? .addEntryForNewFood : .addEntryForExistingFood
         push(addFoodVC, .addFoodEntry)
     }
     
@@ -40,7 +40,7 @@ final class VCController {
         assert(drawerState.last == .detailFoodEntry)
         let editFoodVC: AddOrEditFoodViewController = makeVC(.addOrEditFood)
         editFoodVC.foodEntry = foodEntry
-        editFoodVC.mode = .editExistingFood
+        editFoodVC.mode = .editEntryForExistingFood
         push(editFoodVC, .editFoodEntry)
     }
     

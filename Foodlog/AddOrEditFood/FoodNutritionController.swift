@@ -180,9 +180,11 @@ class FoodNutritionController: NSObject {
                      { [weak self] in self?.potassium = $0 }, .potassium, .percentage),
         ]
     }()
+    private var mode: AddOrEditFoodViewController.Mode!
     
     func setup(_ mode: AddOrEditFoodViewController.Mode) {
-        let isEnabled = (mode == .addNewFood || mode == .editExistingFood)
+        self.mode = mode
+        let isEnabled = (mode == .addEntryForNewFood || mode == .editEntryForExistingFood)
         fields.forEach {
             $1.field.isEnabled = isEnabled
             $1.field.inputAccessoryView = toolbar
@@ -278,10 +280,14 @@ extension FoodNutritionController: UITextFieldDelegate {
         }
         if let oldValue = fields[textField.tag]?.get() {
             set(realValue)
-            addOrEditVC.userChangedFoodInfo &&= value == oldValue
+            if mode == .editEntryForExistingFood {
+                addOrEditVC.userChangedFoodInfo ||= value != oldValue
+            }
         } else {
             set(realValue)
-            addOrEditVC.userChangedFoodInfo &&= true
+            if mode == .editEntryForExistingFood {
+                addOrEditVC.userChangedFoodInfo ||= true
+            }
         }
         if value == 0.0 {
             textField.text = "0"

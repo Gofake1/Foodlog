@@ -20,9 +20,9 @@ class MyScrollView: UIScrollView {
 
 class AddOrEditFoodViewController: PulleyDrawerViewController {
     enum Mode {
-        case addExistingFood
-        case addNewFood
-        case editExistingFood
+        case addEntryForExistingFood
+        case addEntryForNewFood
+        case editEntryForExistingFood
     }
     
     @IBOutlet weak var dateController:          DateController!
@@ -38,16 +38,23 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
             scrollToActiveField()
         }
     }
-    var userChangedFoodInfo = false
+    var userChangedFoodInfo = false {
+        didSet {
+            assert(mode == .editEntryForExistingFood)
+        }
+    }
     var foodEntry: FoodEntry!
     var mode: Mode!
+    private var originalFood: Food?
     
     override func viewDidLoad() {
         switch mode! {
-        case .addExistingFood: fallthrough
-        case .addNewFood:
+        case .addEntryForExistingFood: fallthrough
+        case .addEntryForNewFood:
             foodNameLabel.text = foodEntry.food?.name
-        case .editExistingFood:
+        case .editEntryForExistingFood:
+            // Use original `Food` to filter `FoodEntry`s
+            originalFood = foodEntry.food
             // Make unmanaged versions of model objects
             foodEntry = FoodEntry(value: foodEntry)
             foodEntry.food = Food(value: foodEntry.food!)
@@ -103,35 +110,44 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
     
     /// - postcondition: Writes to Realm
     @IBAction func addFoodEntryToLog() {
-        func addAndPop(_ foodEntry: FoodEntry, update: Bool) {
-            if update {
-                DataStore.update(foodEntry)
-            } else {
-                DataStore.add(foodEntry)
-            }
-            VCController.pop()
-        }
-        
         view.endEditing(false)
         
         switch mode! {
-        case .addNewFood:
-            addAndPop(foodEntry, update: false)
-        case .addExistingFood:
-            addAndPop(foodEntry, update: false)
-        case .editExistingFood:
+        case .addEntryForNewFood: fallthrough
+        case .addEntryForExistingFood:
+            let day: Day
+            if let existingDay = DataStore.object(Day.self, primaryKey: foodEntry.date.startOfDay.hashValue) {
+                day = Day(value: existingDay)
+            } else {
+                day = Day(foodEntry.date.startOfDay)
+            }
+            day.foodEntries.append(foodEntry)
+            DataStore.update(day)
+            VCController.pop()
+        case .editEntryForExistingFood:
             if userChangedFoodInfo {
                 func warningString(_ count: Int) -> String {
                     return "Editing this food item will affect \(count) entries. This cannot be undone."
                 }
                 
-                UIApplication.shared.alert(warning: warningString(0/* TODO: Get count of `FoodEntry`'s with this Food*/)) { [weak self] in
+                let matchingFood = NSPredicate(format: "food == %@", originalFood!)
+                guard let affectedFoodEntries = DataStore.objects(FoodEntry.self, filteredBy: matchingFood)
+                    else { return }
+                UIApplication.shared.alert(warning: warningString(affectedFoodEntries.count)) { [weak self] in
                     guard let foodEntry = self?.foodEntry else { return }
-                    // TODO: Update all affected `FoodEntry`'s `healthKitStatus`
-                    addAndPop(foodEntry, update: true)
+                    DataStore.update(foodEntry)
+                    for entry in affectedFoodEntries {
+                        if entry.healthKitStatus == HealthKitStatus.writtenAndUpToDate.rawValue {
+                            let unmanagedEntry = FoodEntry(value: entry)
+                            unmanagedEntry.healthKitStatus = HealthKitStatus.writtenAndNeedsUpdate.rawValue
+                            DataStore.update(unmanagedEntry)
+                        }
+                    }
+                    VCController.pop()
                 }
             } else {
-                addAndPop(foodEntry, update: true)
+                DataStore.update(foodEntry)
+                VCController.pop()
             }
         }
     }
@@ -155,5 +171,12 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
     
     deinit {
         NotificationCenter.default.removeObserver(self)
+    }
+}
+
+extension Date {
+    var startOfDay: Date {
+        let dc = Calendar.current.dateComponents([.year, .month, .day], from: self)
+        return Calendar.current.date(from: dc) ?? self
     }
 }
