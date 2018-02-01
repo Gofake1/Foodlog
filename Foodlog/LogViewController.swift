@@ -9,13 +9,10 @@
 import RealmSwift
 import UIKit
 
-// TODO: Delete food entries
-// TODO: Auto delete days without food entries
-// TODO: Auto delete foods without entries
 class LogViewController: UIViewController {
     @IBOutlet weak var tableView: UITableView!
     
-    private var daysChangeToken: NotificationToken?
+    private var daysChangeToken: NotificationToken!
     private static let dateFormatter: DateFormatter = {
         let df = DateFormatter()
         df.dateStyle = .short
@@ -95,6 +92,19 @@ extension LogViewController: UITableViewDataSource {
         }
         
         return cell
+    }
+    
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle,
+                   forRowAt indexPath: IndexPath) {
+        guard editingStyle == .delete else { return }
+        if sortedDays[indexPath.section].sortedFoodEntries.count <= 1 {
+            DataStore.delete(sortedDays[indexPath.section], withoutNotifying: [daysChangeToken])
+            tableView.deleteSections(IndexSet([indexPath.section]), with: .automatic)
+        } else {
+            DataStore.delete(sortedDays[indexPath.section].sortedFoodEntries[indexPath.row],
+                             withoutNotifying: [daysChangeToken])
+            tableView.deleteRows(at: [indexPath], with: .automatic)
+        }
     }
 }
 

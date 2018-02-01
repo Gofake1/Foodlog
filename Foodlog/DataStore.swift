@@ -36,6 +36,16 @@ class DataStore {
         write { $0.add(object, update: true) }
     }
     
+    static func delete(_ object: Object, withoutNotifying tokens: [NotificationToken]) {
+        do {
+            realm.beginWrite()
+            realm.delete(object)
+            try realm.commitWrite(withoutNotifying: tokens)
+        } catch {
+            UIApplication.shared.alert(error: error)
+        }
+    }
+    
     private static func read<A>(_ block: (Realm) -> (A)) -> A? {
         return block(realm)
     }
