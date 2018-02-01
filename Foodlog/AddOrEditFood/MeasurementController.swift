@@ -57,9 +57,10 @@ class MeasurementController: NSObject {
         return alert
     }()
     
-    func setup() {
+    func setup(_ mode: AddOrEditFoodViewController.Mode) {
         valueRepresentationControl.selectedSegmentIndex = measurementValueRepresentation.rawValue
         representationButton.setTitle(measurementRepresentation.plural, for: .normal)
+        representationButton.isEnabled = mode != .addEntryForExistingFood
         field.inputAccessoryView = toolbar
         switch measurementValueRepresentation {
         case .decimal:  field.text = measurementValue.to(Float.self).pretty

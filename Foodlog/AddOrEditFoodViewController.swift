@@ -66,7 +66,7 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
         }
         
         dateController.setup()
-        measurementController.setup()
+        measurementController.setup(mode)
         foodNutritionController.setup(mode)
         
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWasShown(_:)),
