@@ -16,12 +16,6 @@ class LogDetailViewController: PulleyDrawerViewController {
     @IBOutlet weak var textViewHeightConstraint: NSLayoutConstraint!
     
     var detailPresentable: FoodEntry? //LogDetailPresentable?
-    fileprivate static let dateFormatter: DateFormatter = {
-        let df = DateFormatter()
-        df.dateStyle = .medium
-        df.timeStyle = .short
-        return df
-    }()
     private var detailTextAttributes: [NSAttributedStringKey: Any]!
     private var viewBounds = CGRect()
     private var valueRepresentation = NutritionKind.ValueRepresentation.real
@@ -88,7 +82,7 @@ extension FoodEntry /*: LogDetailPresentable*/ {
     }
     
     var logDetailSubtitle: String {
-        return LogDetailViewController.dateFormatter.string(from: date)
+        return date.mediumDateShortTimeString
     }
     
     func logDetailText(_ representation: NutritionKind.ValueRepresentation) -> String {

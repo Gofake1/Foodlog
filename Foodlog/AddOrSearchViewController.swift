@@ -9,67 +9,10 @@
 import RealmSwift
 import UIKit
 
-protocol SuggestionType {
-    var addAction: () -> () { get }
-    var canBeAddedToLog: Bool { get }
-    var canBeDeleted: Bool { get }
-    var labelText: String { get }
-}
-
-extension Food: SuggestionType {
-    var addAction: () -> () {
-        return {
-            let foodEntry = FoodEntry()
-            foodEntry.food = self
-            VCController.addFoodEntry(foodEntry, isNew: false)
-        }
-    }
-    var canBeAddedToLog: Bool {
-        return true
-    }
-    var canBeDeleted: Bool {
-        return entries.count == 0
-    }
-    var labelText: String {
-        return name
-    }
-}
-
-extension Tag: SuggestionType {
-    var addAction: () -> () {
-        return {}
-    }
-    var canBeAddedToLog: Bool {
-        return false
-    }
-    var canBeDeleted: Bool {
-        return foods.count == 0 && foodEntries.count == 0
-    }
-    var labelText: String {
-        return name
-    }
-}
-
-extension FoodGroupingTemplate: SuggestionType {
-    var addAction: () -> () {
-        return {}
-    }
-    var canBeAddedToLog: Bool {
-        return true
-    }
-    var canBeDeleted: Bool {
-        return false
-    }
-    var labelText: String {
-        return name
-    }
-}
-
 // TODO: iPhone X UI
-// TODO: Filter LogViewController
 class AddOrSearchViewController: PulleyDrawerViewController {
     @IBOutlet weak var suggestionTableController: SuggestionTableController!
-    @IBOutlet weak var buttonsView: UIView!
+    @IBOutlet weak var suggestionTableViewVisibilityController: SuggestionTableViewVisibilityController!
     @IBOutlet weak var searchBar: UISearchBar!
     @IBOutlet weak var tableView: UITableView!
     
@@ -101,16 +44,13 @@ extension AddOrSearchViewController: UISearchBarDelegate {
     
     func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
         VCController.pulleyVC.setDrawerPosition(position: .open, animated: true)
-        buttonsView.isHidden = true
         searchBar.setShowsCancelButton(true, animated: true)
-        tableView.isHidden = false
+        suggestionTableViewVisibilityController.searchBarStateChanged(true)
     }
     
     func searchBarTextDidEndEditing(_ searchBar: UISearchBar) {
-        if searchBar.text == "" {
-            buttonsView.isHidden = false
-            tableView.isHidden = true
-        }
+        suggestionTableViewVisibilityController.searchBarStateChanged(false)
+        suggestionTableViewVisibilityController.searchTextChanged(searchBar.text)
         searchBar.setShowsCancelButton(false, animated: true)
     }
     
@@ -151,6 +91,7 @@ class SuggestionTableController: NSObject {
     }
     
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var tableViewVisibilityController: SuggestionTableViewVisibilityController!
     
     var searchText = "" {
         didSet {
@@ -220,6 +161,63 @@ extension SuggestionTableController: UITableViewDataSource {
     }
 }
 
+extension SuggestionTableController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
+        if tableView.cellForRow(at: indexPath)!.isSelected {
+            tableView.deselectRow(at: indexPath, animated: true)
+            tableViewVisibilityController.filterStateChanged(false)
+            VCController.clearLogFilter()
+            return nil
+        } else {
+            return indexPath
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard let food = suggestions[indexPath.row] as? Food else { return } //*
+        tableViewVisibilityController.filterStateChanged(true)
+        VCController.filterLog(food)
+    }
+}
+
+class SuggestionTableViewVisibilityController: NSObject {
+    @IBOutlet weak var tableView: UITableView!
+    
+    private var searchBarIsActive = false
+    private var searchText: String?
+    private var filterIsActive = false
+    
+    func searchBarStateChanged(_ isActive: Bool) {
+        searchBarIsActive = isActive
+        update()
+    }
+    
+    func searchTextChanged(_ text: String?) {
+        searchText = text
+        update()
+    }
+    
+    func filterStateChanged(_ isActive: Bool) {
+        filterIsActive = isActive
+        update()
+    }
+    
+    private func update() {
+        if !searchBarIsActive && searchText == "" && !filterIsActive {
+            guard !tableView.isHidden else { return }
+            UIView.animate(withDuration: 0.2, animations: { [weak self] in
+                self?.tableView.alpha = 0.0
+            }) { [weak self] _ in
+                self?.tableView.isHidden = true
+            }
+        } else {
+            guard tableView.isHidden else { return }
+            tableView.alpha = 1.0
+            tableView.isHidden = false
+        }
+    }
+}
+
 class SuggestionTableViewCell: UITableViewCell {
     @IBOutlet weak var label: UILabel!
     @IBOutlet weak var addButton: UIButton!
@@ -233,5 +231,61 @@ class SuggestionTableViewCell: UITableViewCell {
     
     @IBAction func add() {
         suggestion.addAction()
+    }
+}
+
+protocol SuggestionType {
+    var addAction: () -> () { get }
+    var canBeAddedToLog: Bool { get }
+    var canBeDeleted: Bool { get }
+    var labelText: String { get }
+}
+
+extension Food: SuggestionType {
+    var addAction: () -> () {
+        return {
+            let foodEntry = FoodEntry()
+            foodEntry.food = self
+            VCController.addFoodEntry(foodEntry, isNew: false)
+        }
+    }
+    var canBeAddedToLog: Bool {
+        return true
+    }
+    var canBeDeleted: Bool {
+        return entries.count == 0
+    }
+    var labelText: String {
+        return name
+    }
+}
+
+extension Tag: SuggestionType {
+    var addAction: () -> () {
+        return {}
+    }
+    var canBeAddedToLog: Bool {
+        return false
+    }
+    var canBeDeleted: Bool {
+        return foods.count == 0 && foodEntries.count == 0
+    }
+    var labelText: String {
+        return name
+    }
+}
+
+extension FoodGroupingTemplate: SuggestionType {
+    var addAction: () -> () {
+        return {}
+    }
+    var canBeAddedToLog: Bool {
+        return true
+    }
+    var canBeDeleted: Bool {
+        return false
+    }
+    var labelText: String {
+        return name
     }
 }

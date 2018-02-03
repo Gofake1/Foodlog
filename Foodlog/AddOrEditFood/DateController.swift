@@ -12,12 +12,6 @@ class DateController: NSObject {
     @IBOutlet weak var addOrEditVC: AddOrEditFoodViewController!
     @IBOutlet weak var field: UITextField!
     
-    private static let df: DateFormatter = {
-        let df = DateFormatter()
-        df.dateStyle = .short
-        df.timeStyle = .short
-        return df
-    }()
     private static let dp: UIDatePicker = {
         let dp = UIDatePicker()
         dp.datePickerMode = .dateAndTime
@@ -35,11 +29,11 @@ class DateController: NSObject {
     
     func setup() {
         field.inputView = DateController.dp
-        field.text = DateController.df.string(from: date)
+        field.text = date.shortDateShortTimeString
     }
     
     @objc func dateChanged(_ sender: UIDatePicker) {
-        field.text = DateController.df.string(from: sender.date)
+        field.text = sender.date.shortDateShortTimeString
     }
     
     deinit {
@@ -49,11 +43,11 @@ class DateController: NSObject {
     
 extension DateController: UITextFieldDelegate {
     func textFieldDidEndEditing(_ textField: UITextField, reason: UITextFieldDidEndEditingReason) {
-        if let newDate = DateController.df.date(from: textField.text!) {
+        if let newDate = textField.text?.dateFromShortDateShortTime {
             date = newDate
         } else {
             date = Date()
-            textField.text = DateController.df.string(from: date)
+            textField.text = date.shortDateShortTimeString
         }
     }
 }

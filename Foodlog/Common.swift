@@ -8,24 +8,36 @@
 
 import Foundation
 
+private let _jsonDecoder = JSONDecoder()
+private let _jsonEncoder = JSONEncoder()
+private let _mediumDateShortTime: DateFormatter = {
+    let df = DateFormatter()
+    df.dateStyle = .medium
+    df.timeStyle = .short
+    return df
+}()
+private let _noDateShortTime: DateFormatter = {
+    let df = DateFormatter()
+    df.dateStyle = .none
+    df.timeStyle = .short
+    return df
+}()
+private let _shortDateNoTime: DateFormatter = {
+    let df = DateFormatter()
+    df.dateStyle = .short
+    df.timeStyle = .none
+    return df
+}()
+private let _shortDateShortTime: DateFormatter = {
+    let df = DateFormatter()
+    df.dateStyle = .short
+    df.timeStyle = .short
+    return df
+}()
+
 infix operator ||=: AssignmentPrecedence
 func ||=(lhs: inout Bool, rhs: Bool) {
     lhs = lhs || rhs
-}
-
-protocol JSONCoderProvided {}
-
-private let _jsonDecoder = JSONDecoder()
-private let _jsonEncoder = JSONEncoder()
-
-extension JSONCoderProvided where Self: Codable {
-    static func decode(from data: Data) -> Self? {
-        return try? _jsonDecoder.decode(Self.self, from: data)
-    }
-    
-    func encode() -> Data? {
-        return try? _jsonEncoder.encode(self)
-    }
 }
 
 extension Data {
@@ -36,6 +48,21 @@ extension Data {
         
     func to<T>(_ type: T.Type) -> T {
         return withUnsafeBytes { $0.pointee }
+    }
+}
+
+extension Date {
+    var mediumDateShortTimeString: String {
+        return _mediumDateShortTime.string(from: self)
+    }
+    var noDateShortTimeString: String {
+        return _noDateShortTime.string(from: self)
+    }
+    var shortDateNoTimeString: String {
+        return _shortDateNoTime.string(from: self)
+    }
+    var shortDateShortTimeString: String {
+        return _shortDateShortTime.string(from: self)
     }
 }
 
@@ -117,6 +144,18 @@ enum HealthKitStatus: Int {
     case unwritten              = 0
     case writtenAndUpToDate     = 1
     case writtenAndNeedsUpdate  = 2
+}
+
+protocol JSONCoderProvided {}
+
+extension JSONCoderProvided where Self: Codable {
+    static func decode(from data: Data) -> Self? {
+        return try? _jsonDecoder.decode(Self.self, from: data)
+    }
+    
+    func encode() -> Data? {
+        return try? _jsonEncoder.encode(self)
+    }
 }
 
 enum MeasurementRepresentation: Int {
@@ -219,7 +258,6 @@ enum NutritionKind {
         case .potassium:            return 4700
         }
     }
-    
     var unit: Unit {
         switch self {
         case .calories:             return .calorie
@@ -280,6 +318,10 @@ extension NutritionKind: CustomStringConvertible {
 }
 
 extension String {
+    var dateFromShortDateShortTime: Date? {
+        return _shortDateShortTime.date(from: self)
+    }
+    
     init<A: FloatingPoint>(dropDecimalIfZero floatingPoint: A) {
         if floatingPoint.truncatingRemainder(dividingBy: 1).isZero {
             self.init(format: "%.0f", floatingPoint as! CVarArg)

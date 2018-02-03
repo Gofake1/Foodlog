@@ -57,6 +57,15 @@ final class VCController {
         }
     }
     
+    // TODO: Filter by tag or date
+    static func filterLog(_ food: Food) {
+        logVC.filter(food)
+    }
+    
+    static func clearLogFilter() {
+        logVC.clearFilter()
+    }
+    
     static func clearLogSelection() {
         logVC.clearTableSelection()
     }

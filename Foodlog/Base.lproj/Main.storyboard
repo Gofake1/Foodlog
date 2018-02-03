@@ -7,6 +7,7 @@
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14075.4"/>
         <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -69,35 +70,50 @@
                                 <rect key="frame" x="0.0" y="20" width="320" height="548"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="Food" textLabel="4Qf-ai-0e9" detailTextLabel="yg2-Gw-Ctl" style="IBUITableViewCellStyleValue1" id="2vS-hF-4H4">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="Cell" id="KsO-gK-nEW" customClass="DetailSubtitleTableViewCell" customModule="Foodlog" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="28" width="320" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
-                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="2vS-hF-4H4" id="Rzj-v1-Wou">
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="KsO-gK-nEW" id="ONR-Ya-iOU">
                                             <rect key="frame" x="0.0" y="0.0" width="320" height="43.5"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Title" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="4Qf-ai-0e9">
-                                                    <rect key="frame" x="15" y="12" width="33.5" height="20.5"/>
-                                                    <autoresizingMask key="autoresizingMask"/>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Title" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dVX-HE-zTf">
+                                                    <rect key="frame" x="15" y="5" width="33.5" height="21"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Detail" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="yg2-Gw-Ctl">
-                                                    <rect key="frame" x="261" y="12" width="44" height="20.5"/>
-                                                    <autoresizingMask key="autoresizingMask"/>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Subtitle" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="uyF-bp-4wk">
+                                                    <rect key="frame" x="15" y="25" width="44" height="15"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" text="Detail" textAlignment="justified" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aJL-9U-8P5">
+                                                    <rect key="frame" x="261" y="12" width="44" height="20"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                             </subviews>
+                                            <constraints>
+                                                <constraint firstItem="uyF-bp-4wk" firstAttribute="leading" secondItem="ONR-Ya-iOU" secondAttribute="leading" constant="15" id="9r6-FJ-ANZ"/>
+                                                <constraint firstItem="dVX-HE-zTf" firstAttribute="top" secondItem="ONR-Ya-iOU" secondAttribute="top" constant="5" id="DEl-a0-McI"/>
+                                                <constraint firstAttribute="bottom" secondItem="uyF-bp-4wk" secondAttribute="bottom" constant="3.5" id="R8z-tT-VsC"/>
+                                                <constraint firstItem="dVX-HE-zTf" firstAttribute="leading" secondItem="ONR-Ya-iOU" secondAttribute="leading" constant="15" id="ZZB-4u-IId"/>
+                                                <constraint firstItem="uyF-bp-4wk" firstAttribute="trailing" relation="lessThanOrEqual" secondItem="aJL-9U-8P5" secondAttribute="leading" constant="-8" id="a0R-wG-0KK"/>
+                                                <constraint firstItem="aJL-9U-8P5" firstAttribute="trailing" secondItem="ONR-Ya-iOU" secondAttribute="trailingMargin" id="fb0-g4-ecr"/>
+                                                <constraint firstItem="dVX-HE-zTf" firstAttribute="trailing" relation="lessThanOrEqual" secondItem="aJL-9U-8P5" secondAttribute="leading" constant="-8" id="q01-MF-njD"/>
+                                                <constraint firstItem="aJL-9U-8P5" firstAttribute="centerY" secondItem="ONR-Ya-iOU" secondAttribute="centerY" id="zIT-aj-ap2"/>
+                                            </constraints>
                                         </tableViewCellContentView>
+                                        <connections>
+                                            <outlet property="detailLabel" destination="aJL-9U-8P5" id="n2u-vV-dFm"/>
+                                            <outlet property="subtitleLabel" destination="uyF-bp-4wk" id="TqN-fu-d7F"/>
+                                            <outlet property="titleLabel" destination="dVX-HE-zTf" id="s5s-zc-zF3"/>
+                                        </connections>
                                     </tableViewCell>
                                 </prototypes>
-                                <connections>
-                                    <outlet property="dataSource" destination="tlM-rw-hRr" id="D7o-pA-8Ae"/>
-                                    <outlet property="delegate" destination="tlM-rw-hRr" id="mRo-RG-2Pn"/>
-                                </connections>
                             </tableView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -110,10 +126,14 @@
                         <viewLayoutGuide key="safeArea" id="iUA-Al-kYg"/>
                     </view>
                     <connections>
-                        <outlet property="tableView" destination="p4u-kq-wQp" id="fAS-sW-M0N"/>
+                        <outlet property="defaultLogTableController" destination="g3a-vs-0Ou" id="GUT-0s-R48"/>
+                        <outlet property="filteredLogTableController" destination="Dgp-jd-nlf" id="uav-0s-nhd"/>
+                        <outlet property="tableView" destination="p4u-kq-wQp" id="nhe-hk-v5e"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="2tG-7D-m5V" userLabel="First Responder" sceneMemberID="firstResponder"/>
+                <customObject id="g3a-vs-0Ou" customClass="DefaultLogTableController" customModule="Foodlog" customModuleProvider="target"/>
+                <customObject id="Dgp-jd-nlf" customClass="FilteredLogTableController" customModule="Foodlog" customModuleProvider="target"/>
             </objects>
             <point key="canvasLocation" x="760" y="0.0"/>
         </scene>
@@ -205,6 +225,7 @@
                                 </prototypes>
                                 <connections>
                                     <outlet property="dataSource" destination="gQb-oc-Mcp" id="u82-Ti-jI3"/>
+                                    <outlet property="delegate" destination="gQb-oc-Mcp" id="vYE-Z5-obH"/>
                                 </connections>
                             </tableView>
                         </subviews>
@@ -220,9 +241,9 @@
                         <viewLayoutGuide key="safeArea" id="FbL-5G-hY4"/>
                     </view>
                     <connections>
-                        <outlet property="buttonsView" destination="UHz-ef-vcg" id="5C3-mK-CTY"/>
                         <outlet property="searchBar" destination="Bp7-zS-1Cq" id="Kug-Kb-QWF"/>
                         <outlet property="suggestionTableController" destination="gQb-oc-Mcp" id="9le-tz-az7"/>
+                        <outlet property="suggestionTableViewVisibilityController" destination="fvV-Mq-G2b" id="WeV-BF-jcY"/>
                         <outlet property="tableView" destination="GaF-W9-zaw" id="P3R-eu-gpu"/>
                     </connections>
                 </viewController>
@@ -230,6 +251,12 @@
                 <customObject id="gQb-oc-Mcp" customClass="SuggestionTableController" customModule="Foodlog" customModuleProvider="target">
                     <connections>
                         <outlet property="tableView" destination="GaF-W9-zaw" id="AsS-Fk-2Qu"/>
+                        <outlet property="tableViewVisibilityController" destination="fvV-Mq-G2b" id="utp-RW-CIg"/>
+                    </connections>
+                </customObject>
+                <customObject id="fvV-Mq-G2b" customClass="SuggestionTableViewVisibilityController" customModule="Foodlog" customModuleProvider="target">
+                    <connections>
+                        <outlet property="tableView" destination="GaF-W9-zaw" id="aaf-GO-ehm"/>
                     </connections>
                 </customObject>
             </objects>
