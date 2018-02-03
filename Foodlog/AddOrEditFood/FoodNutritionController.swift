@@ -184,7 +184,7 @@ class FoodNutritionController: NSObject {
     
     func setup(_ mode: AddOrEditFoodViewController.Mode) {
         self.mode = mode
-        let isEnabled = (mode == .addEntryForNewFood || mode == .editEntryForExistingFood)
+        let isEnabled = (mode == .addEntryForNewFood || mode == .editEntry)
         fields.forEach {
             $1.field.isEnabled = isEnabled
             $1.field.inputAccessoryView = toolbar
@@ -197,8 +197,8 @@ class FoodNutritionController: NSObject {
                     else { $1.field.text = "?%"; return }
                 $1.field.text = pretty+"%"
             case .real:
-                guard let pretty = value.pretty else { $1.field.text = "?"+$1.kind.unit.short; return }
-                $1.field.text = pretty+$1.kind.unit.short
+                guard let pretty = value.pretty else { $1.field.text = "?"+$1.kind.unit.suffix; return }
+                $1.field.text = pretty+$1.kind.unit.suffix
             }
         }
     }
@@ -280,12 +280,12 @@ extension FoodNutritionController: UITextFieldDelegate {
         }
         if let oldValue = fields[textField.tag]?.get() {
             set(realValue)
-            if mode == .editEntryForExistingFood {
+            if mode == .editEntry {
                 addOrEditVC.userChangedFoodInfo ||= value != oldValue
             }
         } else {
             set(realValue)
-            if mode == .editEntryForExistingFood {
+            if mode == .editEntry {
                 addOrEditVC.userChangedFoodInfo ||= true
             }
         }
@@ -295,7 +295,7 @@ extension FoodNutritionController: UITextFieldDelegate {
             guard let pretty = value.pretty else { return }
             switch representation {
             case .percentage:   textField.text = pretty+"%"
-            case .real:         textField.text = pretty+kind.unit.short
+            case .real:         textField.text = pretty+kind.unit.suffix
             }
         }
     }

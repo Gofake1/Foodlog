@@ -8,6 +8,7 @@
 
 import UIKit
 
+// TODO: Show measurement in title
 class LogDetailViewController: PulleyDrawerViewController {
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var subtitleLabel: UILabel!
@@ -98,10 +99,10 @@ extension FoodEntry /*: LogDetailPresentable*/ {
                 if let percentage = real.dailyValuePercentageFromReal(kind)?.pretty {
                     return "\(kind)\t\(percentage)%\n"
                 } else {
-                    return "\(kind)\t\(real.pretty!)\(kind.unit.short)\n"
+                    return "\(kind)\t\(real.pretty!)\(kind.unit.suffix)\n"
                 }
             case .real:
-                return "\(kind)\t\(real.pretty!)\(kind.unit.short)\n"
+                return "\(kind)\t\(real.pretty!)\(kind.unit.suffix)\n"
             }
         }
         

@@ -40,7 +40,11 @@ class MeasurementController: NSObject {
         func action(_ representation: MeasurementRepresentation) -> UIAlertAction {
             return UIAlertAction(title: representation.plural, style: .default, handler: { [weak self] (_) in
                 guard let _self = self else { return }
-                _self.addOrEditVC.userChangedFoodInfo ||= !(_self.measurementRepresentation ==== representation)
+                if _self.mode == .editEntry {
+                    _self.addOrEditVC.userChangedFoodInfo ||= !(_self.measurementRepresentation ==== representation)
+                } else {
+                    _self.measurementRepresentation = representation
+                }
                 _self.representationButton.setTitle(representation.plural, for: .normal)
                 _self.perRepresentationLabel.text = "Information Per \(representation)"
             })
@@ -56,8 +60,10 @@ class MeasurementController: NSObject {
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
         return alert
     }()
+    private var mode: AddOrEditFoodViewController.Mode!
     
     func setup(_ mode: AddOrEditFoodViewController.Mode) {
+        self.mode = mode
         valueRepresentationControl.selectedSegmentIndex = measurementValueRepresentation.rawValue
         representationButton.setTitle(measurementRepresentation.plural, for: .normal)
         representationButton.isEnabled = mode != .addEntryForExistingFood

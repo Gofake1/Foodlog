@@ -117,7 +117,7 @@
             </objects>
             <point key="canvasLocation" x="760" y="0.0"/>
         </scene>
-        <!--Add Or SearchVC-->
+        <!--Add Or Search View Controller-->
         <scene sceneID="DuT-6Z-VyP">
             <objects>
                 <viewController id="GXp-b9-hhh" customClass="AddOrSearchViewController" customModule="Foodlog" customModuleProvider="target" sceneMemberID="viewController">
@@ -199,7 +199,6 @@
                                         </tableViewCellContentView>
                                         <connections>
                                             <outlet property="addButton" destination="JAq-kT-Pye" id="jtU-Nd-TPR"/>
-                                            <outlet property="addOrSearchVC" destination="GXp-b9-hhh" id="7HV-CF-QK4"/>
                                             <outlet property="label" destination="VNn-ec-SWf" id="jaD-qd-a4N"/>
                                         </connections>
                                     </tableViewCell>

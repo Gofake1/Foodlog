@@ -40,7 +40,7 @@ final class VCController {
         assert(drawerState.last == .detailFoodEntry)
         let editFoodVC: AddOrEditFoodViewController = makeVC(.addOrEditFood)
         editFoodVC.foodEntry = foodEntry
-        editFoodVC.mode = .editEntryForExistingFood
+        editFoodVC.mode = .editEntry
         push(editFoodVC, .editFoodEntry)
     }
     

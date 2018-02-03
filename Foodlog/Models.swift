@@ -47,6 +47,7 @@ final class Food: Object {
     @objc dynamic var iron = Float(0.0)
     @objc dynamic var magnesium = Float(0.0)
     @objc dynamic var potassium = Float(0.0)
+    let entries = LinkingObjects(fromType: FoodEntry.self, property: "food")
     let tags = List<Tag>()
     
     // HealthKit future-proofing, currently unused

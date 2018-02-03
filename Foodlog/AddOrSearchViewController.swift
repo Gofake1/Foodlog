@@ -10,24 +10,63 @@ import RealmSwift
 import UIKit
 
 protocol SuggestionType {
+    var addAction: () -> () { get }
     var canBeAddedToLog: Bool { get }
-    var isPlaceholder: Bool { get }
-    var suggestionName: String { get }
+    var canBeDeleted: Bool { get }
+    var labelText: String { get }
 }
 
 extension Food: SuggestionType {
+    var addAction: () -> () {
+        return {
+            let foodEntry = FoodEntry()
+            foodEntry.food = self
+            VCController.addFoodEntry(foodEntry, isNew: false)
+        }
+    }
     var canBeAddedToLog: Bool {
         return true
     }
-    var isPlaceholder: Bool {
+    var canBeDeleted: Bool {
+        return entries.count == 0
+    }
+    var labelText: String {
+        return name
+    }
+}
+
+extension Tag: SuggestionType {
+    var addAction: () -> () {
+        return {}
+    }
+    var canBeAddedToLog: Bool {
         return false
     }
-    var suggestionName: String {
+    var canBeDeleted: Bool {
+        return foods.count == 0 && foodEntries.count == 0
+    }
+    var labelText: String {
+        return name
+    }
+}
+
+extension FoodGroupingTemplate: SuggestionType {
+    var addAction: () -> () {
+        return {}
+    }
+    var canBeAddedToLog: Bool {
+        return true
+    }
+    var canBeDeleted: Bool {
+        return false
+    }
+    var labelText: String {
         return name
     }
 }
 
 // TODO: iPhone X UI
+// TODO: Filter LogViewController
 class AddOrSearchViewController: PulleyDrawerViewController {
     @IBOutlet weak var suggestionTableController: SuggestionTableController!
     @IBOutlet weak var buttonsView: UIView!
@@ -51,13 +90,6 @@ class AddOrSearchViewController: PulleyDrawerViewController {
         case .partiallyRevealed:
             searchBar.resignFirstResponder()
         }
-    }
-    
-    func suggestionAdded(_ suggestion: SuggestionType, isNew: Bool) {
-        guard let food = suggestion as? Food else { return }
-        let foodEntry = FoodEntry()
-        foodEntry.food = food
-        VCController.addFoodEntry(foodEntry, isNew: isNew)
     }
 }
 
@@ -93,16 +125,28 @@ extension AddOrSearchViewController: UISearchBarDelegate {
 }
 
 class SuggestionTableController: NSObject {
-    struct NewFoodPlaceholder: SuggestionType {
+    class NewFoodPlaceholder: SuggestionType {
         var name: String
+        var addAction: () -> () {
+            return { [weak self] in
+                let foodEntry = FoodEntry()
+                foodEntry.food = Food()
+                foodEntry.food!.name = self!.name
+                VCController.addFoodEntry(foodEntry, isNew: true)
+            }
+        }
         var canBeAddedToLog: Bool {
             return true
         }
-        var isPlaceholder: Bool {
-            return true
+        var canBeDeleted: Bool {
+            return false
         }
-        var suggestionName: String {
-            return name
+        var labelText: String {
+            return "\"\(name)\""
+        }
+        
+        init(name: String) {
+            self.name = name
         }
     }
     
@@ -114,12 +158,12 @@ class SuggestionTableController: NSObject {
         }
     }
     private var suggestions = [SuggestionType]()
+    private let sortedFoodEntries = DataStore.objects(FoodEntry.self, sortedBy: #keyPath(FoodEntry.date))!
     
     func update() {
         if searchText == "" {
-            guard let foodEntries = DataStore.objects(FoodEntry.self) else { return }
             var foods = Set<Food>()
-            for foodEntry in foodEntries {
+            for foodEntry in sortedFoodEntries {
                 if foods.count >= 5 {
                     break
                 }
@@ -134,21 +178,15 @@ class SuggestionTableController: NSObject {
                 else { return }
             var results: [SuggestionType] = [NewFoodPlaceholder(name: searchText)]
             for tag in tags {
-                if results.count >= 5 {
-                    break
-                }
+                if results.count >= 5 { break }
                 results.append(tag)
             }
             for food in foods {
-                if results.count >= 15 {
-                    break
-                }
+                if results.count >= 15 { break }
                 results.append(food)
             }
             for group in groups {
-                if results.count >= 20 {
-                    break
-                }
+                if results.count >= 20 { break }
                 results.append(group)
             }
             suggestions = results
@@ -168,27 +206,32 @@ extension SuggestionTableController: UITableViewDataSource {
         cell.suggestion = suggestions[indexPath.item]
         return cell
     }
+    
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return suggestions[indexPath.row].canBeDeleted
+    }
+    
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle,
+                   forRowAt indexPath: IndexPath) {
+        guard editingStyle == .delete else { return }
+        DataStore.delete(suggestions[indexPath.row] as! Object, withoutNotifying: [])
+        suggestions.remove(at: indexPath.row)
+        tableView.deleteRows(at: [indexPath], with: .automatic)
+    }
 }
 
 class SuggestionTableViewCell: UITableViewCell {
-    @IBOutlet weak var addOrSearchVC: AddOrSearchViewController!
     @IBOutlet weak var label: UILabel!
     @IBOutlet weak var addButton: UIButton!
     
     var suggestion: SuggestionType! {
         didSet {
-            label.text = suggestion.isPlaceholder ? "\"\(suggestion.suggestionName)\"" : suggestion.suggestionName
+            label.text = suggestion.labelText
             addButton.isHidden = !suggestion.canBeAddedToLog
         }
     }
     
     @IBAction func add() {
-        if suggestion.isPlaceholder {
-            let newFood = Food()
-            newFood.name = suggestion.suggestionName
-            addOrSearchVC.suggestionAdded(newFood, isNew: true)
-        } else {
-            addOrSearchVC.suggestionAdded(suggestion, isNew: false)
-        }
+        suggestion.addAction()
     }
 }

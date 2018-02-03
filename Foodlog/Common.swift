@@ -153,7 +153,7 @@ enum NutritionKind {
         case milligram  = 2
         case microgram  = 3
         
-        var short: String {
+        var suffix: String {
             switch self {
             case .calorie:      return ""
             case .gram:         return " g"

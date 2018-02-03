@@ -22,7 +22,7 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
     enum Mode {
         case addEntryForExistingFood
         case addEntryForNewFood
-        case editEntryForExistingFood
+        case editEntry
     }
     
     @IBOutlet weak var dateController:          DateController!
@@ -40,7 +40,7 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
     }
     var userChangedFoodInfo = false {
         didSet {
-            assert(mode == .editEntryForExistingFood)
+            assert(mode == .editEntry)
         }
     }
     var foodEntry: FoodEntry!
@@ -52,7 +52,7 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
         case .addEntryForExistingFood: fallthrough
         case .addEntryForNewFood:
             foodNameLabel.text = foodEntry.food?.name
-        case .editEntryForExistingFood:
+        case .editEntry:
             // Use original `Food` to filter `FoodEntry`s
             originalFood = foodEntry.food
             // Make unmanaged versions of model objects
@@ -124,7 +124,7 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
             day.foodEntries.append(foodEntry)
             DataStore.update(day)
             VCController.pop()
-        case .editEntryForExistingFood:
+        case .editEntry:
             if userChangedFoodInfo {
                 func warningString(_ count: Int) -> String {
                     return "Editing this food item will affect \(count) entries. This cannot be undone."

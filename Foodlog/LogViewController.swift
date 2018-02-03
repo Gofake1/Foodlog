@@ -32,10 +32,10 @@ class LogViewController: UIViewController {
             switch changes {
             case .initial:
                 tableView.reloadData()
-            case .update(_, let deletions, let insertions, let mods):
+            case .update(_, let deletes, let inserts, let mods):
                 tableView.performBatchUpdates({
-                    tableView.deleteSections(IndexSet(deletions), with: .automatic)
-                    tableView.insertSections(IndexSet(insertions), with: .automatic)
+                    tableView.deleteSections(IndexSet(deletes), with: .automatic)
+                    tableView.insertSections(IndexSet(inserts), with: .automatic)
                     tableView.reloadSections(IndexSet(mods), with: .automatic)
                 })
             case .error(let error):
@@ -82,11 +82,11 @@ extension LogViewController: UITableViewDataSource {
             switch valueRepresentation {
             case .fraction:
                 if let fraction = Fraction.decode(from: value)?.description {
-                    cell.detailTextLabel?.text = fraction+representation.short
+                    cell.detailTextLabel?.text = fraction+representation.suffix
                 }
             case .decimal:
                 if let decimal = value.to(Float.self).pretty {
-                    cell.detailTextLabel?.text = decimal+representation.short
+                    cell.detailTextLabel?.text = decimal+representation.suffix
                 }
             }
         }
@@ -122,7 +122,7 @@ extension Day {
 }
 
 extension MeasurementRepresentation {
-    var short: String {
+    var suffix: String {
         switch self {
         case .serving:      return ""
         case .milligram:    return " mg"
