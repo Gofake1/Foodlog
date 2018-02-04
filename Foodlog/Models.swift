@@ -93,6 +93,17 @@ final class FoodEntry: Object {
     override static func primaryKey() -> String? {
         return "id"
     }
+    
+    var measurementString: String? {
+        guard let valueRepresentation = MeasurementValueRepresentation(rawValue: measurementValueRepresentationRaw)
+            else { return nil }
+        switch valueRepresentation {
+        case .decimal:
+            return measurementValue.to(Float.self).pretty
+        case .fraction:
+            return Fraction.decode(from: measurementValue)?.description
+        }
+    }
 }
 
 final class Day: Object {

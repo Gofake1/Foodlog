@@ -8,7 +8,6 @@
 
 import UIKit
 
-// TODO: Show measurement in title
 class LogDetailViewController: PulleyDrawerViewController {
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var subtitleLabel: UILabel!
@@ -26,11 +25,12 @@ class LogDetailViewController: PulleyDrawerViewController {
     }
     
     override func viewDidLayoutSubviews() {
-        // Workaround: Multiple calls to `viewDidLayoutSubviews` will cause `attributes(_:_:)` to throw exception
+        // Workaround: Multiple calls to `viewDidLayoutSubviews` will cause `NSAttributedString.attributes(_:_:)` to
+        // throw exception
         guard viewBounds != view.bounds else { return }
         viewBounds = view.bounds
         
-        // Workaround: `textView` constraints don't update width
+        // Workaround: `textView`'s constraints don't update its width
         textView.bounds.size.width = view.bounds.width - 22
         
         detailTextAttributes = textView.attributedText.attributes(at: 0, effectiveRange: nil)
@@ -65,7 +65,7 @@ class LogDetailViewController: PulleyDrawerViewController {
     
     private func resetLogDetailText() {
         let textViewString = detailPresentable?.logDetailText(valueRepresentation)
-            ?? "Error: No information found for this entry."
+            ?? "Error: Log Detail Text"
         textView.attributedText = NSAttributedString(string: textViewString, attributes: detailTextAttributes)
     }
 }
@@ -78,7 +78,11 @@ class LogDetailViewController: PulleyDrawerViewController {
 
 extension FoodEntry /*: LogDetailPresentable*/ {
     var logDetailTitle: String {
-        return food?.name ?? "Unnamed"
+        guard let food = food,
+            let measurementString = measurementString,
+            let representation = MeasurementRepresentation(rawValue: food.measurementRepresentationRaw)
+            else { return "Error: Log Detail Title" }
+        return "\(measurementString)\(representation.longSuffix) \(food.name)"
     }
     
     var logDetailSubtitle: String {
@@ -100,7 +104,7 @@ extension FoodEntry /*: LogDetailPresentable*/ {
             }
         }
         
-        guard let food = food else { return "Error: No information found for this entry's food." }
+        guard let food = food else { return "Error: Food Information" }
         var str = ""
         str += detailString(food.calories, .calories)
         str += detailString(food.totalFat, .totalFat)
@@ -126,5 +130,18 @@ extension FoodEntry /*: LogDetailPresentable*/ {
         str += detailString(food.magnesium, .magnesium)
         str += detailString(food.potassium, .potassium)
         return str
+    }
+}
+
+extension MeasurementRepresentation {
+    var longSuffix: String {
+        switch self {
+        case .serving:      return "×"
+        case .milligram:    return " mg"
+        case .gram:         return " g"
+        case .ounce:        return " oz."
+        case .pound:        return " lb."
+        case .fluidOunce:   return " oz."
+        }
     }
 }

@@ -241,27 +241,16 @@ extension Day {
 
 extension FoodEntry {
     var measurementLabelText: String? {
-        if let valueRepresentation = MeasurementValueRepresentation(rawValue: measurementValueRepresentationRaw),
-            let representationRaw = food?.measurementRepresentationRaw,
-            let representation = MeasurementRepresentation(rawValue: representationRaw)
-        {
-            switch valueRepresentation {
-            case .fraction:
-                if let fraction = Fraction.decode(from: measurementValue)?.description {
-                    return fraction+representation.suffix
-                }
-            case .decimal:
-                if let decimal = measurementValue.to(Float.self).pretty {
-                    return decimal+representation.suffix
-                }
-            }
-        }
-        return nil
+        guard let food = food,
+            let measurementString = measurementString,
+            let representation = MeasurementRepresentation(rawValue: food.measurementRepresentationRaw)
+            else { return nil }
+        return measurementString+representation.shortSuffix
     }
 }
 
 extension MeasurementRepresentation {
-    var suffix: String {
+    var shortSuffix: String {
         switch self {
         case .serving:      return ""
         case .milligram:    return " mg"
