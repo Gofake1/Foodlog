@@ -16,6 +16,7 @@
 		6361320B201EAB46009F3EDB /* ViewControllerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6361320A201EAB46009F3EDB /* ViewControllerController.swift */; };
 		636E13952000DC73005C8AD8 /* LogDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 636E13942000DC73005C8AD8 /* LogDetailViewController.swift */; };
 		636E139D2000E19B005C8AD8 /* PulleyDrawerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 636E139C2000E19B005C8AD8 /* PulleyDrawerViewController.swift */; };
+		6379B8E1202D0CFE006BA684 /* OrderedSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6379B8E0202D0CFE006BA684 /* OrderedSet.swift */; };
 		637A344B1FF467AF00EA48BD /* PulleyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 637A342F1FF467AF00EA48BD /* PulleyViewController.swift */; };
 		637A344C1FF467AF00EA48BD /* PulleyPassthroughScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 637A34301FF467AF00EA48BD /* PulleyPassthroughScrollView.swift */; };
 		637A344D1FF467AF00EA48BD /* UIView+constrainToParent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 637A34311FF467AF00EA48BD /* UIView+constrainToParent.swift */; };
@@ -78,6 +79,7 @@
 		6361320A201EAB46009F3EDB /* ViewControllerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewControllerController.swift; sourceTree = "<group>"; };
 		636E13942000DC73005C8AD8 /* LogDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogDetailViewController.swift; sourceTree = "<group>"; };
 		636E139C2000E19B005C8AD8 /* PulleyDrawerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PulleyDrawerViewController.swift; sourceTree = "<group>"; };
+		6379B8E0202D0CFE006BA684 /* OrderedSet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderedSet.swift; sourceTree = "<group>"; };
 		637A342F1FF467AF00EA48BD /* PulleyViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PulleyViewController.swift; sourceTree = "<group>"; };
 		637A34301FF467AF00EA48BD /* PulleyPassthroughScrollView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PulleyPassthroughScrollView.swift; sourceTree = "<group>"; };
 		637A34311FF467AF00EA48BD /* UIView+constrainToParent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIView+constrainToParent.swift"; sourceTree = "<group>"; };
@@ -229,6 +231,7 @@
 				636E13942000DC73005C8AD8 /* LogDetailViewController.swift */,
 				6385AF291FE0A436009E8483 /* LogViewController.swift */,
 				63D9709B1FE4961700AA0168 /* Models.swift */,
+				6379B8E0202D0CFE006BA684 /* OrderedSet.swift */,
 				638C976B20030F8E00EC0D99 /* PillView.swift */,
 				636E139C2000E19B005C8AD8 /* PulleyDrawerViewController.swift */,
 				6361320A201EAB46009F3EDB /* ViewControllerController.swift */,
@@ -367,6 +370,7 @@
 				636E13952000DC73005C8AD8 /* LogDetailViewController.swift in Sources */,
 				6385AF2A1FE0A436009E8483 /* LogViewController.swift in Sources */,
 				63D9709C1FE4961700AA0168 /* Models.swift in Sources */,
+				6379B8E1202D0CFE006BA684 /* OrderedSet.swift in Sources */,
 				638C976C20030F8E00EC0D99 /* PillView.swift in Sources */,
 				636E139D2000E19B005C8AD8 /* PulleyDrawerViewController.swift in Sources */,
 				6361320B201EAB46009F3EDB /* ViewControllerController.swift in Sources */,

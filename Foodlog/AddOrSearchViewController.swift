@@ -10,6 +10,7 @@ import RealmSwift
 import UIKit
 
 // TODO: iPhone X UI
+// TODO: Clear filter when search text changes
 class AddOrSearchViewController: PulleyDrawerViewController {
     @IBOutlet weak var suggestionTableController: SuggestionTableController!
     @IBOutlet weak var suggestionTableViewVisibilityController: SuggestionTableViewVisibilityController!
@@ -99,19 +100,19 @@ class SuggestionTableController: NSObject {
         }
     }
     private var suggestions = [SuggestionType]()
-    private let sortedFoodEntries = DataStore.objects(FoodEntry.self, sortedBy: #keyPath(FoodEntry.date))!
+    private let lastAddedFoodEntries = DataStore.objects(FoodEntry.self)!.reversed()
     
     func update() {
         if searchText == "" {
-            var foods = Set<Food>()
-            for foodEntry in sortedFoodEntries {
+            let foods = OrderedSet<Food>()
+            for foodEntry in lastAddedFoodEntries {
                 if foods.count >= 5 {
                     break
                 }
                 guard let food = foodEntry.food else { continue }
-                foods.insert(food)
+                foods.append(food)
             }
-            suggestions = Array(foods)
+            suggestions = foods.items
         } else {
             guard let tags = DataStore.objects(Tag.self)?.filter("name BEGINSWITH %@", searchText),
                 let foods = DataStore.objects(Food.self)?.filter("name BEGINSWITH %@", searchText),
