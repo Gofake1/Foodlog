@@ -3,7 +3,7 @@
 Basically a UI wrapper for HealthKit nutrition information.
 
 Features:
-* Write to HealthKit store (TODO)
+* Write to HealthKit
 * Chronological, searchable history (TODO)
 * Barcode scanning (TODO)
 * Sync over iCloud (TODO)

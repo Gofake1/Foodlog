@@ -83,17 +83,16 @@ final class FoodEntry: Object {
     @objc dynamic var food: Food?
     @objc dynamic var measurementValueRepresentationRaw = MeasurementValueRepresentation.decimal.rawValue
     @objc dynamic var measurementValue = Data(Float(0.0))
-    @objc dynamic var healthKitStatus = HealthKitStatus.unwritten.rawValue
+    @objc dynamic var healthKitStatusRaw = HealthKitStatus.unwritten.rawValue
     let tags = List<Tag>()
-    
-    override static func indexedProperties() -> [String] {
-        return ["date", "healthKitStatus"]
+    var measurementFloat: Float {
+        switch MeasurementValueRepresentation(rawValue: measurementValueRepresentationRaw)! {
+        case .decimal:
+            return measurementValue.to(Float.self)
+        case .fraction:
+            return Fraction.decode(from: measurementValue)?.floatValue ?? 0.0
+        }
     }
-    
-    override static func primaryKey() -> String? {
-        return "id"
-    }
-    
     var measurementString: String? {
         guard let valueRepresentation = MeasurementValueRepresentation(rawValue: measurementValueRepresentationRaw)
             else { return nil }
@@ -103,6 +102,14 @@ final class FoodEntry: Object {
         case .fraction:
             return Fraction.decode(from: measurementValue)?.description
         }
+    }
+    
+    override static func indexedProperties() -> [String] {
+        return ["date", "healthKitStatusRaw"]
+    }
+    
+    override static func primaryKey() -> String? {
+        return "id"
     }
 }
 
@@ -162,5 +169,12 @@ extension Date {
             dc.minute = 0
         }
         return Calendar.current.date(from: dc) ?? self
+    }
+}
+
+extension Fraction {
+    var floatValue: Float? {
+        guard denominator > 0 else { return nil }
+        return Float(numerator) / Float(denominator)
     }
 }

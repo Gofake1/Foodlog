@@ -142,3 +142,37 @@ extension MeasurementRepresentation {
         }
     }
 }
+
+extension Fraction {
+    init?(_ string: String) {
+        enum ParseState {
+            case expectNumeratorDigit
+            case expectNumeratorDigitOrDivider
+            case expectDenominatorDigit
+        }
+        
+        var state = ParseState.expectNumeratorDigit
+        var numeratorString = ""
+        var denominatorString = ""
+        for character in string {
+            switch character {
+            case ".", ",", "/":
+                guard state == .expectNumeratorDigitOrDivider else { return nil }
+                state = .expectDenominatorDigit
+            case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9":
+                switch state {
+                case .expectNumeratorDigit:
+                    numeratorString += String(character)
+                    state = .expectNumeratorDigitOrDivider
+                case .expectNumeratorDigitOrDivider:
+                    numeratorString += String(character)
+                case .expectDenominatorDigit:
+                    denominatorString += String(character)
+                }
+            default:
+                return nil
+            }
+        }
+        self.init(numerator: Int(numeratorString) ?? 0, denominator: Int(denominatorString) ?? 1)
+    }
+}

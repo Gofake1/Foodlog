@@ -92,40 +92,6 @@ struct Fraction: Codable {
     var denominator = 1
 }
 
-extension Fraction {
-    init?(_ string: String) {
-        enum ParseState {
-            case expectNumeratorDigit
-            case expectNumeratorDigitOrDivider
-            case expectDenominatorDigit
-        }
-        
-        var state = ParseState.expectNumeratorDigit
-        var numeratorString = ""
-        var denominatorString = ""
-        for character in string {
-            switch character {
-            case ".", ",", "/":
-                guard state == .expectNumeratorDigitOrDivider else { return nil }
-                state = .expectDenominatorDigit
-            case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9":
-                switch state {
-                case .expectNumeratorDigit:
-                    numeratorString += String(character)
-                    state = .expectNumeratorDigitOrDivider
-                case .expectNumeratorDigitOrDivider:
-                    numeratorString += String(character)
-                case .expectDenominatorDigit:
-                    denominatorString += String(character)
-                }
-            default:
-                return nil
-            }
-        }
-        self.init(numerator: Int(numeratorString) ?? 0, denominator: Int(denominatorString) ?? 1)
-    }
-}
-
 extension Fraction: CustomStringConvertible {
     var description: String {
         if numerator == 0 {
@@ -231,33 +197,6 @@ enum NutritionKind {
     case magnesium
     case potassium
     
-    var dailyValueReal: Float? {
-        switch self {
-        case .calories:             return 2000
-        case .totalFat:             return 78
-        case .saturatedFat:         return 20
-        case .monounsaturatedFat:   return nil
-        case .polyunsaturatedFat:   return nil
-        case .transFat:             return nil
-        case .cholesterol:          return 300
-        case .sodium:               return 2300
-        case .totalCarbohydrate:    return 275
-        case .dietaryFiber:         return 28
-        case .sugars:               return 50
-        case .protein:              return 50
-        case .vitaminA:             return 900
-        case .vitaminB6:            return 1.7
-        case .vitaminB12:           return 2.4
-        case .vitaminC:             return 90
-        case .vitaminD:             return 20
-        case .vitaminE:             return 15
-        case .vitaminK:             return 120
-        case .calcium:              return 1300
-        case .iron:                 return 18
-        case .magnesium:            return 420
-        case .potassium:            return 4700
-        }
-    }
     var unit: Unit {
         switch self {
         case .calories:             return .calorie

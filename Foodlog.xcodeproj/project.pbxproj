@@ -11,6 +11,7 @@
 		6339CFB5200DDF2B00481E0D /* FoodNutritionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6339CFB4200DDF2B00481E0D /* FoodNutritionController.swift */; };
 		6339CFBB200DDFF700481E0D /* DateController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6339CFBA200DDFF700481E0D /* DateController.swift */; };
 		6339CFBD200DE01500481E0D /* MeasurementController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6339CFBC200DE01500481E0D /* MeasurementController.swift */; };
+		633D0A0620267FAD00721498 /* HealthKitStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 633D0A0520267FAD00721498 /* HealthKitStore.swift */; };
 		633E0C001FF87A4500290B61 /* AddOrEditFoodViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 633E0BFF1FF87A4500290B61 /* AddOrEditFoodViewController.swift */; };
 		635972381FF479A500D5CC97 /* AddOrSearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 635972371FF479A500D5CC97 /* AddOrSearchViewController.swift */; };
 		6361320B201EAB46009F3EDB /* ViewControllerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6361320A201EAB46009F3EDB /* ViewControllerController.swift */; };
@@ -73,6 +74,7 @@
 		6339CFB4200DDF2B00481E0D /* FoodNutritionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FoodNutritionController.swift; path = ../AddOrEditFood/FoodNutritionController.swift; sourceTree = "<group>"; };
 		6339CFBA200DDFF700481E0D /* DateController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DateController.swift; path = Foodlog/AddOrEditFood/DateController.swift; sourceTree = SOURCE_ROOT; };
 		6339CFBC200DE01500481E0D /* MeasurementController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MeasurementController.swift; path = Foodlog/AddOrEditFood/MeasurementController.swift; sourceTree = SOURCE_ROOT; };
+		633D0A0520267FAD00721498 /* HealthKitStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitStore.swift; sourceTree = "<group>"; };
 		633E0BFF1FF87A4500290B61 /* AddOrEditFoodViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddOrEditFoodViewController.swift; sourceTree = "<group>"; };
 		633E0C051FF8923700290B61 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		635972371FF479A500D5CC97 /* AddOrSearchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddOrSearchViewController.swift; sourceTree = "<group>"; };
@@ -228,6 +230,7 @@
 				6385AF271FE0A435009E8483 /* AppDelegate.swift */,
 				63CFF023200C541E0044B4E9 /* Common.swift */,
 				63DC132E200992C800A22983 /* DataStore.swift */,
+				633D0A0520267FAD00721498 /* HealthKitStore.swift */,
 				636E13942000DC73005C8AD8 /* LogDetailViewController.swift */,
 				6385AF291FE0A436009E8483 /* LogViewController.swift */,
 				63D9709B1FE4961700AA0168 /* Models.swift */,
@@ -367,6 +370,7 @@
 				6385AF281FE0A435009E8483 /* AppDelegate.swift in Sources */,
 				63CFF024200C541E0044B4E9 /* Common.swift in Sources */,
 				63DC132F200992C800A22983 /* DataStore.swift in Sources */,
+				633D0A0620267FAD00721498 /* HealthKitStore.swift in Sources */,
 				636E13952000DC73005C8AD8 /* LogDetailViewController.swift in Sources */,
 				6385AF2A1FE0A436009E8483 /* LogViewController.swift in Sources */,
 				63D9709C1FE4961700AA0168 /* Models.swift in Sources */,

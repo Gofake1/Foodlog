@@ -9,6 +9,8 @@
 import RealmSwift
 import UIKit
 
+// TODO: Make Realm and HealthKit transactions atomic
+// TODO: Inset table
 class LogViewController: UIViewController {
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var defaultLogTableController: DefaultLogTableController!
@@ -110,11 +112,13 @@ extension DefaultLogTableController: UITableViewDataSource {
                    forRowAt indexPath: IndexPath) {
         guard editingStyle == .delete else { return }
         if sortedDays[indexPath.section].sortedFoodEntries.count <= 1 {
+            HealthKitStore.shared.delete([sortedDays[indexPath.section].sortedFoodEntries[indexPath.row].id], {})
             DataStore.delete(sortedDays[indexPath.section].sortedFoodEntries[indexPath.row],
                              withoutNotifying: [daysChangeToken])
             DataStore.delete(sortedDays[indexPath.section], withoutNotifying: [daysChangeToken])
             tableView.deleteSections(IndexSet([indexPath.section]), with: .automatic)
         } else {
+            HealthKitStore.shared.delete([sortedDays[indexPath.section].sortedFoodEntries[indexPath.row].id], {})
             DataStore.delete(sortedDays[indexPath.section].sortedFoodEntries[indexPath.row],
                              withoutNotifying: [daysChangeToken])
             tableView.deleteRows(at: [indexPath], with: .automatic)
@@ -194,6 +198,7 @@ extension FilteredLogTableController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle,
                    forRowAt indexPath: IndexPath) {
         guard editingStyle == .delete else { return }
+        HealthKitStore.shared.delete([sortedFilteredFoodEntries[indexPath.row].id], {})
         DataStore.delete(sortedFilteredFoodEntries[indexPath.row], withoutNotifying: [foodEntriesChangeToken])
         tableView.deleteRows(at: [indexPath], with: .automatic)
     }

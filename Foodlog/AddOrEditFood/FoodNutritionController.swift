@@ -301,6 +301,36 @@ extension FoodNutritionController: UITextFieldDelegate {
     }
 }
 
+extension NutritionKind {
+    var dailyValueReal: Float? {
+        switch self {
+        case .calories:             return 2000
+        case .totalFat:             return 78
+        case .saturatedFat:         return 20
+        case .monounsaturatedFat:   return nil
+        case .polyunsaturatedFat:   return nil
+        case .transFat:             return nil
+        case .cholesterol:          return 300
+        case .sodium:               return 2300
+        case .totalCarbohydrate:    return 275
+        case .dietaryFiber:         return 28
+        case .sugars:               return 50
+        case .protein:              return 50
+        case .vitaminA:             return 900
+        case .vitaminB6:            return 1.7
+        case .vitaminB12:           return 2.4
+        case .vitaminC:             return 90
+        case .vitaminD:             return 20
+        case .vitaminE:             return 15
+        case .vitaminK:             return 120
+        case .calcium:              return 1300
+        case .iron:                 return 18
+        case .magnesium:            return 420
+        case .potassium:            return 4700
+        }
+    }
+}
+
 extension NutritionKind.Unit {
     var buttonTitle: String {
         switch self {

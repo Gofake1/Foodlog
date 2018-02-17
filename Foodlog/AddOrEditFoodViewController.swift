@@ -108,7 +108,8 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
         userChangedFoodInfo = true
     }
     
-    /// - postcondition: Writes to Realm
+    // TODO: Make Realm and HealthKit transactions atomic
+    /// - postcondition: Writes to Realm and HealthKit
     @IBAction func addFoodEntryToLog() {
         view.endEditing(false)
         
@@ -123,6 +124,7 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
             }
             day.foodEntries.append(foodEntry)
             DataStore.update(day)
+            HealthKitStore.shared.save([foodEntry.hkObject].compactMap { $0 }, {})
             VCController.pop()
         case .editEntry:
             if userChangedFoodInfo {
@@ -131,22 +133,18 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
                 }
                 
                 let matchingFood = NSPredicate(format: "food == %@", originalFood!)
-                guard let affectedFoodEntries = DataStore.objects(FoodEntry.self, filteredBy: matchingFood)
+                guard let _affectedFoodEntries = DataStore.objects(FoodEntry.self, filteredBy: matchingFood)
                     else { return }
+                let affectedFoodEntries = Array(_affectedFoodEntries)
                 UIApplication.shared.alert(warning: warningString(affectedFoodEntries.count)) { [weak self] in
                     guard let foodEntry = self?.foodEntry else { return }
                     DataStore.update(foodEntry)
-                    for entry in affectedFoodEntries {
-                        if entry.healthKitStatus == HealthKitStatus.writtenAndUpToDate.rawValue {
-                            let unmanagedEntry = FoodEntry(value: entry)
-                            unmanagedEntry.healthKitStatus = HealthKitStatus.writtenAndNeedsUpdate.rawValue
-                            DataStore.update(unmanagedEntry)
-                        }
-                    }
+                    HealthKitStore.shared.update(affectedFoodEntries)
                     VCController.pop()
                 }
             } else {
                 DataStore.update(foodEntry)
+                HealthKitStore.shared.update([foodEntry!])
                 VCController.pop()
             }
         }
@@ -178,5 +176,34 @@ extension Date {
     var startOfDay: Date {
         let dc = Calendar.current.dateComponents([.year, .month, .day], from: self)
         return Calendar.current.date(from: dc) ?? self
+    }
+}
+
+extension Array where Element == FoodEntry {
+    func changeHealthKitStatus(from matching: [HealthKitStatus], to new: HealthKitStatus) {
+        for entry in self {
+            if matching.contains(where: { $0.rawValue == entry.healthKitStatusRaw }) {
+                let unmanagedEntry = FoodEntry(value: entry)
+                unmanagedEntry.healthKitStatusRaw = new.rawValue
+                DataStore.update(unmanagedEntry)
+            }
+        }
+    }
+}
+
+extension HealthKitStore {
+    func update(_ affectedFoodEntries: [FoodEntry]) {
+        affectedFoodEntries.changeHealthKitStatus(from: [.writtenAndUpToDate], to: .writtenAndNeedsUpdate)
+        let idsToDelete = affectedFoodEntries.map { $0.id }
+        let hkObjectsToSave = affectedFoodEntries.compactMap { $0.hkObject }
+        delete(idsToDelete) { [weak self] in
+            self?.save(hkObjectsToSave) {
+                // Workaround: Realm expects to be on the main queue
+                DispatchQueue.main.async {
+                    affectedFoodEntries.changeHealthKitStatus(from: [.writtenAndNeedsUpdate, .unwritten],
+                                                              to: .writtenAndUpToDate)
+                }
+            }
+        }
     }
 }
