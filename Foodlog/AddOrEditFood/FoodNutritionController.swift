@@ -130,56 +130,54 @@ class FoodNutritionController: NSObject {
     }
     typealias Info = (field: UITextField, get: () -> Float?, set: (Float) -> (), kind: NutritionKind,
         representation: NutritionKind.ValueRepresentation)
-    private lazy var fields: [Int: Info] = {
-        return [
-            0:  Info(caloriesField, { [weak self] in return self?.calories },
-                     { [weak self] in self?.calories = $0 }, .calories, .real),
-            1:  Info(totalFatField, { [weak self] in return self?.totalFat },
-                     { [weak self] in self?.totalFat = $0 }, .totalFat, .percentage),
-            2:  Info(saturatedFatField, { [weak self] in return self?.saturatedFat },
-                     { [weak self] in self?.saturatedFat = $0 }, .saturatedFat, .percentage),
-            3:  Info(monounsaturatedFatField, { [weak self] in return self?.monounsaruratedFat },
-                     { [weak self] in self?.monounsaruratedFat = $0 }, .monounsaturatedFat, .real),
-            4:  Info(polyunsaturatedFatField, { [weak self] in return self?.polyunsaturatedFat },
-                     { [weak self] in self?.polyunsaturatedFat = $0 }, .polyunsaturatedFat, .real),
-            5:  Info(transFatField, { [weak self] in return self?.transFat },
-                     { [weak self] in self?.transFat = $0 }, .transFat, .real),
-            6:  Info(cholesterolField, { [weak self] in return self?.cholesterol },
-                     { [weak self] in self?.cholesterol = $0 }, .cholesterol, .percentage),
-            7:  Info(sodiumField, { [weak self] in return self?.sodium },
-                     { [weak self] in self?.sodium = $0 }, .sodium, .percentage),
-            8:  Info(totalCarbohydrateField, { [weak self] in return self?.totalCarbohydrate },
-                     { [weak self] in self?.totalCarbohydrate = $0 }, .totalCarbohydrate, .percentage),
-            9:  Info(dietaryFiberField, { [weak self] in return self?.dietaryFiber },
-                     { [weak self] in self?.dietaryFiber = $0 }, .dietaryFiber, .percentage),
-            10: Info(sugarsField, { [weak self] in return self?.sugars },
-                     { [weak self] in self?.sugars = $0 }, .sugars, .real),
-            11: Info(proteinField, { [weak self] in return self?.protein },
-                     { [weak self] in self?.protein = $0 }, .protein, .percentage),
-            12: Info(vitaminAField, { [weak self] in return self?.vitaminA },
-                     { [weak self] in self?.vitaminA = $0 }, .vitaminA, .percentage),
-            13: Info(vitaminB6Field, { [weak self] in return self?.vitaminB6 },
-                     { [weak self] in self?.vitaminB6 = $0 }, .vitaminB6, .percentage),
-            14: Info(vitaminB12Field, { [weak self] in return self?.vitaminB12 },
-                     { [weak self] in self?.vitaminB12 = $0 }, .vitaminB12, .percentage),
-            15: Info(vitaminCField, { [weak self] in return self?.vitaminC },
-                     { [weak self] in self?.vitaminC = $0 }, .vitaminC, .percentage),
-            16: Info(vitaminDField, { [weak self] in return self?.vitaminD },
-                     { [weak self] in self?.vitaminD = $0 }, .vitaminD, .percentage),
-            17: Info(vitaminEField, { [weak self] in return self?.vitaminE },
-                     { [weak self] in self?.vitaminE = $0 }, .vitaminE, .percentage),
-            18: Info(vitaminKField, { [weak self] in return self?.vitaminK },
-                     { [weak self] in self?.vitaminK = $0 }, .vitaminK, .percentage),
-            19: Info(calciumField, { [weak self] in return self?.calcium },
-                     { [weak self] in self?.calcium = $0 }, .calcium, .percentage),
-            20: Info(ironField, { [weak self] in return self?.iron },
-                     { [weak self] in self?.iron = $0 }, .iron, .percentage),
-            21: Info(magnesiumField, { [weak self] in return self?.magnesium },
-                     { [weak self] in self?.magnesium = $0 }, .magnesium, .percentage),
-            22: Info(potassiumField, { [weak self] in return self?.potassium },
-                     { [weak self] in self?.potassium = $0 }, .potassium, .percentage),
-        ]
-    }()
+    private lazy var fields = [
+        0:  Info(caloriesField, { [weak self] in return self?.calories },
+                 { [weak self] in self?.calories = $0 }, .calories, .real),
+        1:  Info(totalFatField, { [weak self] in return self?.totalFat },
+                 { [weak self] in self?.totalFat = $0 }, .totalFat, .real),
+        2:  Info(saturatedFatField, { [weak self] in return self?.saturatedFat },
+                 { [weak self] in self?.saturatedFat = $0 }, .saturatedFat, .real),
+        3:  Info(monounsaturatedFatField, { [weak self] in return self?.monounsaruratedFat },
+                 { [weak self] in self?.monounsaruratedFat = $0 }, .monounsaturatedFat, .real),
+        4:  Info(polyunsaturatedFatField, { [weak self] in return self?.polyunsaturatedFat },
+                 { [weak self] in self?.polyunsaturatedFat = $0 }, .polyunsaturatedFat, .real),
+        5:  Info(transFatField, { [weak self] in return self?.transFat },
+                 { [weak self] in self?.transFat = $0 }, .transFat, .real),
+        6:  Info(cholesterolField, { [weak self] in return self?.cholesterol },
+                 { [weak self] in self?.cholesterol = $0 }, .cholesterol, .real),
+        7:  Info(sodiumField, { [weak self] in return self?.sodium },
+                 { [weak self] in self?.sodium = $0 }, .sodium, .real),
+        8:  Info(totalCarbohydrateField, { [weak self] in return self?.totalCarbohydrate },
+                 { [weak self] in self?.totalCarbohydrate = $0 }, .totalCarbohydrate, .real),
+        9:  Info(dietaryFiberField, { [weak self] in return self?.dietaryFiber },
+                 { [weak self] in self?.dietaryFiber = $0 }, .dietaryFiber, .real),
+        10: Info(sugarsField, { [weak self] in return self?.sugars },
+                 { [weak self] in self?.sugars = $0 }, .sugars, .real),
+        11: Info(proteinField, { [weak self] in return self?.protein },
+                 { [weak self] in self?.protein = $0 }, .protein, .real),
+        12: Info(vitaminAField, { [weak self] in return self?.vitaminA },
+                 { [weak self] in self?.vitaminA = $0 }, .vitaminA, .percentage),
+        13: Info(vitaminB6Field, { [weak self] in return self?.vitaminB6 },
+                 { [weak self] in self?.vitaminB6 = $0 }, .vitaminB6, .percentage),
+        14: Info(vitaminB12Field, { [weak self] in return self?.vitaminB12 },
+                 { [weak self] in self?.vitaminB12 = $0 }, .vitaminB12, .percentage),
+        15: Info(vitaminCField, { [weak self] in return self?.vitaminC },
+                 { [weak self] in self?.vitaminC = $0 }, .vitaminC, .percentage),
+        16: Info(vitaminDField, { [weak self] in return self?.vitaminD },
+                 { [weak self] in self?.vitaminD = $0 }, .vitaminD, .percentage),
+        17: Info(vitaminEField, { [weak self] in return self?.vitaminE },
+                 { [weak self] in self?.vitaminE = $0 }, .vitaminE, .percentage),
+        18: Info(vitaminKField, { [weak self] in return self?.vitaminK },
+                 { [weak self] in self?.vitaminK = $0 }, .vitaminK, .percentage),
+        19: Info(calciumField, { [weak self] in return self?.calcium },
+                 { [weak self] in self?.calcium = $0 }, .calcium, .percentage),
+        20: Info(ironField, { [weak self] in return self?.iron },
+                 { [weak self] in self?.iron = $0 }, .iron, .percentage),
+        21: Info(magnesiumField, { [weak self] in return self?.magnesium },
+                 { [weak self] in self?.magnesium = $0 }, .magnesium, .percentage),
+        22: Info(potassiumField, { [weak self] in return self?.potassium },
+                 { [weak self] in self?.potassium = $0 }, .potassium, .percentage)
+    ]
     private var mode: AddOrEditFoodViewController.Mode!
     
     func setup(_ mode: AddOrEditFoodViewController.Mode) {
@@ -204,8 +202,10 @@ class FoodNutritionController: NSObject {
     }
     
     @IBAction func chooseValueRepresentation(_ sender: UISegmentedControl) {
-        guard let textField = addOrEditVC.activeNutritionField else { return }
-        fields[textField.tag]?.representation = NutritionKind.ValueRepresentation(rawValue: sender.selectedSegmentIndex)!
+        guard let textField = addOrEditVC.activeNutritionField,
+            let representation = NutritionKind.ValueRepresentation(rawValue: sender.selectedSegmentIndex)
+            else { return }
+        fields[textField.tag]?.representation = representation
     }
     
     private func moveToNutritionField(_ calculate: (Int) -> Int) {

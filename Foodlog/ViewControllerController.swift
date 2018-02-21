@@ -25,7 +25,7 @@ final class VCController {
     static var drawers = [PulleyDrawerViewController]()
     static var drawerState = [DrawerState]()
     static var logVC: LogViewController!
-    static var pulleyVC: PulleyViewController = makeVC(.pulley)
+    static let pulleyVC: PulleyViewController = makeVC(.pulley)
     private static let storyboard = UIStoryboard(name: "Main", bundle: nil)
     
     static func addFoodEntry(_ foodEntry: FoodEntry, isNew: Bool) {

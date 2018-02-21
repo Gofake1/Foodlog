@@ -22,22 +22,20 @@ class MeasurementController: NSObject {
     @IBOutlet weak var field: UITextField!
     @IBOutlet weak var perRepresentationLabel: UILabel!
     
-    private var measurementRepresentation: MeasurementRepresentation {
-        get { return MeasurementRepresentation(rawValue: addOrEditVC.foodEntry.food!.measurementRepresentationRaw)
-            ?? .gram }
+    private var measurementRepresentation: Food.MeasurementRepresentation {
+        get { return addOrEditVC.foodEntry.food!.measurementRepresentation }
         set { addOrEditVC.foodEntry.food?.measurementRepresentationRaw = newValue.rawValue }
     }
     private var measurementValue: Data {
         get { return addOrEditVC.foodEntry.measurementValue }
         set { addOrEditVC.foodEntry.measurementValue = newValue }
     }
-    private var measurementValueRepresentation: MeasurementValueRepresentation {
-        get { return MeasurementValueRepresentation(rawValue: addOrEditVC.foodEntry.measurementValueRepresentationRaw)
-            ?? .decimal }
+    private var measurementValueRepresentation: FoodEntry.MeasurementValueRepresentation {
+        get { return addOrEditVC.foodEntry.measurementValueRepresentation }
         set { addOrEditVC.foodEntry.measurementValueRepresentationRaw = newValue.rawValue }
     }
     private lazy var representationPicker: UIAlertController = {
-        func action(_ representation: MeasurementRepresentation) -> UIAlertAction {
+        func action(_ representation: Food.MeasurementRepresentation) -> UIAlertAction {
             return UIAlertAction(title: representation.plural, style: .default, handler: { [weak self] (_) in
                 guard let _self = self else { return }
                 if _self.mode == .editEntry {
@@ -46,7 +44,7 @@ class MeasurementController: NSObject {
                     _self.measurementRepresentation = representation
                 }
                 _self.representationButton.setTitle(representation.plural, for: .normal)
-                _self.perRepresentationLabel.text = "Information Per \(representation)"
+                _self.perRepresentationLabel.text = "Information Per \(representation.singular)"
             })
         }
         
@@ -72,11 +70,11 @@ class MeasurementController: NSObject {
         case .decimal:  field.text = measurementValue.to(Float.self).pretty
         case .fraction: field.text = (Fraction.decode(from: measurementValue) ?? Fraction()).description
         }
-        perRepresentationLabel.text = "Information Per \(measurementRepresentation)"
+        perRepresentationLabel.text = "Information Per \(measurementRepresentation.singular)"
     }
     
     @IBAction func chooseValueRepresentation(_ sender: UISegmentedControl) {
-        measurementValueRepresentation = MeasurementValueRepresentation(rawValue: sender.selectedSegmentIndex)!
+        measurementValueRepresentation = FoodEntry.MeasurementValueRepresentation(rawValue: sender.selectedSegmentIndex)!
     }
     
     @IBAction func showRepresentationsMenu() {
@@ -130,7 +128,7 @@ extension MeasurementController: UITextFieldDelegate {
     }
 }
 
-extension MeasurementRepresentation {
+extension Food.MeasurementRepresentation {
     var plural: String {
         switch self {
         case .serving:      return "Servings"
@@ -139,6 +137,17 @@ extension MeasurementRepresentation {
         case .ounce:        return "Ounces"
         case .pound:        return "Pounds"
         case .fluidOunce:   return "Fluid Ounces"
+        }
+    }
+    
+    var singular: String {
+        switch self {
+        case .serving:      return "Serving"
+        case .milligram:    return "Milligram"
+        case .gram:         return "Gram"
+        case .ounce:        return "Ounce"
+        case .pound:        return "Pound"
+        case .fluidOunce:   return "Fluid Oz."
         }
     }
 }

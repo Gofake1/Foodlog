@@ -10,7 +10,6 @@ import RealmSwift
 import UIKit
 
 // TODO: Make Realm and HealthKit transactions atomic
-// TODO: Inset table
 class LogViewController: UIViewController {
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var defaultLogTableController: DefaultLogTableController!
@@ -26,6 +25,9 @@ class LogViewController: UIViewController {
     override func viewDidLoad() {
         currentLogTableController = defaultLogTableController
         currentLogTableController.setup(tableView)
+        
+        tableView.contentInset = UIEdgeInsets(top: 0.0, left: 0.0, bottom: 64.0, right: 0.0)
+        tableView.scrollIndicatorInsets = UIEdgeInsets(top: 0.0, left: 0.0, bottom: 64.0, right: 0.0)
     }
     
     func clearTableSelection() {
@@ -58,7 +60,7 @@ class LogTableController: NSObject {
 
 class DefaultLogTableController: LogTableController {
     private var daysChangeToken: NotificationToken!
-    private let sortedDays = DataStore.objects(Day.self, sortedBy: #keyPath(Day.startOfDay))!
+    private let sortedDays = DataStore.days.sorted(byKeyPath: #keyPath(Day.startOfDay))
 
     override func setup(_ tableView: UITableView) {
         tableView.dataSource = self
@@ -100,8 +102,8 @@ extension DefaultLogTableController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath) as! DetailSubtitleTableViewCell
         let foodEntry = sortedDays[indexPath.section].sortedFoodEntries[indexPath.row]
-        cell.displayFraction = foodEntry.measurementValueRepresentationRaw ==
-            MeasurementValueRepresentation.fraction.rawValue
+        cell.displayFraction = foodEntry.measurementValueRepresentation ==
+            FoodEntry.MeasurementValueRepresentation.fraction
         cell.titleLabel?.text = foodEntry.food?.name ?? "Unnamed"
         cell.subtitleLabel?.text = foodEntry.date.noDateShortTimeString
         cell.detailLabel?.text = foodEntry.measurementLabelText ?? "?"
@@ -160,8 +162,8 @@ class FilteredLogTableController: LogTableController {
     
     // TODO: Composable filtering
     func filter(_ food: Food) {
-        sortedFilteredFoodEntries = DataStore.objects(FoodEntry.self, filteredBy:
-            NSPredicate(format: "food == %@", food))?.sorted(byKeyPath: #keyPath(FoodEntry.date), ascending: false)
+        sortedFilteredFoodEntries = DataStore.foodEntries.filter("food == %@", food)
+            .sorted(byKeyPath: #keyPath(FoodEntry.date), ascending: false)
         foodEntriesChangeToken = sortedFilteredFoodEntries.observe { [weak self] in
             switch $0 {
             case .initial:
@@ -187,8 +189,8 @@ extension FilteredLogTableController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath) as! DetailSubtitleTableViewCell
         let foodEntry = sortedFilteredFoodEntries[indexPath.row]
-        cell.displayFraction = foodEntry.measurementValueRepresentationRaw ==
-            MeasurementValueRepresentation.fraction.rawValue
+        cell.displayFraction = foodEntry.measurementValueRepresentation ==
+            FoodEntry.MeasurementValueRepresentation.fraction
         cell.titleLabel?.text = foodEntry.food?.name
         cell.subtitleLabel?.text = foodEntry.date.mediumDateShortTimeString
         cell.detailLabel?.text = foodEntry.measurementLabelText ?? "?"
@@ -246,15 +248,12 @@ extension Day {
 
 extension FoodEntry {
     var measurementLabelText: String? {
-        guard let food = food,
-            let measurementString = measurementString,
-            let representation = MeasurementRepresentation(rawValue: food.measurementRepresentationRaw)
-            else { return nil }
-        return measurementString+representation.shortSuffix
+        guard let food = food, let measurementString = measurementString else { return nil }
+        return measurementString+food.measurementRepresentation.shortSuffix
     }
 }
 
-extension MeasurementRepresentation {
+extension Food.MeasurementRepresentation {
     var shortSuffix: String {
         switch self {
         case .serving:      return ""

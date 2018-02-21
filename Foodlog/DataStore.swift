@@ -9,29 +9,18 @@
 import RealmSwift
 import UIKit
 
-class DataStore {
+final class DataStore {
+    static let days                 = read { $0.objects(Day.self) }!
+    static let foods                = read { $0.objects(Food.self) }!
+    static let foodEntries          = read { $0.objects(FoodEntry.self) }!
+    static let groups               = read { $0.objects(FoodGroupingTemplate.self) }!
+    static let tags                 = read { $0.objects(Tag.self) }!
     private static var realm = try! Realm()
     
     static func object<A: Object, B>(_ type: A.Type, primaryKey: B) -> A? {
         return read { $0.object(ofType: type, forPrimaryKey: primaryKey) } ?? nil
     }
-    
-    static func objects<A: Object>(_ type: A.Type) -> Results<A>? {
-        return read { $0.objects(type) }
-    }
-    
-    static func objects<A: Object>(_ type: A.Type, filteredBy predicate: NSPredicate) -> Results<A>? {
-        return read { $0.objects(type).filter(predicate) }
-    }
-    
-    static func objects<A: Object>(_ type: A.Type, sortedBy keyPath: String) -> Results<A>? {
-        return read { $0.objects(type).sorted(byKeyPath: keyPath, ascending: false) }
-    }
-    
-    static func count<A: Object>(_ type: A.Type) -> Int {
-        return read { $0.objects(type).count } ?? 0
-    }
-    
+        
     static func update(_ object: Object) {
         write { $0.add(object, update: true) }
     }

@@ -106,12 +106,6 @@ extension Fraction: CustomStringConvertible {
 
 extension Fraction: JSONCoderProvided {}
 
-enum HealthKitStatus: Int {
-    case unwritten              = 0
-    case writtenAndUpToDate     = 1
-    case writtenAndNeedsUpdate  = 2
-}
-
 protocol JSONCoderProvided {}
 
 extension JSONCoderProvided where Self: Codable {
@@ -122,33 +116,6 @@ extension JSONCoderProvided where Self: Codable {
     func encode() -> Data? {
         return try? _jsonEncoder.encode(self)
     }
-}
-
-enum MeasurementRepresentation: Int {
-    case serving    = 0
-    case milligram  = 1
-    case gram       = 2
-    case ounce      = 3
-    case pound      = 4
-    case fluidOunce = 5
-}
-
-extension MeasurementRepresentation: CustomStringConvertible {
-    var description: String {
-        switch self {
-        case .serving:      return "Serving"
-        case .milligram:    return "Milligram"
-        case .gram:         return "Gram"
-        case .ounce:        return "Ounce"
-        case .pound:        return "Pound"
-        case .fluidOunce:   return "Fluid Oz."
-        }
-    }
-}
-
-enum MeasurementValueRepresentation: Int {
-    case decimal    = 0
-    case fraction   = 1
 }
 
 enum NutritionKind {

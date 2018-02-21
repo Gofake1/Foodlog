@@ -14,24 +14,15 @@ class LogDetailViewController: PulleyDrawerViewController {
     @IBOutlet weak var textView: UITextView!
     @IBOutlet weak var textViewHeightConstraint: NSLayoutConstraint!
     
-    var detailPresentable: FoodEntry? //LogDetailPresentable?
+    var detailPresentable: FoodEntry! //LogDetailPresentable!
     private var detailTextAttributes: [NSAttributedStringKey: Any]!
-    private var viewBounds = CGRect()
     private var valueRepresentation = NutritionKind.ValueRepresentation.real
     
-    override func viewDidLoad() {
-        titleLabel.text = detailPresentable?.logDetailTitle
-        subtitleLabel.text = detailPresentable?.logDetailSubtitle
-    }
-    
-    override func viewDidLayoutSubviews() {
-        // Workaround: Multiple calls to `viewDidLayoutSubviews` will cause `NSAttributedString.attributes(_:_:)` to
-        // throw exception
-        guard viewBounds != view.bounds else { return }
-        viewBounds = view.bounds
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
         
-        // Workaround: `textView`'s constraints don't update its width
-        textView.bounds.size.width = view.bounds.width - 22
+        titleLabel.text = detailPresentable.logDetailTitle
+        subtitleLabel.text = detailPresentable.logDetailSubtitle
         
         detailTextAttributes = textView.attributedText.attributes(at: 0, effectiveRange: nil)
         let paragraphStyle = NSParagraphStyle.default.mutableCopy() as! NSMutableParagraphStyle
@@ -46,8 +37,7 @@ class LogDetailViewController: PulleyDrawerViewController {
     }
     
     @IBAction func edit() {
-        guard let foodEntry = detailPresentable else { return }
-        VCController.editFoodEntry(foodEntry)
+        VCController.editFoodEntry(detailPresentable)
     }
     
     @IBAction func cancel() {
@@ -64,8 +54,7 @@ class LogDetailViewController: PulleyDrawerViewController {
     }
     
     private func resetLogDetailText() {
-        let textViewString = detailPresentable?.logDetailText(valueRepresentation)
-            ?? "Error: Log Detail Text"
+        let textViewString = detailPresentable.logDetailText(valueRepresentation)
         textView.attributedText = NSAttributedString(string: textViewString, attributes: detailTextAttributes)
     }
 }
@@ -78,11 +67,8 @@ class LogDetailViewController: PulleyDrawerViewController {
 
 extension FoodEntry /*: LogDetailPresentable*/ {
     var logDetailTitle: String {
-        guard let food = food,
-            let measurementString = measurementString,
-            let representation = MeasurementRepresentation(rawValue: food.measurementRepresentationRaw)
-            else { return "Error: Log Detail Title" }
-        return "\(measurementString)\(representation.longSuffix) \(food.name)"
+        guard let food = food, let measurementString = measurementString else { return "Error: Log Detail Title" }
+        return "\(measurementString)\(food.measurementRepresentation.longSuffix) \(food.name)"
     }
     
     var logDetailSubtitle: String {
@@ -92,19 +78,20 @@ extension FoodEntry /*: LogDetailPresentable*/ {
     func logDetailText(_ representation: NutritionKind.ValueRepresentation) -> String {
         func detailString(_ real: Float, _ kind: NutritionKind) -> String {
             guard real != 0.0 else { return "" }
+            let totalValue = real * measurementFloat
             switch representation {
             case .percentage:
-                if let percentage = real.dailyValuePercentageFromReal(kind)?.pretty {
+                if let percentage = totalValue.dailyValuePercentageFromReal(kind)?.pretty {
                     return "\(kind)\t\(percentage)%\n"
                 } else {
-                    return "\(kind)\t\(real.pretty!)\(kind.unit.suffix)\n"
+                    return "\(kind)\t\(totalValue.pretty!)\(kind.unit.suffix)\n"
                 }
             case .real:
-                return "\(kind)\t\(real.pretty!)\(kind.unit.suffix)\n"
+                return "\(kind)\t\(totalValue.pretty!)\(kind.unit.suffix)\n"
             }
         }
         
-        guard let food = food else { return "Error: Food Information" }
+        guard let food = food else { return "Error: Food Information\n" }
         var str = ""
         str += detailString(food.calories, .calories)
         str += detailString(food.totalFat, .totalFat)
@@ -129,11 +116,14 @@ extension FoodEntry /*: LogDetailPresentable*/ {
         str += detailString(food.iron, .iron)
         str += detailString(food.magnesium, .magnesium)
         str += detailString(food.potassium, .potassium)
+        if str == "" {
+            str = "No Information\n"
+        }
         return str
     }
 }
 
-extension MeasurementRepresentation {
+extension Food.MeasurementRepresentation {
     var longSuffix: String {
         switch self {
         case .serving:      return "×"

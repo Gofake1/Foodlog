@@ -19,7 +19,7 @@ private var _store: HKHealthStore!
 // Cache transactions that occur before authorization
 private var _cachedHealthKitTransactions = [CachedHealthKitTransaction]()
 
-class HealthKitStore {
+final class HealthKitStore {
     // We use a singleton because Apple recommends asking for authorization at the point of use:
     // https://developer.apple.com/ios/human-interface-guidelines/technologies/healthkit/
     // This rules out using static members because we don't want to ask for authorization immediately after app

@@ -132,10 +132,7 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
                     return "Editing this food item will affect \(count) entries. This cannot be undone."
                 }
                 
-                let matchingFood = NSPredicate(format: "food == %@", originalFood!)
-                guard let _affectedFoodEntries = DataStore.objects(FoodEntry.self, filteredBy: matchingFood)
-                    else { return }
-                let affectedFoodEntries = Array(_affectedFoodEntries)
+                let affectedFoodEntries = Array(DataStore.foodEntries.filter("food == %@", originalFood!))
                 UIApplication.shared.alert(warning: warningString(affectedFoodEntries.count)) { [weak self] in
                     guard let foodEntry = self?.foodEntry else { return }
                     DataStore.update(foodEntry)
@@ -180,9 +177,9 @@ extension Date {
 }
 
 extension Array where Element == FoodEntry {
-    func changeHealthKitStatus(from matching: [HealthKitStatus], to new: HealthKitStatus) {
+    func changeHealthKitStatus(from matching: [FoodEntry.HealthKitStatus], to new: FoodEntry.HealthKitStatus) {
         for entry in self {
-            if matching.contains(where: { $0.rawValue == entry.healthKitStatusRaw }) {
+            if matching.contains(where: { $0 == entry.healthKitStatus }) {
                 let unmanagedEntry = FoodEntry(value: entry)
                 unmanagedEntry.healthKitStatusRaw = new.rawValue
                 DataStore.update(unmanagedEntry)
@@ -198,7 +195,6 @@ extension HealthKitStore {
         let hkObjectsToSave = affectedFoodEntries.compactMap { $0.hkObject }
         delete(idsToDelete) { [weak self] in
             self?.save(hkObjectsToSave) {
-                // Workaround: Realm expects to be on the main queue
                 DispatchQueue.main.async {
                     affectedFoodEntries.changeHealthKitStatus(from: [.writtenAndNeedsUpdate, .unwritten],
                                                               to: .writtenAndUpToDate)

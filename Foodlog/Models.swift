@@ -20,6 +20,15 @@ final class Tag: Object {
 }
 
 final class Food: Object {
+    enum MeasurementRepresentation: Int {
+        case serving    = 0
+        case milligram  = 1
+        case gram       = 2
+        case ounce      = 3
+        case pound      = 4
+        case fluidOunce = 5
+    }
+    
     @objc dynamic var id = UUID().uuidString
     @objc dynamic var name = ""
     @objc dynamic var measurementRepresentationRaw = MeasurementRepresentation.serving.rawValue
@@ -49,6 +58,9 @@ final class Food: Object {
     @objc dynamic var potassium = Float(0.0)
     let entries = LinkingObjects(fromType: FoodEntry.self, property: "food")
     let tags = List<Tag>()
+    var measurementRepresentation: MeasurementRepresentation {
+        return MeasurementRepresentation(rawValue: measurementRepresentationRaw)!
+    }
     
     // HealthKit future-proofing, currently unused
     @objc dynamic var biotin = Float(0.0)
@@ -78,6 +90,17 @@ final class Food: Object {
 }
 
 final class FoodEntry: Object {
+    enum HealthKitStatus: Int {
+        case unwritten              = 0
+        case writtenAndUpToDate     = 1
+        case writtenAndNeedsUpdate  = 2
+    }
+    
+    enum MeasurementValueRepresentation: Int {
+        case decimal    = 0
+        case fraction   = 1
+    }
+    
     @objc dynamic var id = UUID().uuidString
     @objc dynamic var date = Date().roundedToNearestHalfHour
     @objc dynamic var food: Food?
@@ -85,22 +108,22 @@ final class FoodEntry: Object {
     @objc dynamic var measurementValue = Data(Float(0.0))
     @objc dynamic var healthKitStatusRaw = HealthKitStatus.unwritten.rawValue
     let tags = List<Tag>()
+    var healthKitStatus: HealthKitStatus {
+        return HealthKitStatus(rawValue: healthKitStatusRaw)!
+    }
+    var measurementValueRepresentation: MeasurementValueRepresentation {
+        return MeasurementValueRepresentation(rawValue: measurementValueRepresentationRaw)!
+    }
     var measurementFloat: Float {
-        switch MeasurementValueRepresentation(rawValue: measurementValueRepresentationRaw)! {
-        case .decimal:
-            return measurementValue.to(Float.self)
-        case .fraction:
-            return Fraction.decode(from: measurementValue)?.floatValue ?? 0.0
+        switch measurementValueRepresentation {
+        case .decimal:  return measurementValue.to(Float.self)
+        case .fraction: return Fraction.decode(from: measurementValue)?.floatValue ?? 0.0
         }
     }
     var measurementString: String? {
-        guard let valueRepresentation = MeasurementValueRepresentation(rawValue: measurementValueRepresentationRaw)
-            else { return nil }
-        switch valueRepresentation {
-        case .decimal:
-            return measurementValue.to(Float.self).pretty
-        case .fraction:
-            return Fraction.decode(from: measurementValue)?.description
+        switch measurementValueRepresentation {
+        case .decimal:  return measurementValue.to(Float.self).pretty
+        case .fraction: return Fraction.decode(from: measurementValue)?.description
         }
     }
     

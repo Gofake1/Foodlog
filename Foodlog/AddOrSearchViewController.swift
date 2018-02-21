@@ -10,7 +10,6 @@ import RealmSwift
 import UIKit
 
 // TODO: iPhone X UI
-// TODO: Clear filter when search text changes
 class AddOrSearchViewController: PulleyDrawerViewController {
     @IBOutlet weak var suggestionTableController: SuggestionTableController!
     @IBOutlet weak var suggestionTableViewVisibilityController: SuggestionTableViewVisibilityController!
@@ -39,6 +38,8 @@ class AddOrSearchViewController: PulleyDrawerViewController {
 
 extension AddOrSearchViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        suggestionTableViewVisibilityController.filterStateChanged(false)
+        VCController.clearLogFilter()
         guard let searchText = searchBar.text else { return }
         suggestionTableController.searchText = searchText
     }
@@ -100,12 +101,11 @@ class SuggestionTableController: NSObject {
         }
     }
     private var suggestions = [SuggestionType]()
-    private let lastAddedFoodEntries = DataStore.objects(FoodEntry.self)!.reversed()
     
     func update() {
         if searchText == "" {
             let foods = OrderedSet<Food>()
-            for foodEntry in lastAddedFoodEntries {
+            for foodEntry in DataStore.foodEntries.reversed() {
                 if foods.count >= 5 {
                     break
                 }
@@ -114,20 +114,19 @@ class SuggestionTableController: NSObject {
             }
             suggestions = foods.items
         } else {
-            guard let tags = DataStore.objects(Tag.self)?.filter("name BEGINSWITH %@", searchText),
-                let foods = DataStore.objects(Food.self)?.filter("name BEGINSWITH %@", searchText),
-                let groups = DataStore.objects(FoodGroupingTemplate.self)?.filter("name BEGINSWITH %@", searchText)
-                else { return }
+            let filteredTags = DataStore.tags.filter("name BEGINSWITH %@", searchText)
+            let filteredFoods = DataStore.foods.filter("name BEGINSWITH %@", searchText)
+            let filteredGroups = DataStore.groups.filter("name BEGINSWITH %@", searchText)
             var results: [SuggestionType] = [NewFoodPlaceholder(name: searchText)]
-            for tag in tags {
+            for tag in filteredTags {
                 if results.count >= 5 { break }
                 results.append(tag)
             }
-            for food in foods {
+            for food in filteredFoods {
                 if results.count >= 15 { break }
                 results.append(food)
             }
-            for group in groups {
+            for group in filteredGroups {
                 if results.count >= 20 { break }
                 results.append(group)
             }
@@ -244,7 +243,7 @@ protocol SuggestionType {
 
 extension Food: SuggestionType {
     var addAction: () -> () {
-        return {
+        return { [weak self] in
             let foodEntry = FoodEntry()
             foodEntry.food = self
             VCController.addFoodEntry(foodEntry, isNew: false)

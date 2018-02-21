@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14087.3" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14092" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina4_0" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14075.4"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14081.1"/>
         <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
@@ -103,6 +103,7 @@
                                                 <constraint firstItem="dVX-HE-zTf" firstAttribute="leading" secondItem="ONR-Ya-iOU" secondAttribute="leading" constant="15" id="ZZB-4u-IId"/>
                                                 <constraint firstItem="uyF-bp-4wk" firstAttribute="trailing" relation="lessThanOrEqual" secondItem="aJL-9U-8P5" secondAttribute="leading" constant="-8" id="a0R-wG-0KK"/>
                                                 <constraint firstItem="aJL-9U-8P5" firstAttribute="trailing" secondItem="ONR-Ya-iOU" secondAttribute="trailingMargin" id="fb0-g4-ecr"/>
+                                                <constraint firstItem="uyF-bp-4wk" firstAttribute="top" secondItem="dVX-HE-zTf" secondAttribute="bottom" constant="-1" id="m7p-ut-xiT"/>
                                                 <constraint firstItem="dVX-HE-zTf" firstAttribute="trailing" relation="lessThanOrEqual" secondItem="aJL-9U-8P5" secondAttribute="leading" constant="-8" id="q01-MF-njD"/>
                                                 <constraint firstItem="aJL-9U-8P5" firstAttribute="centerY" secondItem="ONR-Ya-iOU" secondAttribute="centerY" id="zIT-aj-ap2"/>
                                             </constraints>
@@ -1135,7 +1136,10 @@
                                                 </connections>
                                             </textView>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4NO-V9-pMw">
-                                                <rect key="frame" x="145" y="44.5" width="30" height="33"/>
+                                                <rect key="frame" x="145" y="14.5" width="30" height="33"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="33" id="OFd-GW-QAO"/>
+                                                </constraints>
                                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                 <state key="normal" title="Edit"/>
                                                 <connections>
@@ -1145,12 +1149,13 @@
                                         </subviews>
                                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
+                                            <constraint firstAttribute="bottom" secondItem="4NO-V9-pMw" secondAttribute="bottom" priority="999" constant="53" id="1V5-TQ-VAm"/>
                                             <constraint firstAttribute="trailing" secondItem="LBS-qe-ezn" secondAttribute="trailing" constant="11" id="8zE-j4-iCf"/>
-                                            <constraint firstItem="4NO-V9-pMw" firstAttribute="top" secondItem="LBS-qe-ezn" secondAttribute="bottom" constant="8" symbolic="YES" id="Aln-XI-CW8"/>
+                                            <constraint firstItem="4NO-V9-pMw" firstAttribute="top" secondItem="LBS-qe-ezn" secondAttribute="bottom" constant="-22" id="Aln-XI-CW8"/>
                                             <constraint firstItem="LBS-qe-ezn" firstAttribute="top" secondItem="CgA-rX-K9W" secondAttribute="top" id="EQH-Qn-yku"/>
                                             <constraint firstItem="LBS-qe-ezn" firstAttribute="leading" secondItem="CgA-rX-K9W" secondAttribute="leading" constant="11" id="NMt-e9-m3N"/>
                                             <constraint firstItem="4NO-V9-pMw" firstAttribute="centerX" secondItem="CgA-rX-K9W" secondAttribute="centerX" id="cV5-J2-rrn"/>
-                                            <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="4NO-V9-pMw" secondAttribute="bottom" constant="53" id="qhg-Kt-aUf"/>
+                                            <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="4NO-V9-pMw" secondAttribute="bottom" constant="217.5" id="tuv-IP-akg"/>
                                         </constraints>
                                     </view>
                                 </subviews>
