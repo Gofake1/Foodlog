@@ -9,8 +9,29 @@
 import Foundation
 import RealmSwift
 
+final class SearchSuggestion: Object {
+    enum Kind: Int {
+        case food   = 0
+        case group  = 1
+        case tag    = 2
+    }
+    
+    @objc dynamic var kind = -1
+    @objc dynamic var lastUsed = Date()
+    @objc dynamic var text = ""
+    
+    let foods = LinkingObjects(fromType: Food.self, property: "searchSuggestion")
+    let groups = LinkingObjects(fromType: FoodGroupingTemplate.self, property: "searchSuggestion")
+    let tags = LinkingObjects(fromType: Tag.self, property: "searchSuggestion")
+    
+    override static func indexedProperties() -> [String] {
+        return ["lastUsed", "text"]
+    }
+}
+
 final class Tag: Object {
     @objc dynamic var name = ""
+    @objc dynamic var searchSuggestion: SearchSuggestion?
     let foods = LinkingObjects(fromType: Food.self, property: "tags")
     let foodEntries = LinkingObjects(fromType: FoodEntry.self, property: "tags")
     
@@ -31,6 +52,7 @@ final class Food: Object {
     
     @objc dynamic var id = UUID().uuidString
     @objc dynamic var name = ""
+    @objc dynamic var searchSuggestion: SearchSuggestion?
     @objc dynamic var measurementRepresentationRaw = MeasurementRepresentation.serving.rawValue
     @objc dynamic var picture: String? //*
     @objc dynamic var calories = Float(0.0)
@@ -107,6 +129,7 @@ final class FoodEntry: Object {
     @objc dynamic var measurementValueRepresentationRaw = MeasurementValueRepresentation.decimal.rawValue
     @objc dynamic var measurementValue = Data(Float(0.0))
     @objc dynamic var healthKitStatusRaw = HealthKitStatus.unwritten.rawValue
+    let day = LinkingObjects(fromType: Day.self, property: "foodEntries")
     let tags = List<Tag>()
     var healthKitStatus: HealthKitStatus {
         return HealthKitStatus(rawValue: healthKitStatusRaw)!
@@ -160,6 +183,7 @@ final class FoodServingPair: Object {
 final class FoodGroupingTemplate: Object {
     @objc dynamic var id = UUID().uuidString
     @objc dynamic var name = ""
+    @objc dynamic var searchSuggestion: SearchSuggestion?
     let foodServingPairs = List<FoodServingPair>()
     
     override static func indexedProperties() -> [String] {

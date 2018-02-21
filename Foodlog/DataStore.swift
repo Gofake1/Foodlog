@@ -14,6 +14,7 @@ final class DataStore {
     static let foods                = read { $0.objects(Food.self) }!
     static let foodEntries          = read { $0.objects(FoodEntry.self) }!
     static let groups               = read { $0.objects(FoodGroupingTemplate.self) }!
+    static let searchSuggestions    = read { $0.objects(SearchSuggestion.self) }!
     static let tags                 = read { $0.objects(Tag.self) }!
     private static var realm = try! Realm()
     

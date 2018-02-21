@@ -10,6 +10,7 @@ import RealmSwift
 import UIKit
 
 // TODO: iPhone X UI
+// TODO: Update suggestions after adding food entry
 class AddOrSearchViewController: PulleyDrawerViewController {
     @IBOutlet weak var suggestionTableController: SuggestionTableController!
     @IBOutlet weak var suggestionTableViewVisibilityController: SuggestionTableViewVisibilityController!
@@ -66,6 +67,14 @@ extension AddOrSearchViewController: UISearchBarDelegate {
     }
 }
 
+protocol SuggestionType {
+    var addAction: () -> () { get }
+    var canBeAddedToLog: Bool { get }
+    var canBeDeleted: Bool { get }
+    var labelText: String { get }
+    var searchObject: SearchSuggestion! { get }
+}
+
 class SuggestionTableController: NSObject {
     class NewFoodPlaceholder: SuggestionType {
         var name: String
@@ -86,6 +95,9 @@ class SuggestionTableController: NSObject {
         var labelText: String {
             return "\"\(name)\""
         }
+        var searchObject: SearchSuggestion! {
+            return nil
+        }
         
         init(name: String) {
             self.name = name
@@ -104,33 +116,14 @@ class SuggestionTableController: NSObject {
     
     func update() {
         if searchText == "" {
-            let foods = OrderedSet<Food>()
-            for foodEntry in DataStore.foodEntries.reversed() {
-                if foods.count >= 5 {
-                    break
-                }
-                guard let food = foodEntry.food else { continue }
-                foods.append(food)
-            }
-            suggestions = foods.items
+            suggestions = DataStore.searchSuggestions
+                .sorted(byKeyPath: #keyPath(SearchSuggestion.lastUsed), ascending: false)
+                .compactMap { $0.value }
         } else {
-            let filteredTags = DataStore.tags.filter("name BEGINSWITH %@", searchText)
-            let filteredFoods = DataStore.foods.filter("name BEGINSWITH %@", searchText)
-            let filteredGroups = DataStore.groups.filter("name BEGINSWITH %@", searchText)
-            var results: [SuggestionType] = [NewFoodPlaceholder(name: searchText)]
-            for tag in filteredTags {
-                if results.count >= 5 { break }
-                results.append(tag)
-            }
-            for food in filteredFoods {
-                if results.count >= 15 { break }
-                results.append(food)
-            }
-            for group in filteredGroups {
-                if results.count >= 20 { break }
-                results.append(group)
-            }
-            suggestions = results
+            suggestions = [NewFoodPlaceholder(name: searchText)] +
+                DataStore.searchSuggestions.filter("text CONTAINS[cd] %@", searchText)
+                    .sorted(byKeyPath: #keyPath(SearchSuggestion.lastUsed), ascending: false)
+                    .compactMap { $0.value }
         }
         tableView.reloadData()
     }
@@ -155,7 +148,9 @@ extension SuggestionTableController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle,
                    forRowAt indexPath: IndexPath) {
         guard editingStyle == .delete else { return }
-        DataStore.delete(suggestions[indexPath.row] as! Object, withoutNotifying: [])
+        let suggestion = suggestions[indexPath.row]
+        DataStore.delete(suggestion.searchObject, withoutNotifying: [])
+        DataStore.delete(suggestion as! Object, withoutNotifying: [])
         suggestions.remove(at: indexPath.row)
         tableView.deleteRows(at: [indexPath], with: .automatic)
     }
@@ -234,13 +229,6 @@ class SuggestionTableViewCell: UITableViewCell {
     }
 }
 
-protocol SuggestionType {
-    var addAction: () -> () { get }
-    var canBeAddedToLog: Bool { get }
-    var canBeDeleted: Bool { get }
-    var labelText: String { get }
-}
-
 extension Food: SuggestionType {
     var addAction: () -> () {
         return { [weak self] in
@@ -258,20 +246,8 @@ extension Food: SuggestionType {
     var labelText: String {
         return name
     }
-}
-
-extension Tag: SuggestionType {
-    var addAction: () -> () {
-        return {}
-    }
-    var canBeAddedToLog: Bool {
-        return false
-    }
-    var canBeDeleted: Bool {
-        return foods.count == 0 && foodEntries.count == 0
-    }
-    var labelText: String {
-        return name
+    var searchObject: SearchSuggestion! {
+        return searchSuggestion
     }
 }
 
@@ -287,5 +263,36 @@ extension FoodGroupingTemplate: SuggestionType {
     }
     var labelText: String {
         return name
+    }
+    var searchObject: SearchSuggestion! {
+        return searchSuggestion
+    }
+}
+
+extension Tag: SuggestionType {
+    var addAction: () -> () {
+        return {}
+    }
+    var canBeAddedToLog: Bool {
+        return false
+    }
+    var canBeDeleted: Bool {
+        return foods.count == 0 && foodEntries.count == 0
+    }
+    var labelText: String {
+        return name
+    }
+    var searchObject: SearchSuggestion! {
+        return searchSuggestion
+    }
+}
+
+extension SearchSuggestion {
+    var value: SuggestionType? {
+        switch SearchSuggestion.Kind(rawValue: kind)! {
+        case .food:     return foods.first
+        case .group:    return groups.first
+        case .tag:      return tags.first
+        }
     }
 }

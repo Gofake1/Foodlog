@@ -49,13 +49,17 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
     
     override func viewDidLoad() {
         switch mode! {
-        case .addEntryForExistingFood: fallthrough
+        case .addEntryForExistingFood:
+            // Make unmanaged versions of model objects
+            foodEntry.food = Food(value: foodEntry.food!)
+            
+            foodNameLabel.text = foodEntry.food?.name
         case .addEntryForNewFood:
             foodNameLabel.text = foodEntry.food?.name
         case .editEntry:
             // Use original `Food` to filter `FoodEntry`s
             originalFood = foodEntry.food
-            // Make unmanaged versions of model objects
+            
             foodEntry = FoodEntry(value: foodEntry)
             foodEntry.food = Food(value: foodEntry.food!)
             
@@ -111,11 +115,11 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
     // TODO: Make Realm and HealthKit transactions atomic
     /// - postcondition: Writes to Realm and HealthKit
     @IBAction func addFoodEntryToLog() {
-        view.endEditing(false)
-        
-        switch mode! {
-        case .addEntryForNewFood: fallthrough
-        case .addEntryForExistingFood:
+        func addFoodEntry(_ searchSuggestion: SearchSuggestion) {
+            searchSuggestion.kind = SearchSuggestion.Kind.food.rawValue
+            searchSuggestion.lastUsed = Date()
+            searchSuggestion.text = foodEntry.food!.name
+            foodEntry.food?.searchSuggestion = searchSuggestion
             let day: Day
             if let existingDay = DataStore.object(Day.self, primaryKey: foodEntry.date.startOfDay.hashValue) {
                 day = Day(value: existingDay)
@@ -126,6 +130,15 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
             DataStore.update(day)
             HealthKitStore.shared.save([foodEntry.hkObject].compactMap { $0 }, {})
             VCController.pop()
+        }
+        
+        view.endEditing(false)
+        
+        switch mode! {
+        case .addEntryForNewFood:
+            addFoodEntry(SearchSuggestion())
+        case .addEntryForExistingFood:
+            addFoodEntry(SearchSuggestion(value: foodEntry.food!.searchSuggestion!))
         case .editEntry:
             if userChangedFoodInfo {
                 func warningString(_ count: Int) -> String {
