@@ -18,8 +18,6 @@ class AddOrSearchViewController: PulleyDrawerViewController {
     @IBOutlet weak var tableView: UITableView!
     
     override func viewDidLoad() {
-        VCController.drawers.append(self)
-        VCController.drawerState.append(.addOrSearch)
         suggestionTableController.update()
     }
         

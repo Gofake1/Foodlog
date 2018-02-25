@@ -17,11 +17,6 @@ class LogViewController: UIViewController {
     
     private var currentLogTableController: LogTableController!
     
-    required init?(coder aDecoder: NSCoder) {
-        super.init(coder: aDecoder)
-        VCController.logVC = self
-    }
-    
     override func viewDidLoad() {
         currentLogTableController = defaultLogTableController
         currentLogTableController.setup(tableView)

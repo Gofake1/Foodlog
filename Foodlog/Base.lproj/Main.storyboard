@@ -1,67 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14092" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14101" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina4_0" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14081.1"/>
-        <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14086"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--Pulley View Controller-->
-        <scene sceneID="tne-QT-ifu">
-            <objects>
-                <viewController storyboardIdentifier="Pulley" id="BYZ-38-t0r" customClass="PulleyViewController" customModule="Foodlog" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="seh-mk-hSq">
-                                <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
-                                <connections>
-                                    <segue destination="tlM-rw-hRr" kind="embed" id="DzO-8Q-Oz5"/>
-                                </connections>
-                            </containerView>
-                            <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="0mk-6D-lrR">
-                                <rect key="frame" x="0.0" y="248" width="320" height="320"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" secondItem="0mk-6D-lrR" secondAttribute="height" multiplier="1:1" id="Svv-4q-ZJo"/>
-                                </constraints>
-                                <connections>
-                                    <segue destination="GXp-b9-hhh" kind="embed" id="Tfi-YP-sdg"/>
-                                </connections>
-                            </containerView>
-                        </subviews>
-                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                        <constraints>
-                            <constraint firstItem="seh-mk-hSq" firstAttribute="trailing" secondItem="8bC-Xf-vdC" secondAttribute="trailing" id="Bgx-Bb-Gut"/>
-                            <constraint firstItem="0mk-6D-lrR" firstAttribute="leading" secondItem="ZeW-RA-3az" secondAttribute="leading" id="IkS-vI-Oot"/>
-                            <constraint firstItem="ZeW-RA-3az" firstAttribute="bottom" secondItem="0mk-6D-lrR" secondAttribute="bottom" id="Ocv-Ca-vEt"/>
-                            <constraint firstItem="seh-mk-hSq" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="top" id="YPK-LC-H3m"/>
-                            <constraint firstItem="ZeW-RA-3az" firstAttribute="bottom" secondItem="seh-mk-hSq" secondAttribute="bottom" id="guY-1j-2jM"/>
-                            <constraint firstItem="seh-mk-hSq" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="mr8-1k-nh2"/>
-                            <constraint firstItem="0mk-6D-lrR" firstAttribute="trailing" secondItem="ZeW-RA-3az" secondAttribute="trailing" id="r50-Me-9YJ"/>
-                        </constraints>
-                        <viewLayoutGuide key="safeArea" id="ZeW-RA-3az"/>
-                    </view>
-                    <size key="freeformSize" width="320" height="568"/>
-                    <connections>
-                        <outlet property="drawerContentContainerView" destination="0mk-6D-lrR" id="MyX-RZ-5KI"/>
-                        <outlet property="primaryContentContainerView" destination="seh-mk-hSq" id="bLl-rH-oAH"/>
-                    </connections>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="0.0" y="0.0"/>
-        </scene>
         <!--Log View Controller-->
         <scene sceneID="8Em-kR-J6d">
             <objects>
-                <viewController id="tlM-rw-hRr" customClass="LogViewController" customModule="Foodlog" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="Log" id="tlM-rw-hRr" customClass="LogViewController" customModule="Foodlog" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="I8m-Wa-ucI">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -141,14 +94,16 @@
         <!--Add Or Search View Controller-->
         <scene sceneID="DuT-6Z-VyP">
             <objects>
-                <viewController id="GXp-b9-hhh" customClass="AddOrSearchViewController" customModule="Foodlog" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="AddOrSearch" id="GXp-b9-hhh" customClass="AddOrSearchViewController" customModule="Foodlog" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="RjI-x7-P8v">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="320"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <searchBar contentMode="redraw" fixedFrame="YES" searchBarStyle="minimal" placeholder="Add Item or Search History" translatesAutoresizingMaskIntoConstraints="NO" id="Bp7-zS-1Cq">
+                            <searchBar contentMode="redraw" searchBarStyle="minimal" placeholder="Add Item or Search History" translatesAutoresizingMaskIntoConstraints="NO" id="Bp7-zS-1Cq">
                                 <rect key="frame" x="3" y="7" width="314" height="56"/>
-                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="56" id="oov-eS-lWe"/>
+                                </constraints>
                                 <textInputTraits key="textInputTraits"/>
                                 <connections>
                                     <outlet property="delegate" destination="GXp-b9-hhh" id="eoy-DP-KrM"/>
@@ -188,9 +143,8 @@
                                     <constraint firstItem="WQU-iN-OcL" firstAttribute="top" secondItem="UHz-ef-vcg" secondAttribute="top" constant="2" id="aee-C6-Xfs"/>
                                 </constraints>
                             </view>
-                            <tableView hidden="YES" clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" alwaysBounceVertical="YES" keyboardDismissMode="interactive" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="GaF-W9-zaw">
+                            <tableView hidden="YES" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" keyboardDismissMode="interactive" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="GaF-W9-zaw">
                                 <rect key="frame" x="0.0" y="63" width="320" height="257"/>
-                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="gray" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="Suggestion" id="8pf-Ew-eQb" customClass="SuggestionTableViewCell" customModule="Foodlog" customModuleProvider="target">
@@ -232,15 +186,23 @@
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
+                            <constraint firstItem="GaF-W9-zaw" firstAttribute="leading" secondItem="FbL-5G-hY4" secondAttribute="leading" id="3Ce-63-9ce"/>
+                            <constraint firstItem="Bp7-zS-1Cq" firstAttribute="top" secondItem="FbL-5G-hY4" secondAttribute="top" constant="7" id="6gU-c6-olE"/>
+                            <constraint firstItem="FbL-5G-hY4" firstAttribute="trailing" secondItem="Bp7-zS-1Cq" secondAttribute="trailing" priority="999" constant="3" id="9BG-Vn-UeZ"/>
                             <constraint firstItem="UHz-ef-vcg" firstAttribute="bottom" secondItem="FbL-5G-hY4" secondAttribute="bottom" id="CZe-X2-SW7"/>
-                            <constraint firstItem="UHz-ef-vcg" firstAttribute="top" secondItem="RjI-x7-P8v" secondAttribute="top" constant="63" id="G9g-gd-Xql"/>
+                            <constraint firstItem="UHz-ef-vcg" firstAttribute="top" secondItem="Bp7-zS-1Cq" secondAttribute="bottom" priority="999" id="G9g-gd-Xql"/>
                             <constraint firstItem="ndq-l0-xxC" firstAttribute="top" secondItem="FbL-5G-hY4" secondAttribute="top" constant="6" id="PHs-WN-9VP"/>
                             <constraint firstItem="UHz-ef-vcg" firstAttribute="leading" secondItem="FbL-5G-hY4" secondAttribute="leading" id="bhW-QS-R0Z"/>
+                            <constraint firstItem="GaF-W9-zaw" firstAttribute="trailing" secondItem="FbL-5G-hY4" secondAttribute="trailing" id="dtq-Vl-pLN"/>
                             <constraint firstItem="UHz-ef-vcg" firstAttribute="trailing" secondItem="FbL-5G-hY4" secondAttribute="trailing" id="g7M-Ad-lNE"/>
+                            <constraint firstItem="GaF-W9-zaw" firstAttribute="top" secondItem="Bp7-zS-1Cq" secondAttribute="bottom" priority="999" id="gue-eP-ySs"/>
+                            <constraint firstItem="GaF-W9-zaw" firstAttribute="bottom" secondItem="FbL-5G-hY4" secondAttribute="bottom" id="jzw-rx-5tG"/>
+                            <constraint firstItem="Bp7-zS-1Cq" firstAttribute="leading" secondItem="FbL-5G-hY4" secondAttribute="leading" constant="3" id="onf-83-fSs"/>
                             <constraint firstItem="ndq-l0-xxC" firstAttribute="centerX" secondItem="FbL-5G-hY4" secondAttribute="centerX" id="xME-Fa-ERd"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="FbL-5G-hY4"/>
                     </view>
+                    <size key="freeformSize" width="320" height="320"/>
                     <connections>
                         <outlet property="searchBar" destination="Bp7-zS-1Cq" id="Kug-Kb-QWF"/>
                         <outlet property="suggestionTableController" destination="gQb-oc-Mcp" id="9le-tz-az7"/>
@@ -959,6 +921,7 @@
                     <connections>
                         <outlet property="addOrEditVC" destination="c3i-y8-uTP" id="jht-uj-bze"/>
                         <outlet property="field" destination="zTw-OU-Ca5" id="9rd-B4-gRQ"/>
+                        <outlet property="toolbar" destination="D3i-2W-iq6" id="BOu-eu-wRf"/>
                     </connections>
                 </customObject>
                 <customObject id="BML-iM-zdH" customClass="MeasurementController" customModule="Foodlog" customModuleProvider="target">
@@ -1001,6 +964,18 @@
                         <outlet property="vitaminKField" destination="r8N-ES-KB9" id="MrL-mM-6ir"/>
                     </connections>
                 </customObject>
+                <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="D3i-2W-iq6">
+                    <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                    <items>
+                        <barButtonItem style="plain" systemItem="flexibleSpace" id="DJv-7z-ecu"/>
+                        <barButtonItem style="done" systemItem="done" id="0zy-zI-x5z">
+                            <connections>
+                                <action selector="doneEditing" destination="whg-DM-Meq" id="qr3-J1-w5L"/>
+                            </connections>
+                        </barButtonItem>
+                    </items>
+                </toolbar>
                 <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="qwg-oS-vsP">
                     <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>

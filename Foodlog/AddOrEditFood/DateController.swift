@@ -10,6 +10,7 @@ import UIKit
 
 class DateController: NSObject {
     @IBOutlet weak var addOrEditVC: AddOrEditFoodViewController!
+    @IBOutlet weak var toolbar: UIToolbar!
     @IBOutlet weak var field: UITextField!
     
     private static let dp: UIDatePicker = {
@@ -29,11 +30,16 @@ class DateController: NSObject {
     
     func setup() {
         field.inputView = DateController.dp
+        field.inputAccessoryView = toolbar
         field.text = date.shortDateShortTimeString
     }
     
     @objc func dateChanged(_ sender: UIDatePicker) {
         field.text = sender.date.shortDateShortTimeString
+    }
+    
+    @IBAction func doneEditing() {
+        field.resignFirstResponder()
     }
     
     deinit {

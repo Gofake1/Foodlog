@@ -11,8 +11,9 @@ import UIKit
 final class VCController {
     enum Kind: String {
         case addOrEditFood  = "AddOrEditFood"
+        case addOrSearch    = "AddOrSearch"
+        case log            = "Log"
         case logDetail      = "LogDetail"
-        case pulley         = "Pulley"
     }
     
     enum DrawerState {
@@ -22,14 +23,19 @@ final class VCController {
         case detailFoodEntry
     }
     
-    static var drawers = [PulleyDrawerViewController]()
-    static var drawerState = [DrawerState]()
-    static var logVC: LogViewController!
-    static let pulleyVC: PulleyViewController = makeVC(.pulley)
+    static var drawerStack = [(vc: PulleyDrawerViewController, state: DrawerState)]()
+    static let addOrSearchVC: AddOrSearchViewController = makeVC(.addOrSearch)
+    static let logVC: LogViewController = makeVC(.log)
+    static let pulleyVC: PulleyViewController = {
+        defer {
+            drawerStack.append((addOrSearchVC, .addOrSearch))
+        }
+        return PulleyViewController(contentViewController: logVC, drawerViewController: addOrSearchVC)
+    }()
     private static let storyboard = UIStoryboard(name: "Main", bundle: nil)
     
     static func addFoodEntry(_ foodEntry: FoodEntry, isNew: Bool) {
-        assert(drawerState.last == .addOrSearch)
+        assert(drawerStack.last?.state == .addOrSearch)
         let addFoodVC: AddOrEditFoodViewController = makeVC(.addOrEditFood)
         addFoodVC.foodEntry = foodEntry
         addFoodVC.mode = isNew ? .addEntryForNewFood : .addEntryForExistingFood
@@ -37,7 +43,7 @@ final class VCController {
     }
     
     static func editFoodEntry(_ foodEntry: FoodEntry) {
-        assert(drawerState.last == .detailFoodEntry)
+        assert(drawerStack.last?.state == .detailFoodEntry)
         let editFoodVC: AddOrEditFoodViewController = makeVC(.addOrEditFood)
         editFoodVC.foodEntry = foodEntry
         editFoodVC.mode = .editEntry
@@ -47,7 +53,7 @@ final class VCController {
     static func selectFoodEntry(_ foodEntry: FoodEntry) {
         let logDetailVC: LogDetailViewController = makeVC(.logDetail)
         logDetailVC.detailPresentable = foodEntry
-        switch drawerState.last! {
+        switch drawerStack.last!.state {
         case .addOrSearch:
             push(logDetailVC, .detailFoodEntry)
         case .addFoodEntry: fallthrough
@@ -71,22 +77,18 @@ final class VCController {
     }
     
     static func push(_ newDrawerVC: PulleyDrawerViewController, _ newDrawerState: DrawerState) {
-        drawers.append(newDrawerVC)
-        drawerState.append(newDrawerState)
+        drawerStack.append((newDrawerVC, newDrawerState))
         pulleyVC.setDrawerContentViewController(controller: newDrawerVC)
     }
     
     static func pop() {
-        drawers.removeLast()
-        drawerState.removeLast()
-        pulleyVC.setDrawerContentViewController(controller: drawers.last!)
+        drawerStack.removeLast()
+        pulleyVC.setDrawerContentViewController(controller: drawerStack.last!.vc)
     }
     
     static func popAndPush(_ newDrawerVC: PulleyDrawerViewController, _ newDrawerState: DrawerState) {
-        drawers.removeLast()
-        drawerState.removeLast()
-        drawers.append(newDrawerVC)
-        drawerState.append(newDrawerState)
+        drawerStack.removeLast()
+        drawerStack.append((newDrawerVC, newDrawerState))
         pulleyVC.setDrawerContentViewController(controller: newDrawerVC)
     }
     
