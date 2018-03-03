@@ -9,7 +9,6 @@
 import UIKit
 
 class DateController: NSObject {
-    @IBOutlet weak var addOrEditVC: AddOrEditFoodViewController!
     @IBOutlet weak var toolbar: UIToolbar!
     @IBOutlet weak var field: UITextField!
     
@@ -18,9 +17,10 @@ class DateController: NSObject {
         dp.datePickerMode = .dateAndTime
         return dp
     }()
+    private var foodEntry: FoodEntry!
     private var date: Date {
-        get { return addOrEditVC.foodEntry.date }
-        set { addOrEditVC.foodEntry.date = newValue }
+        get { return foodEntry.date }
+        set { foodEntry.date = newValue }
     }
     
     override init() {
@@ -28,7 +28,8 @@ class DateController: NSObject {
         DateController.dp.addTarget(self, action: #selector(dateChanged(_:)), for: .valueChanged)
     }
     
-    func setup() {
+    func setup(_ foodEntry: FoodEntry) {
+        self.foodEntry = foodEntry
         field.inputView = DateController.dp
         field.inputAccessoryView = toolbar
         field.text = date.shortDateShortTimeString

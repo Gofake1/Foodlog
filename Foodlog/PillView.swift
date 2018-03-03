@@ -14,7 +14,6 @@ class PillView: UIView {
     
     override func draw(_ rect: CGRect) {
         fillColor?.setFill()
-        let pillPath = UIBezierPath(roundedRect: rect, cornerRadius: rect.height / 2)
-        pillPath.fill()
+        UIBezierPath(roundedRect: rect, cornerRadius: rect.height/2).fill()
     }
 }

@@ -30,7 +30,18 @@ final class SearchSuggestion: Object {
 }
 
 final class Tag: Object {
+    enum ColorCode: Int {
+        case lightGray  = 0
+        case red        = 1
+        case orange     = 2
+        case yellow     = 3
+        case green      = 4
+        case blue       = 5
+        case purple     = 6
+    }
+    
     @objc dynamic var name = ""
+    @objc dynamic var colorCodeRaw = ColorCode.lightGray.rawValue
     @objc dynamic var searchSuggestion: SearchSuggestion?
     let foods = LinkingObjects(fromType: Food.self, property: "tags")
     let foodEntries = LinkingObjects(fromType: FoodEntry.self, property: "tags")

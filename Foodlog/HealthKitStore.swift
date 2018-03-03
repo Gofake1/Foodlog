@@ -17,7 +17,7 @@ private enum CachedHealthKitTransaction {
 private var _queue: DispatchQueue? = DispatchQueue(label: "Foodlog.HealthKitStore.lock")
 private var _store: HKHealthStore!
 // Cache transactions that occur before authorization
-private var _cachedHealthKitTransactions = [CachedHealthKitTransaction]()
+private var _cachedHealthKitTransactions: [CachedHealthKitTransaction]? = []
 
 final class HealthKitStore {
     // We use a singleton because Apple recommends asking for authorization at the point of use:
@@ -28,18 +28,23 @@ final class HealthKitStore {
     private(set) var delete: ([String], @escaping () -> ()) -> () = { ids, completionHandler in
         guard HKHealthStore.isHealthDataAvailable() else { return }
         _queue?.sync {
-            _cachedHealthKitTransactions.append(CachedHealthKitTransaction.delete(ids, completionHandler))
+            _cachedHealthKitTransactions?.append(CachedHealthKitTransaction.delete(ids, completionHandler))
         }
     }
     private(set) var save: ([HKObject], @escaping () -> ()) -> () = { objects, completionHandler in
         guard HKHealthStore.isHealthDataAvailable() else { return }
         _queue?.sync {
-            _cachedHealthKitTransactions.append(CachedHealthKitTransaction.save(objects, completionHandler))
+            _cachedHealthKitTransactions?.append(CachedHealthKitTransaction.save(objects, completionHandler))
         }
     }
     
     private init() {
-        guard HKHealthStore.isHealthDataAvailable() else { return }
+        guard HKHealthStore.isHealthDataAvailable() else {
+            // TODO: Test on iPad
+            delete = { _, _ in }
+            save = { _, _ in }
+            return
+        }
         _store = HKHealthStore()
         let types = Set(arrayLiteral:
             HKObjectType.quantityType(forIdentifier: .dietaryEnergyConsumed)!,
@@ -68,7 +73,7 @@ final class HealthKitStore {
         _store.requestAuthorization(toShare: types, read: nil) { [weak self] in
             if $0 {
                 _queue?.sync {
-                    _cachedHealthKitTransactions.forEach {
+                    _cachedHealthKitTransactions!.forEach {
                         switch $0 {
                         case .delete(let ids, let completionHandler):
                             _store.delete(foodEntryIds: ids, completionHandler: completionHandler)
@@ -76,7 +81,8 @@ final class HealthKitStore {
                             _store.save(foodEntryHKObjects: hkObjects, completionHandler: completionHandler)
                         }
                     }
-                    _cachedHealthKitTransactions.removeAll()
+                    _cachedHealthKitTransactions!.removeAll()
+                    _cachedHealthKitTransactions = nil
                 }
                 _queue = nil
                 
@@ -87,8 +93,19 @@ final class HealthKitStore {
                 self?.save = {
                     _store.save(foodEntryHKObjects: $0, completionHandler: $1)
                 }
-            } else if let error = $1 {
-                UIApplication.shared.alert(error: error)
+            } else {
+                // TODO: Test permission denied
+                print("Auth failed")
+                _queue?.sync {
+                    _cachedHealthKitTransactions!.removeAll()
+                    _cachedHealthKitTransactions = nil
+                }
+                _queue = nil
+                self?.delete = { _, _ in }
+                self?.save = { _, _ in }
+                if let error = $1 {
+                    UIApplication.shared.alert(error: error)
+                }
             }
         }
     }
@@ -193,7 +210,6 @@ extension HKHealthStore {
         } else {
             save(objects) {
                 if let error = $1 { UIApplication.shared.alert(error: error) }
-                print("HK save succeeded") //*
                 completionHandler()
             }
         }
@@ -206,18 +222,15 @@ extension HKHealthStore {
             if let error = error {
                 UIApplication.shared.alert(error: error)
             } else if let matches = matches {
-                print("Matches found:", matches.count) //*
                 guard matches.count > 0 else { return }
                 _store.delete(matches.flatMap { $0.objects }) {
                     if let error = $1 { UIApplication.shared.alert(error: error) }
                     _store.delete(matches) {
                         if let error = $1 { UIApplication.shared.alert(error: error) }
-                        print("HK delete succeeded") //*
                         completionHandler()
                     }
                 }
             } else {
-                print("No matches found") //*
                 completionHandler()
             }
         }

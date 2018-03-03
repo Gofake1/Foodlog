@@ -26,8 +26,9 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
     }
     
     @IBOutlet weak var dateController:          DateController!
-    @IBOutlet weak var measurementController:   MeasurementController!
     @IBOutlet weak var foodNutritionController: FoodNutritionController!
+    @IBOutlet weak var measurementController:   MeasurementController!
+    @IBOutlet weak var tagController:           TagController!
     @IBOutlet weak var scrollView:              MyScrollView!
     @IBOutlet weak var foodNameLabel:           UILabel!
     @IBOutlet weak var foodNameField:           UITextField!
@@ -69,9 +70,10 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
             addToLogButton.setTitle("Update Log", for: .normal)
         }
         
-        dateController.setup()
+        dateController.setup(foodEntry)
         measurementController.setup(mode)
         foodNutritionController.setup(mode)
+        tagController.setup(mode)
         
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWasShown(_:)),
                                                name: .UIKeyboardDidShow, object: nil)

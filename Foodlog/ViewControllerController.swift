@@ -14,6 +14,7 @@ final class VCController {
         case addOrSearch    = "AddOrSearch"
         case log            = "Log"
         case logDetail      = "LogDetail"
+        case tag            = "Tag"
     }
     
     enum DrawerState {
@@ -76,7 +77,7 @@ final class VCController {
         logVC.clearTableSelection()
     }
     
-    static func push(_ newDrawerVC: PulleyDrawerViewController, _ newDrawerState: DrawerState) {
+    private static func push(_ newDrawerVC: PulleyDrawerViewController, _ newDrawerState: DrawerState) {
         drawerStack.append((newDrawerVC, newDrawerState))
         pulleyVC.setDrawerContentViewController(controller: newDrawerVC)
     }
@@ -86,13 +87,13 @@ final class VCController {
         pulleyVC.setDrawerContentViewController(controller: drawerStack.last!.vc)
     }
     
-    static func popAndPush(_ newDrawerVC: PulleyDrawerViewController, _ newDrawerState: DrawerState) {
+    private static func popAndPush(_ newDrawerVC: PulleyDrawerViewController, _ newDrawerState: DrawerState) {
         drawerStack.removeLast()
         drawerStack.append((newDrawerVC, newDrawerState))
         pulleyVC.setDrawerContentViewController(controller: newDrawerVC)
     }
     
-    private static func makeVC<A: UIViewController>(_ kind: Kind) -> A {
+    static func makeVC<A: UIViewController>(_ kind: Kind) -> A {
         return storyboard.instantiateViewController(withIdentifier: kind.rawValue) as! A
     }
 }

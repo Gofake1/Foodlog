@@ -15,5 +15,6 @@ Tested on Xcode 9 and macOS 10.13.
 - [Freepik iOS7 Premium](https://www.flaticon.com/packs/ios7-premium) ([Flaticon Basic License](https://file000.flaticon.com/downloads/license/license.pdf))
 - [IBM Design Icons](https://github.com/IBM-Design/icons) (CC BY)
 - [Pulley](https://github.com/52inc/Pulley) (MIT)
+- [Realm](https://github.com/realm/realm-cocoa) (Apache 2.0)
 
 *This project is available under the MIT License*
