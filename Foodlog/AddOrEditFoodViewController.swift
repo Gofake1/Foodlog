@@ -46,7 +46,7 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
     }
     var foodEntry: FoodEntry!
     var mode: Mode!
-    private var originalFood: Food?
+    private var originalFood: Food!
     
     override func viewDidLoad() {
         switch mode! {
@@ -91,10 +91,10 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
         scrollView.shouldScroll = false
     }
     
-    @objc func keyboardWasShown(_ aNotifcation: NSNotification) {
+    @objc func keyboardWasShown(_ aNotification: NSNotification) {
         VCController.pulleyVC.setDrawerPosition(position: .open, animated: true)
         
-        guard let userInfo = aNotifcation.userInfo,
+        guard let userInfo = aNotification.userInfo,
             let keyboardFrame = userInfo[UIKeyboardFrameEndUserInfoKey] as? CGRect
             else { return }
         let insets = UIEdgeInsets(top: 0.0, left: 0.0, bottom: keyboardFrame.height, right: 0.0)
@@ -118,7 +118,6 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
     /// - postcondition: Writes to Realm and HealthKit
     @IBAction func addFoodEntryToLog() {
         func addFoodEntry(_ searchSuggestion: SearchSuggestion) {
-            searchSuggestion.kind = SearchSuggestion.Kind.food.rawValue
             searchSuggestion.lastUsed = Date()
             searchSuggestion.text = foodEntry.food!.name
             foodEntry.food?.searchSuggestion = searchSuggestion
@@ -138,7 +137,9 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
         
         switch mode! {
         case .addEntryForNewFood:
-            addFoodEntry(SearchSuggestion())
+            let searchSuggestion = SearchSuggestion()
+            searchSuggestion.kindRaw = SearchSuggestion.Kind.food.rawValue
+            addFoodEntry(searchSuggestion)
         case .addEntryForExistingFood:
             addFoodEntry(SearchSuggestion(value: foodEntry.food!.searchSuggestion!))
         case .editEntry:
@@ -147,7 +148,7 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
                     return "Editing this food item will affect \(count) entries. This cannot be undone."
                 }
                 
-                let affectedFoodEntries = Array(DataStore.foodEntries.filter("food == %@", originalFood!))
+                let affectedFoodEntries = Array(DataStore.foodEntries.filter("food == %@", originalFood))
                 UIApplication.shared.alert(warning: warningString(affectedFoodEntries.count)) { [weak self] in
                     guard let foodEntry = self?.foodEntry else { return }
                     DataStore.update(foodEntry)

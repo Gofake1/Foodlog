@@ -23,7 +23,7 @@ class FlowContainerView: UIView {
             }
             subview.frame = CGRect(origin: currentOrigin, size: size)
             lineHeight = max(lineHeight, size.height)
-            currentOrigin.x += size.width + 10.0
+            currentOrigin.x += size.width + 6.0
         }
     }
 }

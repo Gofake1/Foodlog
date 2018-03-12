@@ -10,6 +10,7 @@ import RealmSwift
 import UIKit
 
 // TODO: Make Realm and HealthKit transactions atomic
+// TODO: Show `Food`s in `Tag` search results
 class LogViewController: UIViewController {
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var defaultLogTableController: DefaultLogTableController!
@@ -55,7 +56,7 @@ class LogTableController: NSObject {
 
 class DefaultLogTableController: LogTableController {
     private var daysChangeToken: NotificationToken!
-    private let sortedDays = DataStore.days.sorted(byKeyPath: #keyPath(Day.startOfDay))
+    private let sortedDays = DataStore.days.sorted(byKeyPath: #keyPath(Day.startOfDay), ascending: false)
 
     override func setup(_ tableView: UITableView) {
         tableView.dataSource = self

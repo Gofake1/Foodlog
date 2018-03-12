@@ -66,17 +66,28 @@ extension AddOrSearchViewController: UISearchBarDelegate {
 }
 
 protocol SuggestionType {
-    var addAction: () -> () { get }
     var canBeAddedToLog: Bool { get }
     var canBeDeleted: Bool { get }
+    var canBeSearched: Bool { get }
+    var onAdd: () -> () { get }
+    var onDelete: () -> () { get }
+    var onSearch: () -> () { get }
     var labelText: String { get }
-    var searchObject: SearchSuggestion! { get }
 }
 
 class SuggestionTableController: NSObject {
     class NewFoodPlaceholder: SuggestionType {
         var name: String
-        var addAction: () -> () {
+        var canBeAddedToLog: Bool {
+            return true
+        }
+        var canBeDeleted: Bool {
+            return false
+        }
+        var canBeSearched: Bool {
+            return true
+        }
+        var onAdd: () -> () {
             return { [weak self] in
                 let foodEntry = FoodEntry()
                 foodEntry.food = Food()
@@ -84,17 +95,14 @@ class SuggestionTableController: NSObject {
                 VCController.addFoodEntry(foodEntry, isNew: true)
             }
         }
-        var canBeAddedToLog: Bool {
-            return true
+        var onDelete: () -> () {
+            return { assert(false) }
         }
-        var canBeDeleted: Bool {
-            return false
+        var onSearch: () -> () {
+            return {} // TODO: Search using `name`
         }
         var labelText: String {
             return "\"\(name)\""
-        }
-        var searchObject: SearchSuggestion! {
-            return nil
         }
         
         init(name: String) {
@@ -135,7 +143,7 @@ extension SuggestionTableController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Suggestion", for: indexPath)
             as! SuggestionTableViewCell
-        cell.suggestion = suggestions[indexPath.item]
+        cell.suggestion = suggestions[indexPath.row]
         return cell
     }
     
@@ -146,9 +154,7 @@ extension SuggestionTableController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle,
                    forRowAt indexPath: IndexPath) {
         guard editingStyle == .delete else { return }
-        let suggestion = suggestions[indexPath.row]
-        DataStore.delete(suggestion.searchObject, withoutNotifying: [])
-        DataStore.delete(suggestion as! Object, withoutNotifying: [])
+        suggestions[indexPath.row].onDelete()
         suggestions.remove(at: indexPath.row)
         tableView.deleteRows(at: [indexPath], with: .automatic)
     }
@@ -162,14 +168,13 @@ extension SuggestionTableController: UITableViewDelegate {
             VCController.clearLogFilter()
             return nil
         } else {
-            return indexPath
+            return suggestions[indexPath.row].canBeSearched ? indexPath : nil
         }
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        guard let food = suggestions[indexPath.row] as? Food else { return } //*
+        suggestions[indexPath.row].onSearch()
         tableViewVisibilityController.filterStateChanged(true)
-        VCController.filterLog(food)
     }
 }
 
@@ -223,71 +228,99 @@ class SuggestionTableViewCell: UITableViewCell {
     }
     
     @IBAction func add() {
-        suggestion.addAction()
+        suggestion.onAdd()
     }
 }
 
 extension Food: SuggestionType {
-    var addAction: () -> () {
+    var canBeAddedToLog: Bool {
+        return true
+    }
+    var canBeDeleted: Bool {
+        return true
+    }
+    var canBeSearched: Bool {
+        return true
+    }
+    var onAdd: () -> () {
         return { [weak self] in
             let foodEntry = FoodEntry()
             foodEntry.food = self
             VCController.addFoodEntry(foodEntry, isNew: false)
         }
     }
-    var canBeAddedToLog: Bool {
-        return true
+    var onDelete: () -> () {
+        return { [weak self] in
+            // TODO: Delete all associated food entries
+            DataStore.delete(self!.searchSuggestion!, withoutNotifying: [])
+            DataStore.delete(self!, withoutNotifying: [])
+        }
     }
-    var canBeDeleted: Bool {
-        return entries.count == 0
+    var onSearch: () -> () {
+        return { VCController.filterLog(self) }
     }
     var labelText: String {
         return name
-    }
-    var searchObject: SearchSuggestion! {
-        return searchSuggestion
     }
 }
 
 extension FoodGroupingTemplate: SuggestionType {
-    var addAction: () -> () {
-        return {}
-    }
     var canBeAddedToLog: Bool {
         return true
     }
     var canBeDeleted: Bool {
+        return true
+    }
+    var canBeSearched: Bool {
         return false
+    }
+    var onAdd: () -> () {
+        return {} // TODO
+    }
+    var onDelete: () -> () {
+        return { [weak self] in
+            DataStore.delete(self!.searchSuggestion!, withoutNotifying: [])
+            DataStore.delete(self!, withoutNotifying: [])
+        }
+    }
+    var onSearch: () -> () {
+        return { assert(false) }
     }
     var labelText: String {
         return name
-    }
-    var searchObject: SearchSuggestion! {
-        return searchSuggestion
     }
 }
 
 extension Tag: SuggestionType {
-    var addAction: () -> () {
-        return {}
-    }
     var canBeAddedToLog: Bool {
         return false
     }
     var canBeDeleted: Bool {
-        return foods.count == 0 && foodEntries.count == 0
+        return true
+    }
+    var canBeSearched: Bool {
+        return true
+    }
+    var onAdd: () -> () {
+        return { assert(false) }
+    }
+    var onDelete: () -> () {
+        return { [weak self] in
+            DataStore.delete(self!.searchSuggestion!, withoutNotifying: [])
+            DataStore.delete(self!, withoutNotifying: [])
+        }
+    }
+    var onSearch: () -> () {
+        return {} // TODO
     }
     var labelText: String {
         return name
-    }
-    var searchObject: SearchSuggestion! {
-        return searchSuggestion
     }
 }
 
 extension SearchSuggestion {
     var value: SuggestionType? {
-        switch SearchSuggestion.Kind(rawValue: kind)! {
+        switch SearchSuggestion.Kind(rawValue: kindRaw)! {
         case .food:     return foods.first
         case .group:    return groups.first
         case .tag:      return tags.first

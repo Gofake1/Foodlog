@@ -8,13 +8,14 @@
 
 import UIKit
 
+// TODO: UI for `Food`
 class LogDetailViewController: PulleyDrawerViewController {
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var subtitleLabel: UILabel!
     @IBOutlet weak var textView: UITextView!
     @IBOutlet weak var textViewHeightConstraint: NSLayoutConstraint!
     
-    var detailPresentable: FoodEntry! //LogDetailPresentable!
+    var detailPresentable: LogDetailPresentable!
     private var detailTextAttributes: [NSAttributedStringKey: Any]!
     private var valueRepresentation = NutritionKind.ValueRepresentation.real
     
@@ -37,7 +38,7 @@ class LogDetailViewController: PulleyDrawerViewController {
     }
     
     @IBAction func edit() {
-        VCController.editFoodEntry(detailPresentable)
+        detailPresentable.editDetailPresentable()
     }
     
     @IBAction func cancel() {
@@ -54,18 +55,19 @@ class LogDetailViewController: PulleyDrawerViewController {
     }
     
     private func resetLogDetailText() {
-        let textViewString = detailPresentable.logDetailText(valueRepresentation)
+        let textViewString = detailPresentable.makeDetailText(valueRepresentation)
         textView.attributedText = NSAttributedString(string: textViewString, attributes: detailTextAttributes)
     }
 }
 
-//protocol LogDetailPresentable {
-//    var logDetailTitle: String { get }
-//    var logDetailSubtitle: String { get }
-//    var logDetailText: String { get }
-//}
+protocol LogDetailPresentable {
+    var logDetailTitle: String { get }
+    var logDetailSubtitle: String { get }
+    func editDetailPresentable()
+    func makeDetailText(_ representation: NutritionKind.ValueRepresentation) -> String
+}
 
-extension FoodEntry /*: LogDetailPresentable*/ {
+extension FoodEntry: LogDetailPresentable {
     var logDetailTitle: String {
         guard let food = food, let measurementString = measurementString else { return "Error: Log Detail Title" }
         return "\(measurementString)\(food.measurementRepresentation.longSuffix) \(food.name)"
@@ -75,7 +77,11 @@ extension FoodEntry /*: LogDetailPresentable*/ {
         return date.mediumDateShortTimeString
     }
     
-    func logDetailText(_ representation: NutritionKind.ValueRepresentation) -> String {
+    func editDetailPresentable() {
+        VCController.editFoodEntry(self)
+    }
+    
+    func makeDetailText(_ representation: NutritionKind.ValueRepresentation) -> String {
         func detailString(_ real: Float, _ kind: NutritionKind) -> String {
             guard real != 0.0 else { return "" }
             let totalValue = real * measurementFloat

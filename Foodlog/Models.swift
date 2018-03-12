@@ -16,7 +16,7 @@ final class SearchSuggestion: Object {
         case tag    = 2
     }
     
-    @objc dynamic var kind = -1
+    @objc dynamic var kindRaw = -1
     @objc dynamic var lastUsed = Date()
     @objc dynamic var text = ""
     
