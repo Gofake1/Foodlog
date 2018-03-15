@@ -10,6 +10,7 @@ import RealmSwift
 import UIKit
 
 // TODO: Make Realm and HealthKit transactions atomic
+// TODO: Deleting `Food` doesn't delete empty `Day`s
 class LogViewController: UIViewController {
     @IBOutlet weak var tableView: UITableView!
     
@@ -183,7 +184,6 @@ struct AnyFilteredResult: FilteredResultType {
     }
 }
 
-// TODO: Update SearchVC's table when user deletes from this table
 class FilteredLogTableController: LogTableController {    
     private weak var tableView: UITableView!
     private var tableData = [AnyRandomAccessCollection<AnyFilteredResult>]()
@@ -364,6 +364,7 @@ extension Food: FilteredResultType {
         return String(entries.count)+" entries"
     }
     
+    // TODO: Refactor into common function
     func filteredOnDelete() {
         func warningString(_ count: Int) -> String {
             return "Deleting this food item will also delete \(count) entries. This cannot be undone."

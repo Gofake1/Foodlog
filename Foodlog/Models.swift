@@ -16,6 +16,7 @@ final class SearchSuggestion: Object {
         case tag    = 2
     }
     
+    @objc dynamic var id = UUID().uuidString
     @objc dynamic var kindRaw = -1
     @objc dynamic var lastUsed = Date()
     @objc dynamic var text = ""
@@ -23,6 +24,10 @@ final class SearchSuggestion: Object {
     let foods = LinkingObjects(fromType: Food.self, property: "searchSuggestion")
     let groups = LinkingObjects(fromType: FoodGroupingTemplate.self, property: "searchSuggestion")
     let tags = LinkingObjects(fromType: Tag.self, property: "searchSuggestion")
+    
+    override static func primaryKey() -> String? {
+        return "id"
+    }
     
     override static func indexedProperties() -> [String] {
         return ["lastUsed", "text"]
