@@ -80,14 +80,10 @@
                         <viewLayoutGuide key="safeArea" id="iUA-Al-kYg"/>
                     </view>
                     <connections>
-                        <outlet property="defaultLogTableController" destination="g3a-vs-0Ou" id="GUT-0s-R48"/>
-                        <outlet property="filteredLogTableController" destination="Dgp-jd-nlf" id="uav-0s-nhd"/>
                         <outlet property="tableView" destination="p4u-kq-wQp" id="nhe-hk-v5e"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="2tG-7D-m5V" userLabel="First Responder" sceneMemberID="firstResponder"/>
-                <customObject id="g3a-vs-0Ou" customClass="DefaultLogTableController" customModule="Foodlog" customModuleProvider="target"/>
-                <customObject id="Dgp-jd-nlf" customClass="FilteredLogTableController" customModule="Foodlog" customModuleProvider="target"/>
             </objects>
             <point key="canvasLocation" x="760" y="0.0"/>
         </scene>
@@ -104,7 +100,7 @@
                                 <constraints>
                                     <constraint firstAttribute="height" constant="56" id="oov-eS-lWe"/>
                                 </constraints>
-                                <textInputTraits key="textInputTraits"/>
+                                <textInputTraits key="textInputTraits" autocapitalizationType="words"/>
                                 <connections>
                                     <outlet property="delegate" destination="GXp-b9-hhh" id="eoy-DP-KrM"/>
                                 </connections>

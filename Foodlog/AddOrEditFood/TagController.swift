@@ -331,7 +331,7 @@ class TagViewController: UIViewController {
     }
 }
 
-protocol TagViewControllerDelegate: AnyObject {
+protocol TagViewControllerDelegate: class {
     var tags: Set<Tag> { get }
     func createTag(name: String) throws -> Tag
     func toggleTag(name: String) -> Bool
@@ -359,6 +359,7 @@ extension TagController: TagViewControllerDelegate {
         tag.name = name
         tag.searchSuggestion = SearchSuggestion()
         tag.searchSuggestion?.kindRaw = SearchSuggestion.Kind.tag.rawValue
+        tag.searchSuggestion?.text = name
         DataStore.update(tag)
         return tag
     }

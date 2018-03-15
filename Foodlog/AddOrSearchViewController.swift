@@ -66,43 +66,44 @@ extension AddOrSearchViewController: UISearchBarDelegate {
 }
 
 protocol SuggestionType {
-    var canBeAddedToLog: Bool { get }
-    var canBeDeleted: Bool { get }
-    var canBeSearched: Bool { get }
-    var onAdd: () -> () { get }
-    var onDelete: () -> () { get }
-    var onSearch: () -> () { get }
-    var labelText: String { get }
+    var suggestionCanBeAddedToLog: Bool { get }
+    var suggestionCanBeDeleted: Bool { get }
+    var suggestionCanBeSearched: Bool { get }
+    var suggestionLabelText: String { get }
+    func suggestionOnAdd()
+    func suggestionOnDelete()
+    func suggestionOnSearch()
 }
 
 class SuggestionTableController: NSObject {
     class NewFoodPlaceholder: SuggestionType {
         var name: String
-        var canBeAddedToLog: Bool {
+        var suggestionCanBeAddedToLog: Bool {
             return true
         }
-        var canBeDeleted: Bool {
+        var suggestionCanBeDeleted: Bool {
             return false
         }
-        var canBeSearched: Bool {
+        var suggestionCanBeSearched: Bool {
             return true
         }
-        var onAdd: () -> () {
-            return { [weak self] in
-                let foodEntry = FoodEntry()
-                foodEntry.food = Food()
-                foodEntry.food!.name = self!.name
-                VCController.addFoodEntry(foodEntry, isNew: true)
-            }
-        }
-        var onDelete: () -> () {
-            return { assert(false) }
-        }
-        var onSearch: () -> () {
-            return {} // TODO: Search using `name`
-        }
-        var labelText: String {
+        var suggestionLabelText: String {
             return "\"\(name)\""
+        }
+        
+        func suggestionOnAdd() {
+            let foodEntry = FoodEntry()
+            foodEntry.food = Food()
+            foodEntry.food!.name = name
+            VCController.addFoodEntry(foodEntry, isNew: true)
+        }
+        
+        func suggestionOnDelete() {
+            assert(false)
+        }
+        
+        func suggestionOnSearch() {
+            // TODO
         }
         
         init(name: String) {
@@ -148,13 +149,13 @@ extension SuggestionTableController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        return suggestions[indexPath.row].canBeDeleted
+        return suggestions[indexPath.row].suggestionCanBeDeleted
     }
     
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle,
                    forRowAt indexPath: IndexPath) {
         guard editingStyle == .delete else { return }
-        suggestions[indexPath.row].onDelete()
+        suggestions[indexPath.row].suggestionOnDelete()
         suggestions.remove(at: indexPath.row)
         tableView.deleteRows(at: [indexPath], with: .automatic)
     }
@@ -168,12 +169,12 @@ extension SuggestionTableController: UITableViewDelegate {
             VCController.clearLogFilter()
             return nil
         } else {
-            return suggestions[indexPath.row].canBeSearched ? indexPath : nil
+            return suggestions[indexPath.row].suggestionCanBeSearched ? indexPath : nil
         }
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        suggestions[indexPath.row].onSearch()
+        suggestions[indexPath.row].suggestionOnSearch()
         tableViewVisibilityController.filterStateChanged(true)
     }
 }
@@ -222,99 +223,100 @@ class SuggestionTableViewCell: UITableViewCell {
     
     var suggestion: SuggestionType! {
         didSet {
-            label.text = suggestion.labelText
-            addButton.isHidden = !suggestion.canBeAddedToLog
+            label.text = suggestion.suggestionLabelText
+            addButton.isHidden = !suggestion.suggestionCanBeAddedToLog
         }
     }
     
     @IBAction func add() {
-        suggestion.onAdd()
+        suggestion.suggestionOnAdd()
     }
 }
 
 extension Food: SuggestionType {
-    var canBeAddedToLog: Bool {
+    var suggestionCanBeAddedToLog: Bool {
         return true
     }
-    var canBeDeleted: Bool {
+    var suggestionCanBeDeleted: Bool {
         return true
     }
-    var canBeSearched: Bool {
+    var suggestionCanBeSearched: Bool {
         return true
     }
-    var onAdd: () -> () {
-        return { [weak self] in
-            let foodEntry = FoodEntry()
-            foodEntry.food = self
-            VCController.addFoodEntry(foodEntry, isNew: false)
-        }
-    }
-    var onDelete: () -> () {
-        return { [weak self] in
-            // TODO: Delete all associated food entries
-            DataStore.delete(self!.searchSuggestion!, withoutNotifying: [])
-            DataStore.delete(self!, withoutNotifying: [])
-        }
-    }
-    var onSearch: () -> () {
-        return { VCController.filterLog(self) }
-    }
-    var labelText: String {
+    var suggestionLabelText: String {
         return name
+    }
+    
+    func suggestionOnAdd() {
+        let foodEntry = FoodEntry()
+        foodEntry.food = self
+        VCController.addFoodEntry(foodEntry, isNew: false)
+    }
+    
+    func suggestionOnDelete() {
+        // TODO: Delete all associated food entries
+        DataStore.delete(searchSuggestion!)
+        DataStore.delete(self)
+    }
+    
+    func suggestionOnSearch() {
+        VCController.filterLog(self)
     }
 }
 
 extension FoodGroupingTemplate: SuggestionType {
-    var canBeAddedToLog: Bool {
+    var suggestionCanBeAddedToLog: Bool {
         return true
     }
-    var canBeDeleted: Bool {
+    var suggestionCanBeDeleted: Bool {
         return true
     }
-    var canBeSearched: Bool {
+    var suggestionCanBeSearched: Bool {
         return false
     }
-    var onAdd: () -> () {
-        return {} // TODO
-    }
-    var onDelete: () -> () {
-        return { [weak self] in
-            DataStore.delete(self!.searchSuggestion!, withoutNotifying: [])
-            DataStore.delete(self!, withoutNotifying: [])
-        }
-    }
-    var onSearch: () -> () {
-        return { assert(false) }
-    }
-    var labelText: String {
+    var suggestionLabelText: String {
         return name
+    }
+    
+    func suggestionOnAdd() {
+        // TODO
+    }
+    
+    func suggestionOnDelete() {
+        DataStore.delete(searchSuggestion!)
+        DataStore.delete(self)
+    }
+    
+    func suggestionOnSearch() {
+        assert(false)
     }
 }
 
 extension Tag: SuggestionType {
-    var canBeAddedToLog: Bool {
+    var suggestionCanBeAddedToLog: Bool {
         return false
     }
-    var canBeDeleted: Bool {
+    var suggestionCanBeDeleted: Bool {
         return true
     }
-    var canBeSearched: Bool {
+    var suggestionCanBeSearched: Bool {
         return true
     }
-    var onAdd: () -> () {
-        return { assert(false) }
-    }
-    var onDelete: () -> () {
-        return { [weak self] in
-            DataStore.delete(self!.searchSuggestion!, withoutNotifying: [])
-            DataStore.delete(self!, withoutNotifying: [])
-        }
-    }
-    var onSearch: () -> () {
-        return {} // TODO
-    }
-    var labelText: String {
+    var suggestionLabelText: String {
         return name
+    }
+    
+    func suggestionOnAdd() {
+        assert(false)
+    }
+    
+    func suggestionOnDelete() {
+        DataStore.delete(searchSuggestion!)
+        DataStore.delete(self)
+    }
+    
+    func suggestionOnSearch() {
+        VCController.filterLog(self)
     }
 }
 

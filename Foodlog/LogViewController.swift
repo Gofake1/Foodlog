@@ -10,13 +10,12 @@ import RealmSwift
 import UIKit
 
 // TODO: Make Realm and HealthKit transactions atomic
-// TODO: Show `Food`s in `Tag` search results
 class LogViewController: UIViewController {
     @IBOutlet weak var tableView: UITableView!
-    @IBOutlet weak var defaultLogTableController: DefaultLogTableController!
-    @IBOutlet weak var filteredLogTableController: FilteredLogTableController!
     
     private var currentLogTableController: LogTableController!
+    private let defaultLogTableController = DefaultLogTableController()
+    private let filteredLogTableController = FilteredLogTableController()
     
     override func viewDidLoad() {
         currentLogTableController = defaultLogTableController
@@ -38,6 +37,15 @@ class LogViewController: UIViewController {
             filteredLogTableController.setup(tableView)
         }
         filteredLogTableController.filter(food)
+    }
+    
+    func filter(_ tag: Tag) {
+        if currentLogTableController != filteredLogTableController {
+            currentLogTableController = filteredLogTableController
+            defaultLogTableController.tearDown()
+            filteredLogTableController.setup(tableView)
+        }
+        filteredLogTableController.filter(tag)
     }
     
     func clearFilter() {
@@ -98,8 +106,7 @@ extension DefaultLogTableController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath) as! DetailSubtitleTableViewCell
         let foodEntry = sortedDays[indexPath.section].sortedFoodEntries[indexPath.row]
-        cell.displayFraction = foodEntry.measurementValueRepresentation ==
-            FoodEntry.MeasurementValueRepresentation.fraction
+        cell.displaysFraction = foodEntry.measurementValueRepresentation == .fraction
         cell.titleLabel?.text = foodEntry.food?.name ?? "Unnamed"
         cell.subtitleLabel?.text = foodEntry.date.noDateShortTimeString
         cell.detailLabel?.text = foodEntry.measurementLabelText ?? "?"
@@ -109,7 +116,7 @@ extension DefaultLogTableController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle,
                    forRowAt indexPath: IndexPath) {
         guard editingStyle == .delete else { return }
-        if sortedDays[indexPath.section].sortedFoodEntries.count <= 1 {
+        if sortedDays[indexPath.section].foodEntries.count <= 1 {
             HealthKitStore.shared.delete([sortedDays[indexPath.section].sortedFoodEntries[indexPath.row].id], {})
             DataStore.delete(sortedDays[indexPath.section].sortedFoodEntries[indexPath.row],
                              withoutNotifying: [daysChangeToken])
@@ -128,6 +135,7 @@ extension DefaultLogTableController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
         if tableView.cellForRow(at: indexPath)!.isSelected {
             tableView.deselectRow(at: indexPath, animated: true)
+            assert(VCController.drawerStack.last?.state == .detail)
             VCController.pop()
             return nil
         } else {
@@ -136,69 +144,169 @@ extension DefaultLogTableController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let foodEntry = sortedDays[indexPath.section].sortedFoodEntries[indexPath.row]
-        VCController.selectFoodEntry(foodEntry)
+        VCController.showDetail(sortedDays[indexPath.section].sortedFoodEntries[indexPath.row])
     }
 }
 
-class FilteredLogTableController: LogTableController {
+protocol FilteredResultType {
+    var filteredDetail: String { get }
+    var filteredDetailDisplaysFraction: Bool { get }
+    var filteredTitle: String { get }
+    var filteredSubtitle: String { get }
+    func filteredOnDelete()
+}
+
+struct AnyFilteredResult: FilteredResultType {
+    var filteredDetail: String {
+        return base.filteredDetail
+    }
+    var filteredDetailDisplaysFraction: Bool {
+        return base.filteredDetailDisplaysFraction
+    }
+    var filteredTitle: String {
+        return base.filteredTitle
+    }
+    var filteredSubtitle: String {
+        return base.filteredSubtitle
+    }
+    var logDetailPresentable: LogDetailPresentable {
+        return base as! LogDetailPresentable
+    }
+    private let base: FilteredResultType
+    
+    init(_ base: FilteredResultType) {
+        self.base = base
+    }
+    
+    func filteredOnDelete() {
+        base.filteredOnDelete()
+    }
+}
+
+// TODO: Update SearchVC's table when user deletes from this table
+class FilteredLogTableController: LogTableController {    
     private weak var tableView: UITableView!
-    private var foodEntriesChangeToken: NotificationToken!
-    private var sortedFilteredFoodEntries: Results<FoodEntry>!
+    private var tableData = [AnyRandomAccessCollection<AnyFilteredResult>]()
+    private var tableDataChangeTokens = [NotificationToken]()
     
     override func setup(_ tableView: UITableView) {
         self.tableView = tableView
         tableView.dataSource = self
-        tableView.delegate = nil
+        tableView.delegate = self
     }
     
     override func tearDown() {
-        foodEntriesChangeToken.invalidate()
+        tableDataChangeTokens.forEach { $0.invalidate() }
     }
     
-    // TODO: Composable filtering
     func filter(_ food: Food) {
-        sortedFilteredFoodEntries = DataStore.foodEntries.filter("food == %@", food)
+        tableDataChangeTokens.forEach { $0.invalidate() }
+        let foodEntries = DataStore.foodEntries.filter("food == %@", food)
             .sorted(byKeyPath: #keyPath(FoodEntry.date), ascending: false)
-        foodEntriesChangeToken = sortedFilteredFoodEntries.observe { [weak self] in
+        let foodEntriesChangeToken = foodEntries.observe { [weak self] in
             switch $0 {
             case .initial:
-                self?.tableView.reloadData()
-            case .update(_, let deletes, let inserts, let mods):
-                self?.tableView.performBatchUpdates({
-                    self?.tableView.deleteRows(at: deletes.map({ IndexPath(row: $0, section: 0) }), with: .automatic)
-                    self?.tableView.insertRows(at: inserts.map({ IndexPath(row: $0, section: 0) }), with: .automatic)
-                    self?.tableView.reloadRows(at: mods.map({ IndexPath(row: $0, section: 0) }), with: .automatic)
+                break
+            case .update(_, let deletions, let insertions, let mods):
+                let foodEntryResults = foodEntries.map(AnyFilteredResult.init)
+                self!.tableData = [AnyRandomAccessCollection(foodEntryResults)]
+                self!.tableView.performBatchUpdates({
+                    self!.tableView.deleteRows(at: deletions.map { IndexPath(row: $0, section: 0) }, with: .automatic)
+                    self!.tableView.insertRows(at: insertions.map { IndexPath(row: $0, section: 0) }, with: .automatic)
+                    self!.tableView.reloadRows(at: mods.map { IndexPath(row: $0, section: 0) }, with: .automatic)
                 })
             case .error(let error):
                 UIApplication.shared.alert(error: error)
             }
         }
+        tableDataChangeTokens = [foodEntriesChangeToken]
+        let foodEntryResults = foodEntries.map(AnyFilteredResult.init)
+        tableData = [AnyRandomAccessCollection(foodEntryResults)]
+        tableView.reloadData()
+    }
+    
+    func filter(_ tag: Tag) {
+        tableDataChangeTokens.forEach { $0.invalidate() }
+        let foodsChangeToken = tag.foods.observe { [weak self] in
+            switch $0 {
+            case .initial:
+                break
+            case .update(_, let deletions, let insertions, let mods):
+                let foodResults = tag.foods.map(AnyFilteredResult.init)
+                self!.tableData[0] = AnyRandomAccessCollection(foodResults)
+                self!.tableView.performBatchUpdates({
+                    self!.tableView.deleteRows(at: deletions.map { IndexPath(row: $0, section: 0) }, with: .automatic)
+                    self!.tableView.insertRows(at: insertions.map { IndexPath(row: $0, section: 0) }, with: .automatic)
+                    self!.tableView.reloadRows(at: mods.map { IndexPath(row: $0, section: 0) }, with: .automatic)
+                })
+            case .error(let error):
+                UIApplication.shared.alert(error: error)
+            }
+        }
+        let foodEntriesChangeToken = tag.foodEntries.observe { [weak self] in
+            switch $0 {
+            case .initial:
+                break
+            case .update(_, let deletions, let insertions, let mods):
+                let foodEntryResults = tag.foodEntries.map(AnyFilteredResult.init)
+                self!.tableData[1] = AnyRandomAccessCollection(foodEntryResults)
+                self!.tableView.performBatchUpdates({
+                    self!.tableView.deleteRows(at: deletions.map { IndexPath(row: $0, section: 1) }, with: .automatic)
+                    self!.tableView.insertRows(at: insertions.map { IndexPath(row: $0, section: 1) }, with: .automatic)
+                    self!.tableView.reloadRows(at: mods.map { IndexPath(row: $0, section: 1) }, with: .automatic)
+                })
+            case .error(let error):
+                UIApplication.shared.alert(error: error)
+            }
+        }
+        tableDataChangeTokens = [foodsChangeToken, foodEntriesChangeToken]
+        let foodResults = tag.foods.map(AnyFilteredResult.init)
+        let foodEntryResults = tag.foodEntries.map(AnyFilteredResult.init)
+        tableData = [AnyRandomAccessCollection(foodResults), AnyRandomAccessCollection(foodEntryResults)]
+        tableView.reloadData()
     }
 }
 
 extension FilteredLogTableController: UITableViewDataSource {
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return tableData.count
+    }
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return sortedFilteredFoodEntries.count
+        return tableData[section].count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath) as! DetailSubtitleTableViewCell
-        let foodEntry = sortedFilteredFoodEntries[indexPath.row]
-        cell.displayFraction = foodEntry.measurementValueRepresentation ==
-            FoodEntry.MeasurementValueRepresentation.fraction
-        cell.titleLabel?.text = foodEntry.food?.name
-        cell.subtitleLabel?.text = foodEntry.date.mediumDateShortTimeString
-        cell.detailLabel?.text = foodEntry.measurementLabelText ?? "?"
+        let item = tableData[indexPath.section][AnyIndex(indexPath.row)]
+        cell.displaysFraction = item.filteredDetailDisplaysFraction
+        cell.titleLabel?.text = item.filteredTitle
+        cell.subtitleLabel?.text = item.filteredSubtitle
+        cell.detailLabel?.text = item.filteredDetail
         return cell
     }
     
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle,
                    forRowAt indexPath: IndexPath) {
         guard editingStyle == .delete else { return }
-        HealthKitStore.shared.delete([sortedFilteredFoodEntries[indexPath.row].id], {})
-        DataStore.delete(sortedFilteredFoodEntries[indexPath.row], withoutNotifying: [foodEntriesChangeToken])
-        tableView.deleteRows(at: [indexPath], with: .automatic)
+        tableData[indexPath.section][AnyIndex(indexPath.row)].filteredOnDelete()
+    }
+}
+
+extension FilteredLogTableController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
+        if tableView.cellForRow(at: indexPath)!.isSelected {
+            tableView.deselectRow(at: indexPath, animated: true)
+            assert(VCController.drawerStack.last?.state == .detail)
+            VCController.pop()
+            return nil
+        } else {
+            return indexPath
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        VCController.showDetail(tableData[indexPath.section][AnyIndex(indexPath.row)].logDetailPresentable)
     }
 }
 
@@ -224,10 +332,10 @@ class DetailSubtitleTableViewCell: UITableViewCell {
     }
     @IBOutlet weak var subtitleLabel: UILabel!
     
-    var displayFraction = false {
+    var displaysFraction = false {
         didSet {
-            guard displayFraction != oldValue else { return }
-            if displayFraction {
+            guard displaysFraction != oldValue else { return }
+            if displaysFraction {
                 detailLabel.font = _fractionFont
             } else {
                 detailLabel.font = _defaultFont
@@ -239,6 +347,65 @@ class DetailSubtitleTableViewCell: UITableViewCell {
 extension Day {
     var sortedFoodEntries: Results<FoodEntry> {
         return foodEntries.sorted(byKeyPath: #keyPath(FoodEntry.date), ascending: false)
+    }
+}
+
+extension Food: FilteredResultType {
+    var filteredDetail: String {
+        return ""
+    }
+    var filteredDetailDisplaysFraction: Bool {
+        return false
+    }
+    var filteredTitle: String {
+        return name
+    }
+    var filteredSubtitle: String {
+        return String(entries.count)+" entries"
+    }
+    
+    func filteredOnDelete() {
+        func warningString(_ count: Int) -> String {
+            return "Deleting this food item will also delete \(count) entries. This cannot be undone."
+        }
+        
+        if entries.count > 0 {
+            UIApplication.shared.alert(warning: warningString(entries.count)) {
+                self.entries.forEach { DataStore.delete($0) }
+                DataStore.delete(self.searchSuggestion!)
+                DataStore.delete(self)
+            }
+        } else {
+            entries.forEach { DataStore.delete($0) }
+            DataStore.delete(searchSuggestion!)
+            DataStore.delete(self)
+        }
+    }
+}
+
+extension FoodEntry: FilteredResultType {
+    var filteredDetail: String {
+        return measurementLabelText ?? "?"
+    }
+    var filteredDetailDisplaysFraction: Bool {
+        return measurementValueRepresentation == .fraction
+    }
+    var filteredTitle: String {
+        return food!.name
+    }
+    var filteredSubtitle: String {
+        return date.mediumDateShortTimeString
+    }
+    
+    func filteredOnDelete() {
+        if let day = day.first, day.foodEntries.count <= 1 {
+            HealthKitStore.shared.delete([id], {})
+            DataStore.delete(self)
+            DataStore.delete(day)
+        } else {
+            HealthKitStore.shared.delete([id], {})
+            DataStore.delete(self)
+        }
     }
 }
 

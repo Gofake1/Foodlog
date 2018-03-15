@@ -8,7 +8,6 @@
 
 import UIKit
 
-// TODO: UI for `Food`
 class LogDetailViewController: PulleyDrawerViewController {
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var subtitleLabel: UILabel!
@@ -67,12 +66,29 @@ protocol LogDetailPresentable {
     func makeDetailText(_ representation: NutritionKind.ValueRepresentation) -> String
 }
 
+extension Food: LogDetailPresentable {
+    var logDetailTitle: String {
+        return name
+    }
+    var logDetailSubtitle: String {
+        return String(entries.count)+" entries"
+    }
+    
+    func editDetailPresentable() {
+        // TODO
+    }
+    
+    func makeDetailText(_ representation: NutritionKind.ValueRepresentation) -> String {
+        // TODO
+        return ""
+    }
+}
+
 extension FoodEntry: LogDetailPresentable {
     var logDetailTitle: String {
         guard let food = food, let measurementString = measurementString else { return "Error: Log Detail Title" }
         return "\(measurementString)\(food.measurementRepresentation.longSuffix) \(food.name)"
     }
-    
     var logDetailSubtitle: String {
         return date.mediumDateShortTimeString
     }

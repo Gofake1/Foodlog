@@ -26,7 +26,7 @@ final class DataStore {
         write { $0.add(object, update: true) }
     }
     
-    static func delete(_ object: Object, withoutNotifying tokens: [NotificationToken]) {
+    static func delete(_ object: Object, withoutNotifying tokens: [NotificationToken] = []) {
         do {
             realm.beginWrite()
             realm.delete(object)

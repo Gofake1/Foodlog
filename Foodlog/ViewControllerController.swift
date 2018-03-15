@@ -21,16 +21,14 @@ final class VCController {
         case addOrSearch
         case addFoodEntry
         case editFoodEntry
-        case detailFoodEntry
+        case detail
     }
     
     static var drawerStack = [(vc: PulleyDrawerViewController, state: DrawerState)]()
     static let addOrSearchVC: AddOrSearchViewController = makeVC(.addOrSearch)
     static let logVC: LogViewController = makeVC(.log)
     static let pulleyVC: PulleyViewController = {
-        defer {
-            drawerStack.append((addOrSearchVC, .addOrSearch))
-        }
+        defer { drawerStack.append((addOrSearchVC, .addOrSearch)) }
         return PulleyViewController(contentViewController: logVC, drawerViewController: addOrSearchVC)
     }()
     private static let storyboard = UIStoryboard(name: "Main", bundle: nil)
@@ -44,29 +42,34 @@ final class VCController {
     }
     
     static func editFoodEntry(_ foodEntry: FoodEntry) {
-        assert(drawerStack.last?.state == .detailFoodEntry)
+        assert(drawerStack.last?.state == .detail)
         let editFoodVC: AddOrEditFoodViewController = makeVC(.addOrEditFood)
         editFoodVC.foodEntry = foodEntry
         editFoodVC.mode = .editEntry
         push(editFoodVC, .editFoodEntry)
     }
     
-    static func selectFoodEntry(_ foodEntry: FoodEntry) {
+    static func showDetail(_ presentable: LogDetailPresentable) {
         let logDetailVC: LogDetailViewController = makeVC(.logDetail)
-        logDetailVC.detailPresentable = foodEntry
+        logDetailVC.detailPresentable = presentable
         switch drawerStack.last!.state {
         case .addOrSearch:
-            push(logDetailVC, .detailFoodEntry)
+            push(logDetailVC, .detail)
         case .addFoodEntry: fallthrough
         case .editFoodEntry: fallthrough
-        case .detailFoodEntry:
-            popAndPush(logDetailVC, .detailFoodEntry)
+        case .detail:
+            popAndPush(logDetailVC, .detail)
         }
     }
     
-    // TODO: Filter by tag or date
+    // TODO: Filter by date
+    
     static func filterLog(_ food: Food) {
         logVC.filter(food)
+    }
+    
+    static func filterLog(_ tag: Tag) {
+        logVC.filter(tag)
     }
     
     static func clearLogFilter() {
