@@ -10,7 +10,6 @@ import RealmSwift
 import UIKit
 
 // TODO: Make Realm and HealthKit transactions atomic
-// TODO: Deleting `Food` doesn't delete empty `Day`s
 class LogViewController: UIViewController {
     @IBOutlet weak var tableView: UITableView!
     
@@ -117,17 +116,14 @@ extension DefaultLogTableController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle,
                    forRowAt indexPath: IndexPath) {
         guard editingStyle == .delete else { return }
-        if sortedDays[indexPath.section].foodEntries.count <= 1 {
-            HealthKitStore.shared.delete([sortedDays[indexPath.section].sortedFoodEntries[indexPath.row].id], {})
-            DataStore.delete(sortedDays[indexPath.section].sortedFoodEntries[indexPath.row],
-                             withoutNotifying: [daysChangeToken])
-            DataStore.delete(sortedDays[indexPath.section], withoutNotifying: [daysChangeToken])
-            tableView.deleteSections(IndexSet([indexPath.section]), with: .automatic)
-        } else {
-            HealthKitStore.shared.delete([sortedDays[indexPath.section].sortedFoodEntries[indexPath.row].id], {})
-            DataStore.delete(sortedDays[indexPath.section].sortedFoodEntries[indexPath.row],
-                             withoutNotifying: [daysChangeToken])
-            tableView.deleteRows(at: [indexPath], with: .automatic)
+        FoodEntry.delete(sortedDays[indexPath.section].sortedFoodEntries[indexPath.row],
+                         withoutNotifying: [daysChangeToken])
+        {
+            if $0 {
+                tableView.deleteSections(IndexSet([indexPath.section]), with: .automatic)
+            } else {
+                tableView.deleteRows(at: [indexPath], with: .automatic)
+            }
         }
     }
 }
@@ -364,23 +360,8 @@ extension Food: FilteredResultType {
         return String(entries.count)+" entries"
     }
     
-    // TODO: Refactor into common function
     func filteredOnDelete() {
-        func warningString(_ count: Int) -> String {
-            return "Deleting this food item will also delete \(count) entries. This cannot be undone."
-        }
-        
-        if entries.count > 0 {
-            UIApplication.shared.alert(warning: warningString(entries.count)) {
-                self.entries.forEach { DataStore.delete($0) }
-                DataStore.delete(self.searchSuggestion!)
-                DataStore.delete(self)
-            }
-        } else {
-            entries.forEach { DataStore.delete($0) }
-            DataStore.delete(searchSuggestion!)
-            DataStore.delete(self)
-        }
+        Food.delete(self)
     }
 }
 
@@ -399,14 +380,7 @@ extension FoodEntry: FilteredResultType {
     }
     
     func filteredOnDelete() {
-        if let day = day.first, day.foodEntries.count <= 1 {
-            HealthKitStore.shared.delete([id], {})
-            DataStore.delete(self)
-            DataStore.delete(day)
-        } else {
-            HealthKitStore.shared.delete([id], {})
-            DataStore.delete(self)
-        }
+        FoodEntry.delete(self)
     }
 }
 

@@ -291,23 +291,8 @@ extension Food: SuggestionType {
         VCController.addFoodEntry(foodEntry, isNew: false)
     }
     
-    // TODO: Refactor into common function
     func suggestionOnDelete() {
-        func warningString(_ count: Int) -> String {
-            return "Deleting this food item will also delete \(count) entries. This cannot be undone."
-        }
-        
-        if entries.count > 0 {
-            UIApplication.shared.alert(warning: warningString(entries.count)) {
-                self.entries.forEach { DataStore.delete($0) }
-                DataStore.delete(self.searchSuggestion!)
-                DataStore.delete(self)
-            }
-        } else {
-            entries.forEach { DataStore.delete($0) }
-            DataStore.delete(searchSuggestion!)
-            DataStore.delete(self)
-        }
+        Food.delete(self)
     }
     
     func suggestionOnSearch() {
@@ -334,8 +319,7 @@ extension FoodGroupingTemplate: SuggestionType {
     }
     
     func suggestionOnDelete() {
-        DataStore.delete(searchSuggestion!)
-        DataStore.delete(self)
+        FoodGroupingTemplate.delete(self)
     }
     
     func suggestionOnSearch() {
@@ -362,8 +346,7 @@ extension Tag: SuggestionType {
     }
     
     func suggestionOnDelete() {
-        DataStore.delete(searchSuggestion!)
-        DataStore.delete(self)
+        Tag.delete(self)
     }
     
     func suggestionOnSearch() {

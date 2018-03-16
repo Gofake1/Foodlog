@@ -8,6 +8,7 @@
 
 import Foundation
 import RealmSwift
+import UIKit
 
 final class SearchSuggestion: Object {
     enum Kind: Int {
@@ -32,6 +33,10 @@ final class SearchSuggestion: Object {
     override static func indexedProperties() -> [String] {
         return ["lastUsed", "text"]
     }
+    
+    static func delete(_ suggestion: SearchSuggestion) {
+        DataStore.delete(suggestion)
+    }
 }
 
 final class Tag: Object {
@@ -53,6 +58,11 @@ final class Tag: Object {
     
     override static func primaryKey() -> String? {
         return "name"
+    }
+    
+    static func delete(_ tag: Tag) {
+        SearchSuggestion.delete(tag.searchSuggestion!)
+        DataStore.delete(tag)
     }
 }
 
@@ -125,6 +135,26 @@ final class Food: Object {
     override static func primaryKey() -> String? {
         return "id"
     }
+    
+    static func delete(_ food: Food) {
+        func warningString(_ count: Int) -> String {
+            return "Deleting this food item will also delete \(count) entries. This cannot be undone."
+        }
+        
+        let entries = food.entries
+        let searchSuggestion = food.searchSuggestion!
+        if entries.count > 0 {
+            UIApplication.shared.alert(warning: warningString(entries.count)) {
+                entries.forEach { FoodEntry.delete($0) }
+                SearchSuggestion.delete(searchSuggestion)
+                DataStore.delete(food)
+            }
+        } else {
+            entries.forEach { FoodEntry.delete($0) }
+            SearchSuggestion.delete(searchSuggestion)
+            DataStore.delete(food)
+        }
+    }
 }
 
 final class FoodEntry: Object {
@@ -173,6 +203,22 @@ final class FoodEntry: Object {
     override static func primaryKey() -> String? {
         return "id"
     }
+    
+    static func delete(_ foodEntry: FoodEntry, withoutNotifying tokens: [NotificationToken] = [],
+                       completion: (Bool) -> () = { _ in })
+    {
+        HealthKitStore.shared.delete([foodEntry.id], {})
+        
+        let day = foodEntry.day.first!
+        if day.foodEntries.count <= 1 {
+            DataStore.delete(foodEntry, withoutNotifying: tokens)
+            Day.delete(day, withoutNotifying: tokens)
+            completion(true)
+        } else {
+            DataStore.delete(foodEntry, withoutNotifying: tokens)
+            completion(false)
+        }
+    }
 }
 
 final class Day: Object {
@@ -189,11 +235,24 @@ final class Day: Object {
     override static func primaryKey() -> String? {
         return "id"
     }
+    
+    static func delete(_ day: Day, withoutNotifying tokens: [NotificationToken] = []) {
+        DataStore.delete(day, withoutNotifying: tokens)
+    }
 }
 
 final class FoodServingPair: Object {
+    @objc dynamic var id = UUID().uuidString
     @objc dynamic var food: Food?
     @objc dynamic var servings = 0
+    
+    override static func primaryKey() -> String? {
+        return "id"
+    }
+    
+    static func delete(_ pair: FoodServingPair) {
+        DataStore.delete(pair)
+    }
 }
 
 final class FoodGroupingTemplate: Object {
@@ -208,6 +267,12 @@ final class FoodGroupingTemplate: Object {
     
     override static func primaryKey() -> String? {
         return "id"
+    }
+    
+    static func delete(_ group: FoodGroupingTemplate) {
+        group.foodServingPairs.forEach { FoodServingPair.delete($0) }
+        SearchSuggestion.delete(group.searchSuggestion!)
+        DataStore.delete(group)
     }
 }
 
