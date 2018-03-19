@@ -40,7 +40,7 @@ final class HealthKitStore {
     
     private init() {
         guard HKHealthStore.isHealthDataAvailable() else {
-            // TODO: Test on iPad
+            // TEST: Test on iPad
             delete = { _, _ in }
             save = { _, _ in }
             return
@@ -94,7 +94,7 @@ final class HealthKitStore {
                     _store.save(foodEntryHKObjects: $0, completionHandler: $1)
                 }
             } else {
-                // TODO: Test permission denied
+                // TEST: Test permission denied
                 print("Auth failed")
                 _queue?.sync {
                     _cachedHealthKitTransactions!.removeAll()
@@ -196,11 +196,9 @@ extension HKHealthStore {
     func delete(foodEntryIds ids: [String], completionHandler: @escaping () -> () = {}) {
         if ids.count == 0 {
             completionHandler()
-        } else if ids.count == 1 {
-            let predicate = NSPredicate(format: "\(HKPredicateKeyPathMetadata).FoodlogID == %@", ids[0])
-            delete(foodEntryPredicate: predicate, completionHandler: completionHandler)
         } else {
-            fatalError("TODO: handle multiple deletions")
+            let predicate = NSPredicate(format: "\(HKPredicateKeyPathMetadata).FoodlogID IN %@", ids)
+            delete(foodEntryPredicate: predicate, completionHandler: completionHandler)
         }
     }
     
