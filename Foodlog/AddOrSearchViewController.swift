@@ -17,9 +17,32 @@ class AddOrSearchViewController: PulleyDrawerViewController {
     @IBOutlet weak var tableView: UITableView!
     
     override func viewDidLoad() {
+        let insets = UIEdgeInsets(top: 0.0, left: 0.0, bottom: 20.0, right: 0.0)
+        tableView.contentInset = insets
+        tableView.scrollIndicatorInsets = insets
         suggestionTableController.update()
-    }
         
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWasShown(_:)),
+                                               name: .UIKeyboardDidShow, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillBeHidden(_:)),
+                                               name: .UIKeyboardWillHide, object: nil)
+    }
+    
+    @objc func keyboardWasShown(_ aNotification: NSNotification) {
+        guard let userInfo = aNotification.userInfo,
+            let keyboardFrame = userInfo[UIKeyboardFrameEndUserInfoKey] as? CGRect
+            else { return }
+        let insets = UIEdgeInsets(top: 0.0, left: 0.0, bottom: keyboardFrame.height+20.0, right: 0.0)
+        tableView.contentInset = insets
+        tableView.scrollIndicatorInsets = insets
+    }
+    
+    @objc func keyboardWillBeHidden(_ aNotification: NSNotification) {
+        let insets = UIEdgeInsets(top: 0.0, left: 0.0, bottom: 20.0, right: 0.0)
+        tableView.contentInset = insets
+        tableView.scrollIndicatorInsets = insets
+    }
+    
     func drawerPositionDidChange(drawer: PulleyViewController, bottomSafeArea: CGFloat) {
         switch drawer.drawerPosition {
         case .closed:
@@ -31,6 +54,10 @@ class AddOrSearchViewController: PulleyDrawerViewController {
         case .partiallyRevealed:
             searchBar.resignFirstResponder()
         }
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 }
 
@@ -102,7 +129,7 @@ class SuggestionTableController: NSObject {
         }
         
         func suggestionOnSearch() {
-            // TODO
+            // TODO: Search foods and entries using text
         }
         
         init(name: String) {
