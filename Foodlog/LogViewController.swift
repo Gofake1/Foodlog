@@ -223,12 +223,14 @@ class FilteredLogTableController: LogTableController {
     
     func filter(_ tag: Tag) {
         tableDataChangeTokens.forEach { $0.invalidate() }
-        let foodsChangeToken = tag.foods.observe { [weak self] in
+        let foods = tag.foods.sorted(byKeyPath: #keyPath(Food.name))
+        let foodEntries = tag.foodEntries.sorted(byKeyPath: #keyPath(FoodEntry.date), ascending: false)
+        let foodsChangeToken = foods.observe { [weak self] in
             switch $0 {
             case .initial:
                 break
             case .update(_, let deletions, let insertions, let mods):
-                let foodResults = tag.foods.map(AnyFilteredResult.init)
+                let foodResults = foods.map(AnyFilteredResult.init)
                 self!.tableData[0] = AnyRandomAccessCollection(foodResults)
                 self!.tableView.performBatchUpdates({
                     self!.tableView.deleteRows(at: deletions.map { IndexPath(row: $0, section: 0) }, with: .automatic)
@@ -239,12 +241,12 @@ class FilteredLogTableController: LogTableController {
                 UIApplication.shared.alert(error: error)
             }
         }
-        let foodEntriesChangeToken = tag.foodEntries.observe { [weak self] in
+        let foodEntriesChangeToken = foodEntries.observe { [weak self] in
             switch $0 {
             case .initial:
                 break
             case .update(_, let deletions, let insertions, let mods):
-                let foodEntryResults = tag.foodEntries.map(AnyFilteredResult.init)
+                let foodEntryResults = foodEntries.map(AnyFilteredResult.init)
                 self!.tableData[1] = AnyRandomAccessCollection(foodEntryResults)
                 self!.tableView.performBatchUpdates({
                     self!.tableView.deleteRows(at: deletions.map { IndexPath(row: $0, section: 1) }, with: .automatic)
@@ -256,8 +258,8 @@ class FilteredLogTableController: LogTableController {
             }
         }
         tableDataChangeTokens = [foodsChangeToken, foodEntriesChangeToken]
-        let foodResults = tag.foods.map(AnyFilteredResult.init)
-        let foodEntryResults = tag.foodEntries.map(AnyFilteredResult.init)
+        let foodResults = foods.map(AnyFilteredResult.init)
+        let foodEntryResults = foodEntries.map(AnyFilteredResult.init)
         tableData = [AnyRandomAccessCollection(foodResults), AnyRandomAccessCollection(foodEntryResults)]
         tableView.reloadData()
     }
