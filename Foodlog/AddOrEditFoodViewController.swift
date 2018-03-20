@@ -148,16 +148,16 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
                     return "Editing this food item will affect \(count) entries. This cannot be undone."
                 }
                 
-                let affectedFoodEntries = Array(DataStore.foodEntries.filter("food == %@", originalFood))
+                let affectedFoodEntries = DataStore.foodEntries.filter("food == %@", originalFood)
                 UIApplication.shared.alert(warning: warningString(affectedFoodEntries.count)) { [weak self] in
                     guard let foodEntry = self?.foodEntry else { return }
                     DataStore.update(foodEntry)
-                    HealthKitStore.shared.update(affectedFoodEntries)
+                    HealthKitStore.shared.update(AnyCollection(affectedFoodEntries))
                     VCController.pop()
                 }
             } else {
                 DataStore.update(foodEntry)
-                HealthKitStore.shared.update([foodEntry!])
+                HealthKitStore.shared.update(AnyCollection([foodEntry!]))
                 VCController.pop()
             }
         }
@@ -192,7 +192,7 @@ extension Date {
     }
 }
 
-extension Array where Element == FoodEntry {
+extension AnyCollection where Element == FoodEntry {
     func changeHealthKitStatus(from matching: [FoodEntry.HealthKitStatus], to new: FoodEntry.HealthKitStatus) {
         for entry in self {
             if matching.contains(where: { $0 == entry.healthKitStatus }) {
@@ -205,7 +205,14 @@ extension Array where Element == FoodEntry {
 }
 
 extension HealthKitStore {
-    func update(_ affectedFoodEntries: [FoodEntry]) {
+    // FIXME: Case when no data will be written to HealthKit:
+    //   - Food item with no data (all zeroes) is created
+    //   - Entries of this food are created
+    //   - Nutrition data is later added to food item
+    //   - Expected: Data is added to HealthKit for all previous entries
+    //   - Actual: Data is not added. However, subsequent entries will get written to HealthKit. Editing a food
+    //     item with an entry that has a record in HealthKit will result in all previous entries getting written.
+    func update(_ affectedFoodEntries: AnyCollection<FoodEntry>) {
         affectedFoodEntries.changeHealthKitStatus(from: [.writtenAndUpToDate], to: .writtenAndNeedsUpdate)
         let idsToDelete = affectedFoodEntries.map { $0.id }
         let hkObjectsToSave = affectedFoodEntries.compactMap { $0.hkObject }
