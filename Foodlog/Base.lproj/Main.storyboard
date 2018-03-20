@@ -250,7 +250,7 @@
                             </label>
                             <textField hidden="YES" opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="qqo-Yv-lUD">
                                 <rect key="frame" x="9" y="16" width="259" height="30"/>
-                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                 <nil key="textColor"/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                                 <textInputTraits key="textInputTraits"/>
@@ -1174,7 +1174,18 @@
                                     <constraint firstAttribute="height" constant="30" id="UH7-3H-iYn"/>
                                     <constraint firstAttribute="width" constant="30" id="q9n-s8-RZw"/>
                                 </constraints>
-                                <state key="normal" image="Close"/>
+                                <state key="normal" image="CloseFilled"/>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="size" keyPath="layer.shadowOffset">
+                                        <size key="value" width="0.0" height="4"/>
+                                    </userDefinedRuntimeAttribute>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.shadowOpacity">
+                                        <real key="value" value="0.20000000000000001"/>
+                                    </userDefinedRuntimeAttribute>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.shadowRadius">
+                                        <integer key="value" value="10"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
                                 <connections>
                                     <action selector="dismiss" destination="R5x-H3-FaN" eventType="touchUpInside" id="N5E-fk-SQ7"/>
                                 </connections>
@@ -1336,7 +1347,8 @@
     <resources>
         <image name="ChevronDown" width="24" height="24"/>
         <image name="ChevronUp" width="24" height="24"/>
-        <image name="Close" width="24" height="24"/>
+        <image name="Close" width="68" height="68"/>
+        <image name="CloseFilled" width="68" height="68"/>
     </resources>
     <color key="tintColor" red="0.0" green="0.53096664507772018" blue="0.01904661551" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
 </document>

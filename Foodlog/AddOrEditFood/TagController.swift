@@ -46,6 +46,9 @@ extension FoodEntry: Tagged {
 }
 
 // TODO: `FlowContainerView.intrinsicContentSize`
+// TODO: Use lighter color when tags are disabled
+// TODO: Make newly created tags toggleable
+// TODO: Update `Tag.lastUsed` when added to `Food` or `FoodEntry`
 class TagController: NSObject {
     @IBOutlet weak var addOrEditVC: AddOrEditFoodViewController!
     @IBOutlet weak var entryTagsView: FlowContainerView!
@@ -246,8 +249,6 @@ extension TagController: UIViewControllerTransitioningDelegate {
     }
 }
 
-// TODO: Make filled close button
-// TODO: Show confirm button if user (de)selected tags
 class TagViewController: UIViewController {
     @IBOutlet weak var addNewTagTextField: UITextField!
     @IBOutlet weak var addNewTagView: UIView!
@@ -318,8 +319,11 @@ class TagViewController: UIViewController {
             }
         }
         addNewTagTextField.resignFirstResponder()
-        UIView.animate(withDuration: 0.5, animations: { [weak self] in self?.addNewTagView.alpha = 0.0 },
-                       completion: { [weak self] _ in self?.addNewTagView.isHidden = true })
+        UIView.animate(withDuration: 0.5, animations: { [weak self] in self?.addNewTagView.alpha = 0.0 }) {
+            [weak self] _ in
+            self?.addNewTagView.isHidden = true
+            self?.addNewTagTextField.text = nil
+        }
     }
     
     @IBAction func dismiss() {
