@@ -1031,12 +1031,13 @@
                     <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                     <items>
+                        <barButtonItem width="8" style="plain" systemItem="fixedSpace" id="ghd-R9-H4H"/>
                         <barButtonItem image="ChevronUp" id="bJ8-7r-Ri9">
                             <connections>
                                 <action selector="moveToPreviousNutritionField" destination="1Xv-DH-p0u" id="OVh-D8-Fym"/>
                             </connections>
                         </barButtonItem>
-                        <barButtonItem width="8" style="plain" systemItem="fixedSpace" id="10J-j2-2RR"/>
+                        <barButtonItem width="8" style="plain" systemItem="fixedSpace" id="rI0-iy-UgO"/>
                         <barButtonItem image="ChevronDown" id="9qo-5x-T4k">
                             <connections>
                                 <action selector="moveToNextNutritionField" destination="1Xv-DH-p0u" id="34m-CC-6vh"/>
@@ -1345,8 +1346,8 @@
         </scene>
     </scenes>
     <resources>
-        <image name="ChevronDown" width="24" height="24"/>
-        <image name="ChevronUp" width="24" height="24"/>
+        <image name="ChevronDown" width="21" height="21"/>
+        <image name="ChevronUp" width="21" height="21"/>
         <image name="Close" width="68" height="68"/>
         <image name="CloseFilled" width="68" height="68"/>
     </resources>
