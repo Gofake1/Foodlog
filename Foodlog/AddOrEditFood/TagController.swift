@@ -8,41 +8,11 @@
 
 import UIKit
 
-protocol Tagged {
-    var tagSet: Set<Tag> { get }
-    func toggleTag(_ name: String) -> Bool
-}
-
-extension Food: Tagged {
-    var tagSet: Set<Tag> {
-        return Set(tags)
-    }
-    
-    func toggleTag(_ name: String) -> Bool {
-        if let index = tags.index(where: { $0.name == name }) {
-            tags.remove(at: index)
-            return false
-        } else {
-            tags.append(DataStore.tags.first(where: { $0.name == name })!)
-            return true
-        }
-    }
-}
-
-extension FoodEntry: Tagged {
-    var tagSet: Set<Tag> {
-        return Set(tags)
-    }
-    
-    func toggleTag(_ name: String) -> Bool {
-        if let index = tags.index(where: { $0.name == name }) {
-            tags.remove(at: index)
-            return false
-        } else {
-            tags.append(DataStore.tags.first(where: { $0.name == name })!)
-            return true
-        }
-    }
+protocol TagControllerContext: class {
+    var didDismissModal: (AnyCollection<Tag>) -> () { get set }
+    var disableFoodTagsView: Bool { get }
+    var tags: (AnyCollection<Tag>, AnyCollection<Tag>) { get }
+    var vcDelegates: (TagViewControllerDelegate, TagViewControllerDelegate) { get }
 }
 
 // TODO: `FlowContainerView.intrinsicContentSize`
@@ -50,7 +20,7 @@ extension FoodEntry: Tagged {
 // TODO: Make newly created tags toggleable
 // TODO: Update `Tag.lastUsed` when added to `Food` or `FoodEntry`
 class TagController: NSObject {
-    @IBOutlet weak var addOrEditVC: AddOrEditFoodViewController!
+    @IBOutlet weak var scrollController: ScrollController!
     @IBOutlet weak var entryTagsView: FlowContainerView!
     @IBOutlet weak var foodTagsView: FlowContainerView!
     
@@ -60,12 +30,12 @@ class TagController: NSObject {
     private static let translationRelativeDuration = translationDuration / animationDuration
     private static let animationDuration = shadowDuration + translationDuration
     private weak var activeTagsView: FlowContainerView!
-    private var tagged: Tagged!
-    private var fillForView = [FlowContainerView: ([Tag]) -> ()]()
+    private var context: TagControllerContext!
+    private var fillForView = [FlowContainerView: (AnyCollection<Tag>) -> ()]()
     
-    func setup(_ mode: AddOrEditFoodViewController.Mode) {
+    func setup(_ context: TagControllerContext) {
         func makeFill(for view: UIView, empty: @escaping () -> UIView, make: @escaping (Tag) -> UIView)
-            -> ([Tag]) -> ()
+            -> (AnyCollection<Tag>) -> ()
         {
             return { [weak view] tags in
                 if tags.count == 0 {
@@ -88,56 +58,54 @@ class TagController: NSObject {
             return button
         })
         
-        let empty: () -> UIView, make: (Tag) -> UIView
-        switch mode {
-        case .addEntryForExistingFood:
-            empty = {
+        if context.disableFoodTagsView {
+            fillForView[foodTagsView] = makeFill(for: foodTagsView, empty: {
                 let label = UILabel()
                 label.textColor = .lightGray
                 label.text = "no tags"
                 return label
-            }
-            make = {
+            }, make: {
                 let button = $0.plainButton
                 button.isEnabled = false
                 return button
-            }
-        case .addEntryForNewFood: fallthrough
-        case .editEntry:
-            empty = {
+            })
+        } else {
+            fillForView[foodTagsView] = makeFill(for: foodTagsView, empty: {
                 let button = UIButton(pill: "add tags", color: .lightGray)
                 button.addTarget(self, action: #selector(TagController.foodTagPressed), for: .touchUpInside)
                 return button
-            }
-            make = {
+            }, make: {
                 let button = $0.plainButton
                 button.addTarget(self, action: #selector(TagController.foodTagPressed), for: .touchUpInside)
                 return button
-            }
+            })
         }
-        fillForView[foodTagsView] = makeFill(for: foodTagsView, empty: empty, make: make)
         
-        fillForView[entryTagsView]!(Array(addOrEditVC.foodEntry.tags))
-        fillForView[foodTagsView]!(Array(addOrEditVC.foodEntry.food!.tags))
+        self.context = context
+        context.didDismissModal = { [weak self] tags in
+            self!.activeTagsView.subviews.forEach { $0.removeFromSuperview() }
+            self!.fillForView[self!.activeTagsView]!(tags)
+        }
+        fillForView[entryTagsView]!(context.tags.0)
+        fillForView[foodTagsView]!(context.tags.1)
     }
     
     @objc func foodEntryTagPressed() {
-        tagged = addOrEditVC.foodEntry
-        showModal(tagView: entryTagsView)
+        showModal(tagView: entryTagsView, delegate: context.vcDelegates.0)
     }
     
     @objc func foodTagPressed() {
-        tagged = addOrEditVC.foodEntry.food!
-        showModal(tagView: foodTagsView)
+        showModal(tagView: foodTagsView, delegate: context.vcDelegates.1)
     }
     
-    private func showModal(tagView: FlowContainerView) {
+    private func showModal(tagView: FlowContainerView, delegate: TagViewControllerDelegate) {
+        scrollController.scrollToView(nil)
         activeTagsView = tagView
         let tagVC: TagViewController = VCController.makeVC(.tag)
-        tagVC.delegate = self
+        tagVC.delegate = delegate
         tagVC.modalPresentationStyle = .overCurrentContext
         tagVC.transitioningDelegate = self
-        addOrEditVC.present(tagVC, animated: true, completion: nil)
+        UIApplication.shared.keyWindow?.rootViewController?.present(tagVC, animated: true)
     }
 }
 
@@ -183,10 +151,10 @@ extension TagController: UIViewControllerAnimatedTransitioning {
             transitionContext.containerView.addSubview(animatedView)
             
             let startFrame = activeTagsView.convert(activeTagsView.bounds, to: nil)
-            let (leftConstraint, rightConstraint, heightConstraint, centerConstraint) =
+            let (left, right, height, centerY) =
                 makeConstraints(view: animatedView, left: 4.0, right: -4.0, height: startFrame.height,
                                 centerY: startFrame.midY - toVC.view.frame.height/2)
-            NSLayoutConstraint.activate([leftConstraint, rightConstraint, heightConstraint, centerConstraint])
+            NSLayoutConstraint.activate([left, right, height, centerY])
             transitionContext.containerView.layoutIfNeeded()
             
             UIView.animateKeyframes(withDuration: TagController.animationDuration, delay: 0.0, animations: {
@@ -196,8 +164,8 @@ extension TagController: UIViewControllerAnimatedTransitioning {
                 UIView.addKeyframe(withRelativeStartTime: TagController.shadowRelativeDuration,
                                    relativeDuration: TagController.translationRelativeDuration)
                 {
-                    heightConstraint.constant = 214.0
-                    centerConstraint.constant = -23.0
+                    height.constant = 214.0
+                    centerY.constant = -23.0
                     transitionContext.containerView.layoutIfNeeded()
                 }
             }) { _ in
@@ -214,9 +182,9 @@ extension TagController: UIViewControllerAnimatedTransitioning {
             let animatedView = makeAnimatedView()
             transitionContext.containerView.addSubview(animatedView)
             
-            let (leftConstraint, rightConstraint, heightConstraint, centerConstraint) =
+            let (left, right, height, centerY) =
                 makeConstraints(view: animatedView, left: 4.0, right: -4.0, height: 214.0, centerY: -23.0)
-            NSLayoutConstraint.activate([leftConstraint, rightConstraint, heightConstraint, centerConstraint])
+            NSLayoutConstraint.activate([left, right, height, centerY])
             transitionContext.containerView.layoutIfNeeded()
             
             let endFrame = activeTagsView.convert(activeTagsView.bounds, to: nil)
@@ -224,8 +192,8 @@ extension TagController: UIViewControllerAnimatedTransitioning {
                 UIView.addKeyframe(withRelativeStartTime: 0.0,
                                    relativeDuration: TagController.translationRelativeDuration)
                 {
-                    heightConstraint.constant = endFrame.height
-                    centerConstraint.constant = endFrame.midY - fromVC.view.frame.height/2
+                    height.constant = endFrame.height
+                    centerY.constant = endFrame.midY - fromVC.view.frame.height/2
                     transitionContext.containerView.layoutIfNeeded()
                 }
                 UIView.addKeyframe(withRelativeStartTime: TagController.translationRelativeDuration,
@@ -249,13 +217,74 @@ extension TagController: UIViewControllerTransitioningDelegate {
     }
 }
 
+final class AddEntryForExistingFoodTagControllerContext: TagControllerContext {
+    var didDismissModal: (AnyCollection<Tag>) -> () = { _ in }
+    var disableFoodTagsView: Bool {
+        return true
+    }
+    var tags: (AnyCollection<Tag>, AnyCollection<Tag>) {
+        return (AnyCollection(foodEntry.tags), AnyCollection(foodEntry.food!.tags))
+    }
+    var vcDelegates: (TagViewControllerDelegate, TagViewControllerDelegate) {
+        return (FoodEntryTagViewControllerDelegate(self, foodEntry), FoodTagViewControllerDelegate(self, foodEntry.food!))
+    }
+    private let foodEntry: FoodEntry
+    
+    init(_ foodEntry: FoodEntry) {
+        self.foodEntry = foodEntry
+    }
+}
+
+final class DefaultTagControllerContext: TagControllerContext {
+    var didDismissModal: (AnyCollection<Tag>) -> () = { _ in }
+    var disableFoodTagsView: Bool {
+        return false
+    }
+    var tags: (AnyCollection<Tag>, AnyCollection<Tag>) {
+        return (AnyCollection(foodEntry.tags), AnyCollection(foodEntry.food!.tags))
+    }
+    var vcDelegates: (TagViewControllerDelegate, TagViewControllerDelegate) {
+        return (FoodEntryTagViewControllerDelegate(self, foodEntry), FoodTagViewControllerDelegate(self, foodEntry.food!))
+    }
+    private let foodEntry: FoodEntry
+    
+    init(_ foodEntry: FoodEntry) {
+        self.foodEntry = foodEntry
+    }
+}
+
+final class EditFoodTagControllerContext: TagControllerContext {
+    var didDismissModal: (AnyCollection<Tag>) -> () = { _ in }
+    var disableFoodTagsView: Bool {
+        return false
+    }
+    var tags: (AnyCollection<Tag>, AnyCollection<Tag>) {
+        return (AnyCollection([]), AnyCollection(food.tags))
+    }
+    var vcDelegates: (TagViewControllerDelegate, TagViewControllerDelegate) {
+        return (DummyTagViewControllerDelegate(), FoodTagViewControllerDelegate(self, food))
+    }
+    private let food: Food
+    
+    init(_ food: Food) {
+        self.food = food
+    }
+}
+
+protocol TagViewControllerDelegate {
+    var tags: AnyCollection<Tag> { get }
+    func createTag(name: String) throws -> Tag
+    func toggleTag(name: String) -> Bool
+    func willBeDismissed()
+}
+
 class TagViewController: UIViewController {
     @IBOutlet weak var addNewTagTextField: UITextField!
     @IBOutlet weak var addNewTagView: UIView!
     @IBOutlet weak var centerYConstraint: NSLayoutConstraint!
     @IBOutlet weak var tagsView: FlowContainerView!
     
-    weak var delegate: TagViewControllerDelegate!
+    var delegate: TagViewControllerDelegate!
     
     override func viewDidLoad() {
         for tag in DataStore.tags {
@@ -327,6 +356,7 @@ class TagViewController: UIViewController {
     }
     
     @IBAction func dismiss() {
+        delegate.willBeDismissed()
         presentingViewController?.dismiss(animated: true)
     }
     
@@ -335,27 +365,17 @@ class TagViewController: UIViewController {
     }
 }
 
-protocol TagViewControllerDelegate: class {
-    var tags: Set<Tag> { get }
-    func createTag(name: String) throws -> Tag
-    func toggleTag(name: String) -> Bool
-}
-
-extension TagController: TagViewControllerDelegate {
-    enum TagError: LocalizedError {
-        case alreadyExists
-        
-        var localizedDescription: String {
-            switch self {
-            case .alreadyExists: return "A tag with this name already exists."
-            }
+enum TagError: LocalizedError {
+    case alreadyExists
+    
+    var localizedDescription: String {
+        switch self {
+        case .alreadyExists: return "A tag with this name already exists."
         }
     }
-    
-    var tags: Set<Tag> {
-        return tagged.tagSet
-    }
-    
+}
+
+extension TagViewControllerDelegate {
     /// - precondition: `name` must not be an empty `String`
     func createTag(name: String) throws -> Tag {
         guard DataStore.tags.first(where: { $0.name == name }) == nil else { throw TagError.alreadyExists }
@@ -367,11 +387,65 @@ extension TagController: TagViewControllerDelegate {
         DataStore.update(tag)
         return tag
     }
+}
+
+final class DummyTagViewControllerDelegate: TagViewControllerDelegate {
+    var tags: AnyCollection<Tag> {
+        fatalError()
+    }
+    
+    func createTag(name: String) throws -> Tag {
+        fatalError()
+    }
     
     func toggleTag(name: String) -> Bool {
-        activeTagsView.subviews.forEach { $0.removeFromSuperview() }
-        defer { fillForView[activeTagsView]!(Array(tagged.tagSet)) }
-        return tagged.toggleTag(name)
+        fatalError()
+    }
+    
+    func willBeDismissed() {
+        fatalError()
+    }
+}
+
+final class FoodTagViewControllerDelegate: TagViewControllerDelegate {
+    var tags: AnyCollection<Tag> {
+        return AnyCollection(food.tags)
+    }
+    private weak var context: TagControllerContext!
+    private let food: Food
+    
+    init(_ context: TagControllerContext, _ food: Food) {
+        self.context = context
+        self.food = food
+    }
+    
+    func toggleTag(name: String) -> Bool {
+        return food.tags.toggle(name)
+    }
+    
+    func willBeDismissed() {
+        context.didDismissModal(tags)
+    }
+}
+
+final class FoodEntryTagViewControllerDelegate: TagViewControllerDelegate {
+    var tags: AnyCollection<Tag> {
+        return AnyCollection(foodEntry.tags)
+    }
+    private weak var context: TagControllerContext!
+    private let foodEntry: FoodEntry
+    
+    init(_ context: TagControllerContext, _ foodEntry: FoodEntry) {
+        self.context = context
+        self.foodEntry = foodEntry
+    }
+    
+    func toggleTag(name: String) -> Bool {
+        return foodEntry.tags.toggle(name)
+    }
+    
+    func willBeDismissed() {
+        context.didDismissModal(tags)
     }
 }
 

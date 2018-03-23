@@ -64,6 +64,10 @@ extension Date {
     var shortDateShortTimeString: String {
         return _shortDateShortTime.string(from: self)
     }
+    var startOfDay: Date {
+        let dc = Calendar.current.dateComponents([.year, .month, .day], from: self)
+        return Calendar.current.date(from: dc) ?? self
+    }
 }
 
 extension Float {
@@ -220,6 +224,14 @@ extension NutritionKind: CustomStringConvertible {
         case .magnesium:            return "Magnesium"
         case .potassium:            return "Potassium"
         }
+    }
+}
+
+final class Ref<T> {
+    var value: T
+    
+    init(_ value: T) {
+        self.value = value
     }
 }
 

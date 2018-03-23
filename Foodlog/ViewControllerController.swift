@@ -20,33 +20,46 @@ final class VCController {
     enum DrawerState {
         case addOrSearch
         case addFoodEntry
+        case editFood
         case editFoodEntry
         case detail
     }
     
     static var drawerStack = [(vc: PulleyDrawerViewController, state: DrawerState)]()
-    static let addOrSearchVC: AddOrSearchViewController = makeVC(.addOrSearch)
-    static let logVC: LogViewController = makeVC(.log)
     static let pulleyVC: PulleyViewController = {
         defer { drawerStack.append((addOrSearchVC, .addOrSearch)) }
         return PulleyViewController(contentViewController: logVC, drawerViewController: addOrSearchVC)
     }()
+    private static let addOrSearchVC: AddOrSearchViewController = makeVC(.addOrSearch)
+    private static let logVC: LogViewController = makeVC(.log)
     private static let storyboard = UIStoryboard(name: "Main", bundle: nil)
     
-    static func addFoodEntry(_ foodEntry: FoodEntry, isNew: Bool) {
+    static func addEntryForExistingFood(_ foodEntry: FoodEntry) {
         assert(drawerStack.last?.state == .addOrSearch)
-        let addFoodVC: AddOrEditFoodViewController = makeVC(.addOrEditFood)
-        addFoodVC.foodEntry = foodEntry
-        addFoodVC.mode = isNew ? .addEntryForNewFood : .addEntryForExistingFood
-        push(addFoodVC, .addFoodEntry)
+        let vc: AddOrEditFoodViewController = makeVC(.addOrEditFood)
+        vc.context = AddEntryForExistingFoodContext(foodEntry)
+        push(vc, .addFoodEntry)
+    }
+    
+    static func addEntryForNewFood(_ foodEntry: FoodEntry) {
+        assert(drawerStack.last?.state == .addOrSearch)
+        let vc: AddOrEditFoodViewController = makeVC(.addOrEditFood)
+        vc.context = AddEntryForNewFoodContext(foodEntry)
+        push(vc, .addFoodEntry)
+    }
+    
+    static func editFood(_ food: Food) {
+        assert(drawerStack.last?.state == .detail)
+        let vc: AddOrEditFoodViewController = makeVC(.addOrEditFood)
+        vc.context = EditFoodContext(food)
+        push(vc, .editFood)
     }
     
     static func editFoodEntry(_ foodEntry: FoodEntry) {
         assert(drawerStack.last?.state == .detail)
-        let editFoodVC: AddOrEditFoodViewController = makeVC(.addOrEditFood)
-        editFoodVC.foodEntry = foodEntry
-        editFoodVC.mode = .editEntry
-        push(editFoodVC, .editFoodEntry)
+        let vc: AddOrEditFoodViewController = makeVC(.addOrEditFood)
+        vc.context = EditFoodEntryContext(foodEntry)
+        push(vc, .editFoodEntry)
     }
     
     static func showDetail(_ presentable: LogDetailPresentable) {
@@ -56,6 +69,7 @@ final class VCController {
         case .addOrSearch:
             push(logDetailVC, .detail)
         case .addFoodEntry: fallthrough
+        case .editFood: fallthrough
         case .editFoodEntry: fallthrough
         case .detail:
             popAndPush(logDetailVC, .detail)

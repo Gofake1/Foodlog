@@ -121,7 +121,7 @@ class SuggestionTableController: NSObject {
             let foodEntry = FoodEntry()
             foodEntry.food = Food()
             foodEntry.food!.name = name
-            VCController.addFoodEntry(foodEntry, isNew: true)
+            VCController.addEntryForNewFood(foodEntry)
         }
         
         func suggestionOnDelete() {
@@ -315,11 +315,14 @@ extension Food: SuggestionType {
     func suggestionOnAdd() {
         let foodEntry = FoodEntry()
         foodEntry.food = self
-        VCController.addFoodEntry(foodEntry, isNew: false)
+        VCController.addEntryForExistingFood(foodEntry)
     }
     
     func suggestionOnDelete() {
-        Food.delete(self)
+        if let (count, onConfirm) = Food.delete(self) {
+            let warning = "Deleting this food item will also delete \(count) entries. This cannot be undone."
+            UIApplication.shared.alert(warning: warning, confirm: onConfirm)
+        }
     }
     
     func suggestionOnSearch() {

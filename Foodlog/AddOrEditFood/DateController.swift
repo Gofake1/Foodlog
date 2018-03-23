@@ -8,7 +8,12 @@
 
 import UIKit
 
+protocol DateControllerContext {
+    var date: Date { get set }
+}
+
 class DateController: NSObject {
+    @IBOutlet weak var scrollController: ScrollController!
     @IBOutlet weak var toolbar: UIToolbar!
     @IBOutlet weak var field: UITextField!
     
@@ -17,22 +22,14 @@ class DateController: NSObject {
         dp.datePickerMode = .dateAndTime
         return dp
     }()
-    private var foodEntry: FoodEntry!
-    private var date: Date {
-        get { return foodEntry.date }
-        set { foodEntry.date = newValue }
-    }
+    private var context: DateControllerContext!
     
-    override init() {
-        super.init()
+    func setup(_ context: DateControllerContext) {
+        self.context = context
         DateController.dp.addTarget(self, action: #selector(dateChanged(_:)), for: .valueChanged)
-    }
-    
-    func setup(_ foodEntry: FoodEntry) {
-        self.foodEntry = foodEntry
         field.inputView = DateController.dp
         field.inputAccessoryView = toolbar
-        field.text = date.shortDateShortTimeString
+        field.text = context.date.shortDateShortTimeString
     }
     
     @objc func dateChanged(_ sender: UIDatePicker) {
@@ -49,12 +46,28 @@ class DateController: NSObject {
 }
     
 extension DateController: UITextFieldDelegate {
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        scrollController.scrollToView(textField)
+    }
+    
     func textFieldDidEndEditing(_ textField: UITextField, reason: UITextFieldDidEndEditingReason) {
         if let newDate = textField.text?.dateFromShortDateShortTime {
-            date = newDate
+            context.date = newDate
         } else {
-            date = Date()
-            textField.text = date.shortDateShortTimeString
+            context.date = Date()
+            textField.text = context.date.shortDateShortTimeString
         }
+    }
+}
+
+final class DefaultDateControllerContext: DateControllerContext {
+    var date: Date {
+        get { return foodEntry.date }
+        set { foodEntry.date = newValue }
+    }
+    private let foodEntry: FoodEntry
+    
+    init(_ foodEntry: FoodEntry) {
+        self.foodEntry = foodEntry
     }
 }

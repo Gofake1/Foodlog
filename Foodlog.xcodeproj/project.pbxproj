@@ -26,6 +26,7 @@
 		6385AF2A1FE0A436009E8483 /* LogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6385AF291FE0A436009E8483 /* LogViewController.swift */; };
 		6385AF2F1FE0A436009E8483 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6385AF2E1FE0A436009E8483 /* Assets.xcassets */; };
 		638C976C20030F8E00EC0D99 /* PillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 638C976B20030F8E00EC0D99 /* PillView.swift */; };
+		63A8345620634ADE001214B4 /* Contexts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63A8345520634ADE001214B4 /* Contexts.swift */; };
 		63AACA9C1FF329C600FE805F /* Realm.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63D970A11FE4B1E200AA0168 /* Realm.framework */; };
 		63AACA9D1FF329C600FE805F /* Realm.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 63D970A11FE4B1E200AA0168 /* Realm.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		63AB78D61FE77268009F9383 /* HealthKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63AB78D51FE77268009F9383 /* HealthKit.framework */; };
@@ -36,6 +37,7 @@
 		63DC132F200992C800A22983 /* DataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63DC132E200992C800A22983 /* DataStore.swift */; };
 		63EF95451FF33F9E00076825 /* RealmSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63D970A31FE4B1F400AA0168 /* RealmSwift.framework */; };
 		63EF95461FF33F9E00076825 /* RealmSwift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 63D970A31FE4B1F400AA0168 /* RealmSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		63F5941B2064A9F1001F627A /* MyScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63F5941A2064A9F1001F627A /* MyScrollView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -110,6 +112,7 @@
 		6385AF311FE0A436009E8483 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		6385AF331FE0A436009E8483 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		638C976B20030F8E00EC0D99 /* PillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PillView.swift; sourceTree = "<group>"; };
+		63A8345520634ADE001214B4 /* Contexts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Contexts.swift; sourceTree = "<group>"; };
 		63AB78D41FE77267009F9383 /* Foodlog.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Foodlog.entitlements; sourceTree = "<group>"; };
 		63AB78D51FE77268009F9383 /* HealthKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = HealthKit.framework; path = System/Library/Frameworks/HealthKit.framework; sourceTree = SDKROOT; };
 		63CFF023200C541E0044B4E9 /* Common.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Common.swift; sourceTree = "<group>"; };
@@ -118,6 +121,7 @@
 		63D970A11FE4B1E200AA0168 /* Realm.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Realm.framework; path = Carthage/Build/iOS/Realm.framework; sourceTree = "<group>"; };
 		63D970A31FE4B1F400AA0168 /* RealmSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RealmSwift.framework; path = Carthage/Build/iOS/RealmSwift.framework; sourceTree = "<group>"; };
 		63DC132E200992C800A22983 /* DataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStore.swift; sourceTree = "<group>"; };
+		63F5941A2064A9F1001F627A /* MyScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyScrollView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -138,6 +142,7 @@
 		6339CFB9200DDF8200481E0D /* AddOrEditFood */ = {
 			isa = PBXGroup;
 			children = (
+				63A8345520634ADE001214B4 /* Contexts.swift */,
 				6339CFBA200DDFF700481E0D /* DateController.swift */,
 				6339CFB4200DDF2B00481E0D /* FoodNutritionController.swift */,
 				6339CFBC200DE01500481E0D /* MeasurementController.swift */,
@@ -238,6 +243,7 @@
 				636E13942000DC73005C8AD8 /* LogDetailViewController.swift */,
 				6385AF291FE0A436009E8483 /* LogViewController.swift */,
 				63D9709B1FE4961700AA0168 /* Models.swift */,
+				63F5941A2064A9F1001F627A /* MyScrollView.swift */,
 				638C976B20030F8E00EC0D99 /* PillView.swift */,
 				636E139C2000E19B005C8AD8 /* PulleyDrawerViewController.swift */,
 				6361320A201EAB46009F3EDB /* ViewControllerController.swift */,
@@ -378,9 +384,11 @@
 				636E13952000DC73005C8AD8 /* LogDetailViewController.swift in Sources */,
 				6385AF2A1FE0A436009E8483 /* LogViewController.swift in Sources */,
 				63D9709C1FE4961700AA0168 /* Models.swift in Sources */,
+				63F5941B2064A9F1001F627A /* MyScrollView.swift in Sources */,
 				638C976C20030F8E00EC0D99 /* PillView.swift in Sources */,
 				636E139D2000E19B005C8AD8 /* PulleyDrawerViewController.swift in Sources */,
 				6361320B201EAB46009F3EDB /* ViewControllerController.swift in Sources */,
+				63A8345620634ADE001214B4 /* Contexts.swift in Sources */,
 				6339CFBB200DDFF700481E0D /* DateController.swift in Sources */,
 				6339CFB5200DDF2B00481E0D /* FoodNutritionController.swift in Sources */,
 				6339CFBD200DE01500481E0D /* MeasurementController.swift in Sources */,

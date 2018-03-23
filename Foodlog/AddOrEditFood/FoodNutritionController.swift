@@ -8,8 +8,14 @@
 
 import UIKit
 
+protocol FoodNutritionControllerContext {
+    var enableFields: Bool { get }
+    func set(kind: NutritionKind, to value: Float)
+    func value(for kind: NutritionKind) -> Float
+}
+
 class FoodNutritionController: NSObject {
-    @IBOutlet weak var addOrEditVC:                 AddOrEditFoodViewController!
+    @IBOutlet weak var scrollController:            ScrollController!
     @IBOutlet weak var toolbar:                     UIToolbar!
     @IBOutlet weak var valueRepresentationControl:  UISegmentedControl!
     @IBOutlet weak var caloriesField:               UITextField!
@@ -36,187 +42,73 @@ class FoodNutritionController: NSObject {
     @IBOutlet weak var magnesiumField:              UITextField!
     @IBOutlet weak var potassiumField:              UITextField!
     
-    private var calories: Float? {
-        get { return addOrEditVC.foodEntry.food?.calories }
-        set { addOrEditVC.foodEntry.food?.calories = newValue! }
-    }
-    private var totalFat: Float? {
-        get { return addOrEditVC.foodEntry.food?.totalFat}
-        set { addOrEditVC.foodEntry.food?.totalFat = newValue! }
-    }
-    private var saturatedFat: Float? {
-        get { return addOrEditVC.foodEntry.food?.saturatedFat }
-        set { addOrEditVC.foodEntry.food?.saturatedFat = newValue!}
-    }
-    private var monounsaruratedFat: Float? {
-        get { return addOrEditVC.foodEntry.food?.monounsaturatedFat }
-        set { addOrEditVC.foodEntry.food?.monounsaturatedFat = newValue!}
-    }
-    private var polyunsaturatedFat: Float? {
-        get { return addOrEditVC.foodEntry.food?.polyunsaturatedFat }
-        set { addOrEditVC.foodEntry.food?.polyunsaturatedFat = newValue!}
-    }
-    private var transFat: Float? {
-        get { return addOrEditVC.foodEntry.food?.transFat }
-        set { addOrEditVC.foodEntry.food?.transFat = newValue!}
-    }
-    private var cholesterol: Float? {
-        get { return addOrEditVC.foodEntry.food?.cholesterol }
-        set { addOrEditVC.foodEntry.food?.cholesterol = newValue!}
-    }
-    private var sodium: Float? {
-        get { return addOrEditVC.foodEntry.food?.sodium }
-        set { addOrEditVC.foodEntry.food?.sodium = newValue!}
-    }
-    private var totalCarbohydrate: Float? {
-        get { return addOrEditVC.foodEntry.food?.totalCarbohydrate }
-        set { addOrEditVC.foodEntry.food?.totalCarbohydrate = newValue!}
-    }
-    private var dietaryFiber: Float? {
-        get { return addOrEditVC.foodEntry.food?.dietaryFiber }
-        set { addOrEditVC.foodEntry.food?.dietaryFiber = newValue!}
-    }
-    private var sugars: Float? {
-        get { return addOrEditVC.foodEntry.food?.sugars }
-        set { addOrEditVC.foodEntry.food?.sugars = newValue!}
-    }
-    private var protein: Float? {
-        get { return addOrEditVC.foodEntry.food?.protein }
-        set { addOrEditVC.foodEntry.food?.protein = newValue!}
-    }
-    private var vitaminA: Float? {
-        get { return addOrEditVC.foodEntry.food?.vitaminA }
-        set { addOrEditVC.foodEntry.food?.vitaminA = newValue!}
-    }
-    private var vitaminB6: Float? {
-        get { return addOrEditVC.foodEntry.food?.vitaminB6 }
-        set { addOrEditVC.foodEntry.food?.vitaminB6 = newValue!}
-    }
-    private var vitaminB12: Float? {
-        get { return addOrEditVC.foodEntry.food?.vitaminB12 }
-        set { addOrEditVC.foodEntry.food?.vitaminB12 = newValue!}
-    }
-    private var vitaminC: Float? {
-        get { return addOrEditVC.foodEntry.food?.vitaminC }
-        set { addOrEditVC.foodEntry.food?.vitaminC = newValue!}
-    }
-    private var vitaminD: Float? {
-        get { return addOrEditVC.foodEntry.food?.vitaminD }
-        set { addOrEditVC.foodEntry.food?.vitaminD = newValue!}
-    }
-    private var vitaminE: Float? {
-        get { return addOrEditVC.foodEntry.food?.vitaminE }
-        set { addOrEditVC.foodEntry.food?.vitaminE = newValue!}
-    }
-    private var vitaminK: Float? {
-        get { return addOrEditVC.foodEntry.food?.vitaminK }
-        set { addOrEditVC.foodEntry.food?.vitaminK = newValue!}
-    }
-    private var calcium: Float? {
-        get { return addOrEditVC.foodEntry.food?.calcium }
-        set { addOrEditVC.foodEntry.food?.calcium = newValue!}
-    }
-    private var iron: Float? {
-        get { return addOrEditVC.foodEntry.food?.iron }
-        set { addOrEditVC.foodEntry.food?.iron = newValue!}
-    }
-    private var magnesium: Float? {
-        get { return addOrEditVC.foodEntry.food?.magnesium }
-        set { addOrEditVC.foodEntry.food?.magnesium = newValue!}
-    }
-    private var potassium: Float? {
-        get { return addOrEditVC.foodEntry.food?.potassium }
-        set { addOrEditVC.foodEntry.food?.potassium = newValue!}
-    }
-    typealias Info = (field: UITextField, get: () -> Float?, set: (Float) -> (), kind: NutritionKind,
-        representation: NutritionKind.ValueRepresentation)
+    typealias Info = (field: UITextField, kind: NutritionKind, representation: NutritionKind.ValueRepresentation)
     private lazy var fields = [
-        0:  Info(caloriesField, { [weak self] in return self?.calories },
-                 { [weak self] in self?.calories = $0 }, .calories, .real),
-        1:  Info(totalFatField, { [weak self] in return self?.totalFat },
-                 { [weak self] in self?.totalFat = $0 }, .totalFat, .real),
-        2:  Info(saturatedFatField, { [weak self] in return self?.saturatedFat },
-                 { [weak self] in self?.saturatedFat = $0 }, .saturatedFat, .real),
-        3:  Info(monounsaturatedFatField, { [weak self] in return self?.monounsaruratedFat },
-                 { [weak self] in self?.monounsaruratedFat = $0 }, .monounsaturatedFat, .real),
-        4:  Info(polyunsaturatedFatField, { [weak self] in return self?.polyunsaturatedFat },
-                 { [weak self] in self?.polyunsaturatedFat = $0 }, .polyunsaturatedFat, .real),
-        5:  Info(transFatField, { [weak self] in return self?.transFat },
-                 { [weak self] in self?.transFat = $0 }, .transFat, .real),
-        6:  Info(cholesterolField, { [weak self] in return self?.cholesterol },
-                 { [weak self] in self?.cholesterol = $0 }, .cholesterol, .real),
-        7:  Info(sodiumField, { [weak self] in return self?.sodium },
-                 { [weak self] in self?.sodium = $0 }, .sodium, .real),
-        8:  Info(totalCarbohydrateField, { [weak self] in return self?.totalCarbohydrate },
-                 { [weak self] in self?.totalCarbohydrate = $0 }, .totalCarbohydrate, .real),
-        9:  Info(dietaryFiberField, { [weak self] in return self?.dietaryFiber },
-                 { [weak self] in self?.dietaryFiber = $0 }, .dietaryFiber, .real),
-        10: Info(sugarsField, { [weak self] in return self?.sugars },
-                 { [weak self] in self?.sugars = $0 }, .sugars, .real),
-        11: Info(proteinField, { [weak self] in return self?.protein },
-                 { [weak self] in self?.protein = $0 }, .protein, .real),
-        12: Info(vitaminAField, { [weak self] in return self?.vitaminA },
-                 { [weak self] in self?.vitaminA = $0 }, .vitaminA, .percentage),
-        13: Info(vitaminB6Field, { [weak self] in return self?.vitaminB6 },
-                 { [weak self] in self?.vitaminB6 = $0 }, .vitaminB6, .percentage),
-        14: Info(vitaminB12Field, { [weak self] in return self?.vitaminB12 },
-                 { [weak self] in self?.vitaminB12 = $0 }, .vitaminB12, .percentage),
-        15: Info(vitaminCField, { [weak self] in return self?.vitaminC },
-                 { [weak self] in self?.vitaminC = $0 }, .vitaminC, .percentage),
-        16: Info(vitaminDField, { [weak self] in return self?.vitaminD },
-                 { [weak self] in self?.vitaminD = $0 }, .vitaminD, .percentage),
-        17: Info(vitaminEField, { [weak self] in return self?.vitaminE },
-                 { [weak self] in self?.vitaminE = $0 }, .vitaminE, .percentage),
-        18: Info(vitaminKField, { [weak self] in return self?.vitaminK },
-                 { [weak self] in self?.vitaminK = $0 }, .vitaminK, .percentage),
-        19: Info(calciumField, { [weak self] in return self?.calcium },
-                 { [weak self] in self?.calcium = $0 }, .calcium, .percentage),
-        20: Info(ironField, { [weak self] in return self?.iron },
-                 { [weak self] in self?.iron = $0 }, .iron, .percentage),
-        21: Info(magnesiumField, { [weak self] in return self?.magnesium },
-                 { [weak self] in self?.magnesium = $0 }, .magnesium, .percentage),
-        22: Info(potassiumField, { [weak self] in return self?.potassium },
-                 { [weak self] in self?.potassium = $0 }, .potassium, .percentage)
+        0:  Info(caloriesField, .calories, .real),
+        1:  Info(totalFatField, .totalFat, .real),
+        2:  Info(saturatedFatField, .saturatedFat, .real),
+        3:  Info(monounsaturatedFatField, .monounsaturatedFat, .real),
+        4:  Info(polyunsaturatedFatField, .polyunsaturatedFat, .real),
+        5:  Info(transFatField, .transFat, .real),
+        6:  Info(cholesterolField, .cholesterol, .real),
+        7:  Info(sodiumField, .sodium, .real),
+        8:  Info(totalCarbohydrateField, .totalCarbohydrate, .real),
+        9:  Info(dietaryFiberField, .dietaryFiber, .real),
+        10: Info(sugarsField, .sugars, .real),
+        11: Info(proteinField, .protein, .real),
+        12: Info(vitaminAField, .vitaminA, .percentage),
+        13: Info(vitaminB6Field, .vitaminB6, .percentage),
+        14: Info(vitaminB12Field, .vitaminB12, .percentage),
+        15: Info(vitaminCField, .vitaminC, .percentage),
+        16: Info(vitaminDField, .vitaminD, .percentage),
+        17: Info(vitaminEField, .vitaminE, .percentage),
+        18: Info(vitaminKField, .vitaminK, .percentage),
+        19: Info(calciumField, .calcium, .percentage),
+        20: Info(ironField, .iron, .percentage),
+        21: Info(magnesiumField, .magnesium, .percentage),
+        22: Info(potassiumField, .potassium, .percentage)
     ]
-    private var mode: AddOrEditFoodViewController.Mode!
+    private var activeTextField: UITextField!
+    private var context: FoodNutritionControllerContext!
     
-    func setup(_ mode: AddOrEditFoodViewController.Mode) {
-        self.mode = mode
-        let isEnabled = (mode == .addEntryForNewFood || mode == .editEntry)
-        fields.forEach {
-            $1.field.isEnabled = isEnabled
-            $1.field.inputAccessoryView = toolbar
+    func setup(_ context: FoodNutritionControllerContext) {
+        self.context = context
+        fields.values.forEach { (field, kind, representation) in
+            field.isEnabled = context.enableFields
+            field.inputAccessoryView = toolbar
             
-            guard let value = $1.get() else { $1.field.text = "?"; return }
-            guard value != 0.0 else { $1.field.text = "0"; return }
-            switch $1.representation {
+            let value = context.value(for: kind)
+            guard value != 0.0 else { field.text = "0"; return }
+            switch representation {
             case .percentage:
-                guard let pretty = value.dailyValuePercentageFromReal($1.kind)?.pretty
-                    else { $1.field.text = "?%"; return }
-                $1.field.text = pretty+"%"
+                guard let pretty = value.dailyValuePercentageFromReal(kind)?.pretty
+                    else { field.text = "?%"; return }
+                field.text = pretty+"%"
             case .real:
-                guard let pretty = value.pretty else { $1.field.text = "?"+$1.kind.unit.suffix; return }
-                $1.field.text = pretty+$1.kind.unit.suffix
+                guard let pretty = value.pretty else { field.text = "?"+kind.unit.suffix; return }
+                field.text = pretty+kind.unit.suffix
             }
         }
     }
     
     @IBAction func chooseValueRepresentation(_ sender: UISegmentedControl) {
-        guard let textField = addOrEditVC.activeNutritionField,
+        guard let textField = activeTextField,
             let representation = NutritionKind.ValueRepresentation(rawValue: sender.selectedSegmentIndex)
             else { return }
         fields[textField.tag]?.representation = representation
     }
     
     private func moveToNutritionField(_ calculate: (Int) -> Int) {
-        guard let currentField = addOrEditVC.activeNutritionField else { return }
+        guard let currentField = activeTextField else { return }
         var index = calculate(currentField.tag)
         if index < 0 {
             index = fields.count-1
         } else if index >= fields.count {
             index = 0
         }
-        fields[index]?.field.becomeFirstResponder()
+        activeTextField = fields[index]!.field
+        activeTextField.becomeFirstResponder()
+        scrollController.scrollToView(activeTextField)
     }
     
     @IBAction func moveToPreviousNutritionField() {
@@ -228,30 +120,28 @@ class FoodNutritionController: NSObject {
     }
     
     @IBAction func doneEditing() {
-        addOrEditVC.activeNutritionField?.resignFirstResponder()
+        activeTextField.resignFirstResponder()
     }
 }
 
 extension FoodNutritionController: UITextFieldDelegate {
     func textFieldDidBeginEditing(_ textField: UITextField) {
-        addOrEditVC.activeNutritionField = textField
-        guard let fieldInfo = fields[textField.tag] else { return }
-        valueRepresentationControl.isEnabled = fieldInfo.kind.dailyValueReal != nil
-        valueRepresentationControl.selectedSegmentIndex = fieldInfo.representation.rawValue
-        valueRepresentationControl.setTitle(fieldInfo.kind.unit.buttonTitle, forSegmentAt: 1)
-        if let value = fieldInfo.get() {
-            if value == 0.0 {
-                textField.text = ""
-            } else {
-                switch fieldInfo.representation {
-                case .percentage:
-                    textField.text = value.dailyValuePercentageFromReal(fieldInfo.kind)?.pretty
-                case .real:
-                    textField.text = value.pretty
-                }
-            }
-        } else {
+        activeTextField = textField
+        scrollController.scrollToView(textField)
+        guard let info = fields[textField.tag] else { return }
+        valueRepresentationControl.isEnabled = info.kind.dailyValueReal != nil
+        valueRepresentationControl.selectedSegmentIndex = info.representation.rawValue
+        valueRepresentationControl.setTitle(info.kind.unit.buttonTitle, forSegmentAt: 1)
+        let value = context.value(for: info.kind)
+        if value == 0.0 {
             textField.text = ""
+        } else {
+            switch info.representation {
+            case .percentage:
+                textField.text = value.dailyValuePercentageFromReal(info.kind)?.pretty
+            case .real:
+                textField.text = value.pretty
+            }
         }
     }
     
@@ -267,37 +157,84 @@ extension FoodNutritionController: UITextFieldDelegate {
     }
     
     func textFieldDidEndEditing(_ textField: UITextField) {
-        addOrEditVC.activeNutritionField = nil
-        guard let set = fields[textField.tag]?.set,
-            let representation = fields[textField.tag]?.representation,
-            let kind = fields[textField.tag]?.kind
-            else { return }
+        activeTextField = nil
+        guard let info = fields[textField.tag] else { return }
         let value = Float(textField.text!) ?? 0.0
         let realValue: Float
-        switch representation {
-        case .percentage:   realValue = value.dailyValueRealFromPercentage(kind) ?? 0.0
+        switch info.representation {
+        case .percentage:   realValue = value.dailyValueRealFromPercentage(info.kind) ?? 0.0
         case .real:         realValue = value
         }
-        if let oldValue = fields[textField.tag]?.get() {
-            set(realValue)
-            if mode == .editEntry {
-                addOrEditVC.userChangedFoodInfo ||= value != oldValue
-            }
-        } else {
-            set(realValue)
-            if mode == .editEntry {
-                addOrEditVC.userChangedFoodInfo ||= true
-            }
-        }
+        context.set(kind: info.kind, to: realValue)
         if value == 0.0 {
             textField.text = "0"
         } else {
             guard let pretty = value.pretty else { return }
-            switch representation {
+            switch info.representation {
             case .percentage:   textField.text = pretty+"%"
-            case .real:         textField.text = pretty+kind.unit.suffix
+            case .real:         textField.text = pretty+info.kind.unit.suffix
             }
         }
+    }
+}
+
+final class AddEntryForExistingFoodNutritionControllerContext: FoodNutritionControllerContext {
+    var enableFields: Bool {
+        return false
+    }
+    private let food: Food
+    
+    init(_ food: Food) {
+        self.food = food
+    }
+    
+    func set(kind: NutritionKind, to value: Float) {
+        food[keyPath: kind.keyPath] = value
+    }
+    
+    func value(for kind: NutritionKind) -> Float {
+        return food[keyPath: kind.keyPath]
+    }
+}
+
+final class AddEntryForNewFoodNutritionControllerContext: FoodNutritionControllerContext {
+    var enableFields: Bool {
+        return true
+    }
+    private let food: Food
+    
+    init(_ food: Food) {
+        self.food = food
+    }
+    
+    func set(kind: NutritionKind, to value: Float) {
+        food[keyPath: kind.keyPath] = value
+    }
+    
+    func value(for kind: NutritionKind) -> Float {
+        return food[keyPath: kind.keyPath]
+    }
+}
+
+final class DefaultFoodNutritionControllerContext: FoodNutritionControllerContext {
+    var enableFields: Bool {
+        return true
+    }
+    private let food: Food
+    private let foodInfoChanged: Ref<Bool>
+    
+    init(_ food: Food, _ foodInfoChanged: Ref<Bool>) {
+        self.food = food
+        self.foodInfoChanged = foodInfoChanged
+    }
+    
+    func set(kind: NutritionKind, to newValue: Float) {
+        foodInfoChanged.value ||= newValue != value(for: kind)
+        food[keyPath: kind.keyPath] = newValue
+    }
+    
+    func value(for kind: NutritionKind) -> Float {
+        return food[keyPath: kind.keyPath]
     }
 }
 
@@ -327,6 +264,34 @@ extension NutritionKind {
         case .iron:                 return 18
         case .magnesium:            return 420
         case .potassium:            return 4700
+        }
+    }
+    
+    var keyPath: ReferenceWritableKeyPath<Food, Float> {
+        switch self {
+        case .calories:             return \Food.calories
+        case .totalFat:             return \Food.totalFat
+        case .saturatedFat:         return \Food.saturatedFat
+        case .monounsaturatedFat:   return \Food.monounsaturatedFat
+        case .polyunsaturatedFat:   return \Food.polyunsaturatedFat
+        case .transFat:             return \Food.transFat
+        case .cholesterol:          return \Food.cholesterol
+        case .sodium:               return \Food.sodium
+        case .totalCarbohydrate:    return \Food.totalCarbohydrate
+        case .dietaryFiber:         return \Food.dietaryFiber
+        case .sugars:               return \Food.sugars
+        case .protein:              return \Food.protein
+        case .vitaminA:             return \Food.vitaminA
+        case .vitaminB6:            return \Food.vitaminB6
+        case .vitaminB12:           return \Food.vitaminB12
+        case .vitaminC:             return \Food.vitaminC
+        case .vitaminD:             return \Food.vitaminD
+        case .vitaminE:             return \Food.vitaminE
+        case .vitaminK:             return \Food.vitaminK
+        case .calcium:              return \Food.calcium
+        case .iron:                 return \Food.iron
+        case .magnesium:            return \Food.magnesium
+        case .potassium:            return \Food.potassium
         }
     }
 }

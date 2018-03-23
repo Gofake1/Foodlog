@@ -8,43 +8,29 @@
 
 import UIKit
 
-infix operator ====: AssignmentPrecedence
-func ====<A: Equatable>(lhs: inout A, rhs: A) -> Bool {
-    defer { lhs = rhs }
-    return lhs == rhs
+protocol MeasurementControllerContext {
+    var canChangeRepresentation: Bool { get }
+    var hasMeasurementValue: Bool { get }
+    var measurementValue: Data { get set }
+    var measurementValueRepresentation: FoodEntry.MeasurementValueRepresentation { get set }
+    var measurementRepresentation: Food.MeasurementRepresentation { get set }
 }
 
 class MeasurementController: NSObject {
-    @IBOutlet weak var addOrEditVC: AddOrEditFoodViewController!
+    @IBOutlet weak var scrollController: ScrollController!
     @IBOutlet weak var toolbar: UIToolbar!
     @IBOutlet weak var valueRepresentationControl: UISegmentedControl!
     @IBOutlet weak var representationButton: UIButton!
     @IBOutlet weak var field: UITextField!
     @IBOutlet weak var perRepresentationLabel: UILabel!
     
-    private var measurementRepresentation: Food.MeasurementRepresentation {
-        get { return addOrEditVC.foodEntry.food!.measurementRepresentation }
-        set { addOrEditVC.foodEntry.food?.measurementRepresentationRaw = newValue.rawValue }
-    }
-    private var measurementValue: Data {
-        get { return addOrEditVC.foodEntry.measurementValue }
-        set { addOrEditVC.foodEntry.measurementValue = newValue }
-    }
-    private var measurementValueRepresentation: FoodEntry.MeasurementValueRepresentation {
-        get { return addOrEditVC.foodEntry.measurementValueRepresentation }
-        set { addOrEditVC.foodEntry.measurementValueRepresentationRaw = newValue.rawValue }
-    }
+    private var context: MeasurementControllerContext!
     private lazy var representationPicker: UIAlertController = {
         func action(_ representation: Food.MeasurementRepresentation) -> UIAlertAction {
             return UIAlertAction(title: representation.plural, style: .default, handler: { [weak self] (_) in
-                guard let _self = self else { return }
-                if _self.mode == .editEntry {
-                    _self.addOrEditVC.userChangedFoodInfo ||= !(_self.measurementRepresentation ==== representation)
-                } else {
-                    _self.measurementRepresentation = representation
-                }
-                _self.representationButton.setTitle(representation.plural, for: .normal)
-                _self.perRepresentationLabel.text = "Information Per \(representation.singular)"
+                self!.context.measurementRepresentation = representation
+                self!.representationButton.setTitle(representation.plural, for: .normal)
+                self!.perRepresentationLabel.text = "Information Per \(representation.singular)"
             })
         }
         
@@ -58,27 +44,29 @@ class MeasurementController: NSObject {
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
         return alert
     }()
-    private var mode: AddOrEditFoodViewController.Mode!
     
-    func setup(_ mode: AddOrEditFoodViewController.Mode) {
-        self.mode = mode
-        valueRepresentationControl.selectedSegmentIndex = measurementValueRepresentation.rawValue
-        representationButton.setTitle(measurementRepresentation.plural, for: .normal)
-        representationButton.isEnabled = mode != .addEntryForExistingFood
-        field.inputAccessoryView = toolbar
-        switch measurementValueRepresentation {
-        case .decimal:  field.text = measurementValue.to(Float.self).pretty
-        case .fraction: field.text = (Fraction.decode(from: measurementValue) ?? Fraction()).description
+    func setup(_ context: MeasurementControllerContext) {
+        self.context = context
+        if context.hasMeasurementValue {
+            valueRepresentationControl.selectedSegmentIndex = context.measurementValueRepresentation.rawValue
+            representationButton.setTitle(context.measurementRepresentation.plural, for: .normal)
+            representationButton.isEnabled = context.canChangeRepresentation
+            field.inputAccessoryView = toolbar
+            switch context.measurementValueRepresentation {
+            case .decimal:  field.text = context.measurementValue.to(Float.self).pretty
+            case .fraction: field.text = (Fraction.decode(from: context.measurementValue)!).description
+            }
         }
-        perRepresentationLabel.text = "Information Per \(measurementRepresentation.singular)"
+        perRepresentationLabel.text = "Information Per \(context.measurementRepresentation.singular)"
     }
     
     @IBAction func chooseValueRepresentation(_ sender: UISegmentedControl) {
-        measurementValueRepresentation = FoodEntry.MeasurementValueRepresentation(rawValue: sender.selectedSegmentIndex)!
+        context.measurementValueRepresentation = FoodEntry.MeasurementValueRepresentation(rawValue:
+            sender.selectedSegmentIndex)!
     }
     
     @IBAction func showRepresentationsMenu() {
-        addOrEditVC.present(representationPicker, animated: true, completion: nil)
+        UIApplication.shared.keyWindow?.rootViewController?.present(representationPicker, animated: true)
     }
     
     @IBAction func doneEditing() {
@@ -88,6 +76,7 @@ class MeasurementController: NSObject {
 
 extension MeasurementController: UITextFieldDelegate {
     func textFieldDidBeginEditing(_ textField: UITextField) {
+        scrollController.scrollToView(textField)
         if textField.text == "0" {
             textField.text = ""
         }
@@ -107,24 +96,138 @@ extension MeasurementController: UITextFieldDelegate {
     }
     
     func textFieldDidEndEditing(_ textField: UITextField) {
-        switch measurementValueRepresentation {
+        switch context.measurementValueRepresentation {
         case .decimal:
             if let decimal = Float(textField.text!) {
-                measurementValue = Data(decimal)
+                context.measurementValue = Data(decimal)
                 textField.text = decimal.pretty
             } else {
-                measurementValue = Data(Float(0.0))
+                context.measurementValue = Data(Float(0.0))
                 textField.text = "0"
             }
         case .fraction:
             if let fraction = Fraction(textField.text!) {
-                measurementValue = fraction.encode()!
+                context.measurementValue = fraction.encode()!
                 textField.text = fraction.description
             } else {
-                measurementValue = Fraction().encode()!
+                context.measurementValue = Fraction().encode()!
                 textField.text = "0"
             }
         }
+    }
+}
+
+final class AddEntryForExistingFoodMeasurementControllerContext: MeasurementControllerContext {
+    var canChangeRepresentation: Bool {
+        return false
+    }
+    var hasMeasurementValue: Bool {
+        return true
+    }
+    var measurementValue: Data {
+        get { return foodEntry.measurementValue }
+        set { foodEntry.measurementValue = newValue }
+    }
+    var measurementValueRepresentation: FoodEntry.MeasurementValueRepresentation {
+        get { return foodEntry.measurementValueRepresentation }
+        set { foodEntry.measurementValueRepresentationRaw = newValue.rawValue}
+    }
+    var measurementRepresentation: Food.MeasurementRepresentation {
+        get { return foodEntry.food!.measurementRepresentation }
+        set { fatalError() }
+    }
+    private let foodEntry: FoodEntry
+    
+    init(_ foodEntry: FoodEntry) {
+        self.foodEntry = foodEntry
+    }
+}
+
+final class AddEntryForNewFoodMeasurementControllerContext: MeasurementControllerContext {
+    var canChangeRepresentation: Bool {
+        return true
+    }
+    var hasMeasurementValue: Bool {
+        return true
+    }
+    var measurementValue: Data {
+        get { return foodEntry.measurementValue }
+        set { foodEntry.measurementValue = newValue }
+    }
+    var measurementValueRepresentation: FoodEntry.MeasurementValueRepresentation {
+        get { return foodEntry.measurementValueRepresentation }
+        set { foodEntry.measurementValueRepresentationRaw = newValue.rawValue }
+    }
+    var measurementRepresentation: Food.MeasurementRepresentation {
+        get { return foodEntry.food!.measurementRepresentation }
+        set { foodEntry.food!.measurementRepresentationRaw = newValue.rawValue }
+    }
+    private let foodEntry: FoodEntry
+    
+    init(_ foodEntry: FoodEntry) {
+        self.foodEntry = foodEntry
+    }
+}
+
+final class EditFoodMeasurementControllerContext: MeasurementControllerContext {
+    var canChangeRepresentation: Bool {
+        return false
+    }
+    var hasMeasurementValue: Bool {
+        return false
+    }
+    var measurementValue: Data {
+        get { fatalError() }
+        set { fatalError() }
+    }
+    var measurementValueRepresentation: FoodEntry.MeasurementValueRepresentation {
+        get { fatalError() }
+        set { fatalError() }
+    }
+    var measurementRepresentation: Food.MeasurementRepresentation {
+        get { return food.measurementRepresentation }
+        set {
+            foodInfoChanged.value ||= newValue != food.measurementRepresentation
+            food.measurementRepresentationRaw = newValue.rawValue
+        }
+    }
+    private let food: Food
+    private let foodInfoChanged: Ref<Bool>
+    
+    init(_ food: Food, _ foodInfoChanged: Ref<Bool>) {
+        self.food = food
+        self.foodInfoChanged = foodInfoChanged
+    }
+}
+
+final class EditFoodEntryMeasurementControllerContext: MeasurementControllerContext {
+    var canChangeRepresentation: Bool {
+        return true
+    }
+    var hasMeasurementValue: Bool {
+        return true
+    }
+    var measurementValue: Data {
+        get { return foodEntry.measurementValue }
+        set { foodEntry.measurementValue = newValue }
+    }
+    var measurementValueRepresentation: FoodEntry.MeasurementValueRepresentation {
+        get { return foodEntry.measurementValueRepresentation }
+        set { foodEntry.measurementValueRepresentationRaw = newValue.rawValue }
+    }
+    var measurementRepresentation: Food.MeasurementRepresentation {
+        get { return foodEntry.food!.measurementRepresentation }
+        set {
+            foodInfoChanged.value ||= newValue != foodEntry.food!.measurementRepresentation
+            foodEntry.food!.measurementRepresentationRaw = newValue.rawValue
+        }
+    }
+    private let foodEntry: FoodEntry
+    private var foodInfoChanged: Ref<Bool>
+    
+    init(_ foodEntry: FoodEntry, _ foodInfoChanged: Ref<Bool>) {
+        self.foodEntry = foodEntry
+        self.foodInfoChanged = foodInfoChanged
     }
 }
 

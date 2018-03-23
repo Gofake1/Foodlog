@@ -8,7 +8,6 @@
 
 import Foundation
 import RealmSwift
-import UIKit
 
 final class SearchSuggestion: Object {
     enum Kind: Int {
@@ -136,34 +135,26 @@ final class Food: Object {
         return "id"
     }
     
-    static func delete(_ food: Food) {
-        func warningString(_ count: Int) -> String {
-            return "Deleting this food item will also delete \(count) entries. This cannot be undone."
-        }
-        
+    /// - returns: If the delete operation requires user confirmation, returns a block that should be called.
+    static func delete(_ food: Food) -> (Int, () -> ())? {
         let entries = food.entries
         let searchSuggestion = food.searchSuggestion!
         if entries.count > 0 {
-            UIApplication.shared.alert(warning: warningString(entries.count)) {
+            return (entries.count, {
                 entries.forEach { FoodEntry.delete($0) }
                 SearchSuggestion.delete(searchSuggestion)
                 DataStore.delete(food)
-            }
+            })
         } else {
             entries.forEach { FoodEntry.delete($0) }
             SearchSuggestion.delete(searchSuggestion)
             DataStore.delete(food)
+            return nil
         }
     }
 }
 
 final class FoodEntry: Object {
-    enum HealthKitStatus: Int {
-        case unwritten              = 0
-        case writtenAndUpToDate     = 1
-        case writtenAndNeedsUpdate  = 2
-    }
-    
     enum MeasurementValueRepresentation: Int {
         case decimal    = 0
         case fraction   = 1
@@ -174,12 +165,8 @@ final class FoodEntry: Object {
     @objc dynamic var food: Food?
     @objc dynamic var measurementValueRepresentationRaw = MeasurementValueRepresentation.decimal.rawValue
     @objc dynamic var measurementValue = Data(Float(0.0))
-    @objc dynamic var healthKitStatusRaw = HealthKitStatus.unwritten.rawValue
-    let day = LinkingObjects(fromType: Day.self, property: "foodEntries")
+    let days = LinkingObjects(fromType: Day.self, property: "foodEntries")
     let tags = List<Tag>()
-    var healthKitStatus: HealthKitStatus {
-        return HealthKitStatus(rawValue: healthKitStatusRaw)!
-    }
     var measurementValueRepresentation: MeasurementValueRepresentation {
         return MeasurementValueRepresentation(rawValue: measurementValueRepresentationRaw)!
     }
@@ -197,27 +184,23 @@ final class FoodEntry: Object {
     }
     
     override static func indexedProperties() -> [String] {
-        return ["date", "healthKitStatusRaw"]
+        return ["date"]
     }
     
     override static func primaryKey() -> String? {
         return "id"
     }
     
+    // TODO: Make Realm and HealthKit transactions atomic
     static func delete(_ foodEntry: FoodEntry, withoutNotifying tokens: [NotificationToken] = [],
                        completion: (Bool) -> () = { _ in })
     {
         HealthKitStore.shared.delete([foodEntry.id], {})
         
-        let day = foodEntry.day.first!
-        if day.foodEntries.count <= 1 {
-            DataStore.delete(foodEntry, withoutNotifying: tokens)
-            Day.delete(day, withoutNotifying: tokens)
-            completion(true)
-        } else {
-            DataStore.delete(foodEntry, withoutNotifying: tokens)
-            completion(false)
-        }
+        let day = foodEntry.days.first!
+        DataStore.delete(foodEntry, withoutNotifying: tokens)
+        let dayWasDeleted = Day.deleteIfNoEntries(day, withoutNotifying: tokens)
+        completion(dayWasDeleted)
     }
 }
 
@@ -238,6 +221,14 @@ final class Day: Object {
     
     static func delete(_ day: Day, withoutNotifying tokens: [NotificationToken] = []) {
         DataStore.delete(day, withoutNotifying: tokens)
+    }
+    
+    static func deleteIfNoEntries(_ day: Day, withoutNotifying tokens: [NotificationToken] = []) -> Bool {
+        if day.foodEntries.count <= 0 {
+            Day.delete(day, withoutNotifying: tokens)
+            return true
+        }
+        return false
     }
 }
 
@@ -304,5 +295,17 @@ extension Fraction {
     var floatValue: Float? {
         guard denominator > 0 else { return nil }
         return Float(numerator) / Float(denominator)
+    }
+}
+
+extension List where Element == Tag {
+    func toggle(_ name: String) -> Bool {
+        if let index = index(where: { $0.name == name }) {
+            remove(at: index)
+            return false
+        } else {
+            append(DataStore.tags.first(where: { $0.name == name })!)
+            return true
+        }
     }
 }

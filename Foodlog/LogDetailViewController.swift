@@ -12,7 +12,7 @@ class LogDetailViewController: PulleyDrawerViewController {
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var subtitleLabel: UILabel!
     @IBOutlet weak var textView: UITextView!
-    @IBOutlet weak var textViewHeightConstraint: NSLayoutConstraint!
+    @IBOutlet weak var textViewHeight: NSLayoutConstraint!
     
     var detailPresentable: LogDetailPresentable!
     private var detailTextAttributes: [NSAttributedStringKey: Any]!
@@ -32,8 +32,7 @@ class LogDetailViewController: PulleyDrawerViewController {
         
         resetLogDetailText()
         
-        textViewHeightConstraint.constant = textView.sizeThatFits(
-            CGSize(width: 0, height: CGFloat.greatestFiniteMagnitude)).height
+        textViewHeight.constant = textView.sizeThatFits(CGSize(width: 0, height: CGFloat.greatestFiniteMagnitude)).height
     }
     
     @IBAction func edit() {

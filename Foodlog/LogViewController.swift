@@ -9,7 +9,6 @@
 import RealmSwift
 import UIKit
 
-// TODO: Make Realm and HealthKit transactions atomic
 class LogViewController: UIViewController {
     @IBOutlet weak var tableView: UITableView!
     
@@ -363,7 +362,10 @@ extension Food: FilteredResultType {
     }
     
     func filteredOnDelete() {
-        Food.delete(self)
+        if let (count, onConfirm) = Food.delete(self) {
+            let warning = "Deleting this food item will also delete \(count) entries. This cannot be undone."
+            UIApplication.shared.alert(warning: warning, confirm: onConfirm)
+        }
     }
 }
 
