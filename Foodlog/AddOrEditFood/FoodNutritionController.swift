@@ -8,12 +8,6 @@
 
 import UIKit
 
-protocol FoodNutritionControllerContext {
-    var enableFields: Bool { get }
-    func set(kind: NutritionKind, to value: Float)
-    func value(for kind: NutritionKind) -> Float
-}
-
 class FoodNutritionController: NSObject {
     @IBOutlet weak var scrollController:            ScrollController!
     @IBOutlet weak var toolbar:                     UIToolbar!
@@ -176,6 +170,12 @@ extension FoodNutritionController: UITextFieldDelegate {
             }
         }
     }
+}
+
+protocol FoodNutritionControllerContext {
+    var enableFields: Bool { get }
+    func set(kind: NutritionKind, to value: Float)
+    func value(for kind: NutritionKind) -> Float
 }
 
 final class AddEntryForExistingFoodNutritionControllerContext: FoodNutritionControllerContext {

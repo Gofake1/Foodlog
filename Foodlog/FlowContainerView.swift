@@ -9,6 +9,11 @@
 import UIKit
 
 class FlowContainerView: UIView {
+    override var intrinsicContentSize: CGSize {
+        return CGSize(width: bounds.width, height: intrinsicHeight)
+    }
+    private var intrinsicHeight = CGFloat(0.0)
+    
     override func layoutSubviews() {
         super.layoutSubviews()
         
@@ -25,5 +30,7 @@ class FlowContainerView: UIView {
             lineHeight = max(lineHeight, size.height)
             currentOrigin.x += size.width + 6.0
         }
+        intrinsicHeight = lineHeight + currentOrigin.y
+        invalidateIntrinsicContentSize()
     }
 }

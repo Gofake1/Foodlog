@@ -10,6 +10,8 @@ import RealmSwift
 import UIKit
 
 // TODO: iPhone X UI
+// TODO: Show tags for food suggestions
+// TODO: Show tag color for tag suggestions
 class AddOrSearchViewController: PulleyDrawerViewController {
     @IBOutlet weak var suggestionTableController: SuggestionTableController!
     @IBOutlet weak var suggestionTableViewVisibilityController: SuggestionTableViewVisibilityController!
@@ -89,16 +91,6 @@ extension AddOrSearchViewController: UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         searchBar.resignFirstResponder()
     }
-}
-
-protocol SuggestionType {
-    var suggestionCanBeAddedToLog: Bool { get }
-    var suggestionCanBeDeleted: Bool { get }
-    var suggestionCanBeSearched: Bool { get }
-    var suggestionLabelText: String { get }
-    func suggestionOnAdd()
-    func suggestionOnDelete()
-    func suggestionOnSearch()
 }
 
 class SuggestionTableController: NSObject {
@@ -296,6 +288,16 @@ class SuggestionTableViewCell: UITableViewCell {
     @IBAction func add() {
         suggestion.suggestionOnAdd()
     }
+}
+
+protocol SuggestionType {
+    var suggestionCanBeAddedToLog: Bool { get }
+    var suggestionCanBeDeleted: Bool { get }
+    var suggestionCanBeSearched: Bool { get }
+    var suggestionLabelText: String { get }
+    func suggestionOnAdd()
+    func suggestionOnDelete()
+    func suggestionOnSearch()
 }
 
 extension Food: SuggestionType {

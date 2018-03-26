@@ -11,6 +11,7 @@ import UIKit
 class LogDetailViewController: PulleyDrawerViewController {
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var subtitleLabel: UILabel!
+    @IBOutlet weak var tagsView: FlowContainerView!
     @IBOutlet weak var textView: UITextView!
     @IBOutlet weak var textViewHeight: NSLayoutConstraint!
     
@@ -23,12 +24,16 @@ class LogDetailViewController: PulleyDrawerViewController {
         
         titleLabel.text = detailPresentable.logDetailTitle
         subtitleLabel.text = detailPresentable.logDetailSubtitle
+        tagsView.subviews.forEach { $0.removeFromSuperview() }
+        detailPresentable.fillTagView(tagsView)
         
-        detailTextAttributes = textView.attributedText.attributes(at: 0, effectiveRange: nil)
-        let paragraphStyle = NSParagraphStyle.default.mutableCopy() as! NSMutableParagraphStyle
-        let location = textView.bounds.width - textView.textContainer.lineFragmentPadding * 2
-        paragraphStyle.tabStops = [NSTextTab(textAlignment: .right, location: location)]
-        detailTextAttributes[.paragraphStyle] = paragraphStyle
+        if detailTextAttributes == nil {
+            detailTextAttributes = textView.attributedText.attributes(at: 0, effectiveRange: nil)
+            let paragraphStyle = NSParagraphStyle.default.mutableCopy() as! NSMutableParagraphStyle
+            let location = textView.bounds.width - textView.textContainer.lineFragmentPadding * 2
+            paragraphStyle.tabStops = [NSTextTab(textAlignment: .right, location: location)]
+            detailTextAttributes[.paragraphStyle] = paragraphStyle
+        }
         
         resetLogDetailText()
         
@@ -62,7 +67,51 @@ protocol LogDetailPresentable {
     var logDetailTitle: String { get }
     var logDetailSubtitle: String { get }
     func editDetailPresentable()
+    func fillTagView(_ view: FlowContainerView)
     func makeDetailText(_ representation: NutritionKind.ValueRepresentation) -> String
+}
+
+extension Food: LogDetailPresentable {
+    var logDetailTitle: String {
+        return name
+    }
+    var logDetailSubtitle: String {
+        return String(entries.count)+" entries"
+    }
+    
+    func editDetailPresentable() {
+        VCController.editFood(self)
+    }
+    
+    func fillTagView(_ view: FlowContainerView) {
+        tags.map({ $0.disabledButton }).forEach({ view.addSubview($0) })
+    }
+    
+    func makeDetailText(_ representation: NutritionKind.ValueRepresentation) -> String {
+        return "Per \(measurementRepresentation.singular):\n" + NutritionPrinter(self, representation, { $0 }).print
+    }
+}
+
+extension FoodEntry: LogDetailPresentable {
+    var logDetailTitle: String {
+        guard let food = food, let measurementString = measurementString else { return "Error: Log Detail Title" }
+        return "\(measurementString)\(food.measurementRepresentation.longSuffix) \(food.name)"
+    }
+    var logDetailSubtitle: String {
+        return date.mediumDateShortTimeString
+    }
+    
+    func editDetailPresentable() {
+        VCController.editFoodEntry(self)
+    }
+    
+    func fillTagView(_ view: FlowContainerView) {
+        tags.map({ $0.disabledButton }).forEach({ view.addSubview($0) })
+    }
+    
+    func makeDetailText(_ representation: NutritionKind.ValueRepresentation) -> String {
+        return NutritionPrinter(food!, representation, { [measurementFloat] in $0 * measurementFloat }).print
+    }
 }
 
 struct NutritionPrinter {
@@ -117,41 +166,6 @@ struct NutritionPrinter {
                 return kind.description+"\t"+transform(real).pretty!+kind.unit.suffix+"\n"
             }
         }
-    }
-}
-
-extension Food: LogDetailPresentable {
-    var logDetailTitle: String {
-        return name
-    }
-    var logDetailSubtitle: String {
-        return String(entries.count)+" entries"
-    }
-    
-    func editDetailPresentable() {
-        VCController.editFood(self)
-    }
-    
-    func makeDetailText(_ representation: NutritionKind.ValueRepresentation) -> String {
-        return "Per \(measurementRepresentation.singular):\n" + NutritionPrinter(self, representation, { $0 }).print
-    }
-}
-
-extension FoodEntry: LogDetailPresentable {
-    var logDetailTitle: String {
-        guard let food = food, let measurementString = measurementString else { return "Error: Log Detail Title" }
-        return "\(measurementString)\(food.measurementRepresentation.longSuffix) \(food.name)"
-    }
-    var logDetailSubtitle: String {
-        return date.mediumDateShortTimeString
-    }
-    
-    func editDetailPresentable() {
-        VCController.editFoodEntry(self)
-    }
-    
-    func makeDetailText(_ representation: NutritionKind.ValueRepresentation) -> String {
-        return NutritionPrinter(food!, representation, { [measurementFloat] in $0 * measurementFloat }).print
     }
 }
 

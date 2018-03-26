@@ -8,14 +8,6 @@
 
 import UIKit
 
-protocol MeasurementControllerContext {
-    var canChangeRepresentation: Bool { get }
-    var hasMeasurementValue: Bool { get }
-    var measurementValue: Data { get set }
-    var measurementValueRepresentation: FoodEntry.MeasurementValueRepresentation { get set }
-    var measurementRepresentation: Food.MeasurementRepresentation { get set }
-}
-
 class MeasurementController: NSObject {
     @IBOutlet weak var scrollController: ScrollController!
     @IBOutlet weak var toolbar: UIToolbar!
@@ -86,10 +78,8 @@ extension MeasurementController: UITextFieldDelegate {
                    replacementString string: String) -> Bool {
         for character in string {
             switch character {
-            case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".", ",", "/":
-                continue
-            default:
-                return false
+            case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".", ",", "/": continue
+            default: return false
             }
         }
         return true
@@ -115,6 +105,14 @@ extension MeasurementController: UITextFieldDelegate {
             }
         }
     }
+}
+
+protocol MeasurementControllerContext {
+    var canChangeRepresentation: Bool { get }
+    var hasMeasurementValue: Bool { get }
+    var measurementValue: Data { get set }
+    var measurementValueRepresentation: FoodEntry.MeasurementValueRepresentation { get set }
+    var measurementRepresentation: Food.MeasurementRepresentation { get set }
 }
 
 final class AddEntryForExistingFoodMeasurementControllerContext: MeasurementControllerContext {

@@ -110,19 +110,19 @@ final class EditFoodEntryContext: AddOrEditContextType {
     var name: String {
         get { return foodEntry.food!.name }
         set {
-            foodInfoChanged.value ||= newValue == foodEntry.food!.name
+            foodInfoChanged.value ||= newValue != foodEntry.food!.name
             foodEntry.food!.name = newValue
         }
     }
-    private let day: Day // Handle case when user changes food entry's day
     private let foodEntry: FoodEntry
     private let foodInfoChanged = Ref(false)
+    private let originalDay: Day
     private let originalFood: Food
     
     init(_ foodEntry: FoodEntry) {
-        day = foodEntry.days.first!
         self.foodEntry = FoodEntry(value: foodEntry)
         self.foodEntry.food = Food(value: foodEntry.food!)
+        originalDay = foodEntry.days.first!
         originalFood = foodEntry.food!
     }
     
@@ -138,18 +138,27 @@ final class EditFoodEntryContext: AddOrEditContextType {
     }
     
     func save() -> (Int, () -> ())? {
+        func _save(_ context: EditFoodEntryContext) {
+            if context.originalDay.startOfDay != context.foodEntry.date.startOfDay {
+                let correctDay = Day.get(for: context.foodEntry)
+                correctDay.foodEntries.append(context.foodEntry)
+                DataStore.update(correctDay)
+                let wrongDay = Day(value: context.originalDay)
+                let index = wrongDay.foodEntries.index(of: context.foodEntry)!
+                wrongDay.foodEntries.remove(at: index)
+                DataStore.update(wrongDay)
+                _ = Day.deleteIfNoEntries(wrongDay)
+            } else {
+                DataStore.update(context.foodEntry)
+            }
+            HealthKitStore.shared.update(AnyCollection([context.foodEntry]))
+        }
+        
         if foodInfoChanged.value {
             let affectedFoodEntries = DataStore.foodEntries.filter("food == %@", originalFood)
-            return (affectedFoodEntries.count, { [weak self] in
-                DataStore.update(self!.foodEntry)
-                _ = Day.deleteIfNoEntries(self!.day)
-                let foodEntries = DataStore.foodEntries.filter("food == %@", self!.foodEntry.food!)
-                HealthKitStore.shared.update(AnyCollection(foodEntries))
-            })
+            return (affectedFoodEntries.count, { [weak self] in _save(self!) })
         } else {
-            DataStore.update(foodEntry)
-            _ = Day.deleteIfNoEntries(day)
-            HealthKitStore.shared.update(AnyCollection([foodEntry]))
+            _save(self)
             return nil
         }
     }
@@ -159,12 +168,7 @@ private func _addFoodEntry(_ foodEntry: FoodEntry, _ searchSuggestion: SearchSug
     searchSuggestion.lastUsed = Date()
     searchSuggestion.text = foodEntry.food!.name
     foodEntry.food!.searchSuggestion = searchSuggestion
-    let day: Day
-    if let _day = DataStore.object(Day.self, primaryKey: foodEntry.date.startOfDay.hashValue) {
-        day = Day(value: _day)
-    } else {
-        day = Day(foodEntry.date.startOfDay)
-    }
+    let day = Day.get(for: foodEntry)
     day.foodEntries.append(foodEntry)
     DataStore.update(day)
     HealthKitStore.shared.save([foodEntry.hkObject].compactMap { $0 })
@@ -174,8 +178,6 @@ extension HealthKitStore {
     func update(_ foodEntries: AnyCollection<FoodEntry>) {
         let idsToDelete = foodEntries.map { $0.id }
         let hkObjectsToSave = foodEntries.compactMap { $0.hkObject }
-        delete(idsToDelete) { [weak self] in
-            self?.save(hkObjectsToSave)
-        }
+        delete(idsToDelete) { [weak self] in self?.save(hkObjectsToSave) }
     }
 }

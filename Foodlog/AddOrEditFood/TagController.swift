@@ -8,20 +8,10 @@
 
 import UIKit
 
-protocol TagControllerContext: class {
-    var didDismissModal: (AnyCollection<Tag>) -> () { get set }
-    var disableFoodTagsView: Bool { get }
-    var tags: (AnyCollection<Tag>, AnyCollection<Tag>) { get }
-    var vcDelegates: (TagViewControllerDelegate, TagViewControllerDelegate) { get }
-}
-
-// TODO: `FlowContainerView.intrinsicContentSize`
-// TODO: Use lighter color when tags are disabled
-// TODO: Make newly created tags toggleable
 // TODO: Update `Tag.lastUsed` when added to `Food` or `FoodEntry`
 class TagController: NSObject {
     @IBOutlet weak var scrollController: ScrollController!
-    @IBOutlet weak var entryTagsView: FlowContainerView!
+    @IBOutlet weak var foodEntryTagsView: FlowContainerView!
     @IBOutlet weak var foodTagsView: FlowContainerView!
     
     private static let shadowDuration = 0.4
@@ -41,19 +31,17 @@ class TagController: NSObject {
                 if tags.count == 0 {
                     view!.addSubview(empty())
                 } else {
-                    for tag in tags {
-                        view!.addSubview(make(tag))
-                    }
+                    tags.map({ make($0) }).forEach({ view!.addSubview($0) })
                 }
             }
         }
         
-        fillForView[entryTagsView] = makeFill(for: entryTagsView, empty: {
-            let button = UIButton(pill: "add tags", color: .lightGray)
+        fillForView[foodEntryTagsView] = makeFill(for: foodEntryTagsView, empty: {
+            let button = UIButton(pillFilled: "add tags to entry", color: .lightGray)
             button.addTarget(self, action: #selector(TagController.foodEntryTagPressed), for: .touchUpInside)
             return button
         }, make: {
-            let button = $0.plainButton
+            let button = $0.activeButton
             button.addTarget(self, action: #selector(TagController.foodEntryTagPressed), for: .touchUpInside)
             return button
         })
@@ -65,17 +53,15 @@ class TagController: NSObject {
                 label.text = "no tags"
                 return label
             }, make: {
-                let button = $0.plainButton
-                button.isEnabled = false
-                return button
+                $0.disabledButton
             })
         } else {
             fillForView[foodTagsView] = makeFill(for: foodTagsView, empty: {
-                let button = UIButton(pill: "add tags", color: .lightGray)
+                let button = UIButton(pillFilled: "add tags to food", color: .lightGray)
                 button.addTarget(self, action: #selector(TagController.foodTagPressed), for: .touchUpInside)
                 return button
             }, make: {
-                let button = $0.plainButton
+                let button = $0.activeButton
                 button.addTarget(self, action: #selector(TagController.foodTagPressed), for: .touchUpInside)
                 return button
             })
@@ -86,12 +72,12 @@ class TagController: NSObject {
             self!.activeTagsView.subviews.forEach { $0.removeFromSuperview() }
             self!.fillForView[self!.activeTagsView]!(tags)
         }
-        fillForView[entryTagsView]!(context.tags.0)
+        fillForView[foodEntryTagsView]!(context.tags.0)
         fillForView[foodTagsView]!(context.tags.1)
     }
     
     @objc func foodEntryTagPressed() {
-        showModal(tagView: entryTagsView, delegate: context.vcDelegates.0)
+        showModal(tagView: foodEntryTagsView, delegate: context.vcDelegates.0)
     }
     
     @objc func foodTagPressed() {
@@ -217,6 +203,13 @@ extension TagController: UIViewControllerTransitioningDelegate {
     }
 }
 
+protocol TagControllerContext: class {
+    var didDismissModal: (AnyCollection<Tag>) -> () { get set }
+    var disableFoodTagsView: Bool { get }
+    var tags: (AnyCollection<Tag>, AnyCollection<Tag>) { get }
+    var vcDelegates: (TagViewControllerDelegate, TagViewControllerDelegate) { get }
+}
+
 final class AddEntryForExistingFoodTagControllerContext: TagControllerContext {
     var didDismissModal: (AnyCollection<Tag>) -> () = { _ in }
     var disableFoodTagsView: Bool {
@@ -271,13 +264,6 @@ final class EditFoodTagControllerContext: TagControllerContext {
     }
 }
 
-protocol TagViewControllerDelegate {
-    var tags: AnyCollection<Tag> { get }
-    func createTag(name: String) throws -> Tag
-    func toggleTag(name: String) -> Bool
-    func willBeDismissed()
-}
-
 class TagViewController: UIViewController {
     @IBOutlet weak var addNewTagTextField: UITextField!
     @IBOutlet weak var addNewTagView: UIView!
@@ -288,11 +274,9 @@ class TagViewController: UIViewController {
     
     override func viewDidLoad() {
         for tag in DataStore.tags {
-            let button = tag.makeControlButton(delegate.tags.contains(tag))
-            button.addTarget(self, action: #selector(toggleTag(_:)), for: .touchUpInside)
-            tagsView.addSubview(button)
+            tagsView.addSubview(tag.makeControlButton(delegate.tags.contains(tag), self, #selector(toggleTag(_:))))
         }
-        let button = UIButton(pill: "add new tag", color: .lightGray)
+        let button = UIButton(pillFilled: "add new tag", color: .lightGray)
         button.addTarget(self, action: #selector(startAddNewTag), for: .touchUpInside)
         tagsView.addSubview(button)
         
@@ -342,7 +326,7 @@ class TagViewController: UIViewController {
             do {
                 let tag = try delegate.createTag(name: addNewTagTextField.text!)
                 // TODO: Animate creation of new tag
-                tagsView.addSubview(tag.makeControlButton(false))
+                tagsView.addSubview(tag.makeControlButton(false, self, #selector(toggleTag(_:))))
             } catch {
                 UIApplication.shared.alert(error: error)
             }
@@ -363,6 +347,13 @@ class TagViewController: UIViewController {
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
+}
+
+protocol TagViewControllerDelegate {
+    var tags: AnyCollection<Tag> { get }
+    func createTag(name: String) throws -> Tag
+    func toggleTag(name: String) -> Bool
+    func willBeDismissed()
 }
 
 enum TagError: LocalizedError {
@@ -449,37 +440,12 @@ final class FoodEntryTagViewControllerDelegate: TagViewControllerDelegate {
     }
 }
 
-private let _caseSensitiveFont: UIFont = {
-    let descriptor = UIFont.systemFont(ofSize: 14.0).fontDescriptor.addingAttributes([
-        .featureSettings: [
-            [
-                UIFontDescriptor.FeatureKey.featureIdentifier: kCaseSensitiveLayoutType,
-                UIFontDescriptor.FeatureKey.typeIdentifier: kCaseSensitiveLayoutOnSelector
-            ]
-        ]
-    ])
-    return UIFont(descriptor: descriptor, size: 0.0)
-}()
-
 extension Tag {
-    var plainButton: UIButton {
-        return UIButton(pill: name, color: color)
-    }
-    var color: UIColor {
-        switch ColorCode(rawValue: colorCodeRaw)! {
-        case .lightGray:    return .lightGray
-        case .red:          return .red
-        case .orange:       return .orange
-        case .yellow:       return .yellow
-        case .green:        return .green
-        case .blue:         return .blue
-        case .purple:       return .purple
-        }
-    }
-    
-    func makeControlButton(_ isMember: Bool) -> DualLabelButton {
-        return isMember ? DualLabelButton(pillLeft: "×", right: name, color: color, leftFont: _caseSensitiveFont) :
-            DualLabelButton(pillLeft: "+", right: name, color: color, leftFont: _caseSensitiveFont)
+    func makeControlButton(_ isMember: Bool, _ target: Any, _ action: Selector) -> DualLabelButton {
+        let button = isMember ? DualLabelButton(pillLeft: "×", right: name, color: color) :
+            DualLabelButton(pillLeft: "+", right: name, color: color)
+        button.addTarget(target, action: action, for: .touchUpInside)
+        return button
     }
 }
 
@@ -491,11 +457,22 @@ class DualLabelButton: UIButton {
         return CGSize(width: width, height: height)
     }
 
+    private static let caseSensitiveFont: UIFont = {
+        let descriptor = UIFont.systemFont(ofSize: 14.0).fontDescriptor.addingAttributes([
+            .featureSettings: [
+                [
+                    UIFontDescriptor.FeatureKey.featureIdentifier: kCaseSensitiveLayoutType,
+                    UIFontDescriptor.FeatureKey.typeIdentifier: kCaseSensitiveLayoutOnSelector
+                ]
+            ]
+            ])
+        return UIFont(descriptor: descriptor, size: 0.0)
+    }()
     private let leftLabel = UILabel()
     
-    convenience init(pillLeft left: String, right: String, color: UIColor, leftFont: UIFont) {
-        self.init(pill: right, color: color)
-        leftLabel.font = leftFont
+    convenience init(pillLeft left: String, right: String, color: UIColor) {
+        self.init(pillFilled: right, color: color)
+        leftLabel.font = DualLabelButton.caseSensitiveFont
         leftLabel.isUserInteractionEnabled = true
         leftLabel.text = left
         leftLabel.textColor = currentTitleColor
@@ -514,16 +491,5 @@ class DualLabelButton: UIButton {
     func setLeftTitle(_ title: String) {
         leftLabel.text = title
         layoutIfNeeded()
-    }
-}
-
-extension UIButton {
-    convenience init(pill title: String, color: UIColor) {
-        self.init(type: .custom)
-        setTitle(title, for: .normal)
-        backgroundColor = color
-        contentEdgeInsets = .init(top: 4.0, left: 6.0, bottom: 4.0, right: 6.0)
-        titleLabel?.font = UIFont.systemFont(ofSize: 14.0)
-        layer.cornerRadius = intrinsicContentSize.height / 2
     }
 }

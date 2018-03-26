@@ -230,6 +230,14 @@ final class Day: Object {
         }
         return false
     }
+    
+    static func get(for foodEntry: FoodEntry) -> Day {
+        if let day = DataStore.object(Day.self, primaryKey: foodEntry.date.startOfDay.hashValue) {
+            return Day(value: day)
+        } else {
+            return Day(foodEntry.date.startOfDay)
+        }
+    }
 }
 
 final class FoodServingPair: Object {

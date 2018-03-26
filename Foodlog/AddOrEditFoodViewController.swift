@@ -8,6 +8,7 @@
 
 import UIKit
 
+// TODO: UI to change measurement representation
 class AddOrEditFoodViewController: PulleyDrawerViewController {    
     @IBOutlet weak var dateController:          DateController!
     @IBOutlet weak var foodNutritionController: FoodNutritionController!

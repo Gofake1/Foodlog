@@ -38,6 +38,7 @@
 		63EF95451FF33F9E00076825 /* RealmSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63D970A31FE4B1F400AA0168 /* RealmSwift.framework */; };
 		63EF95461FF33F9E00076825 /* RealmSwift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 63D970A31FE4B1F400AA0168 /* RealmSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		63F5941B2064A9F1001F627A /* MyScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63F5941A2064A9F1001F627A /* MyScrollView.swift */; };
+		63F8780B206758FA009D0A29 /* Models+UIKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63F8780A206758FA009D0A29 /* Models+UIKit.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -122,6 +123,7 @@
 		63D970A31FE4B1F400AA0168 /* RealmSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RealmSwift.framework; path = Carthage/Build/iOS/RealmSwift.framework; sourceTree = "<group>"; };
 		63DC132E200992C800A22983 /* DataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStore.swift; sourceTree = "<group>"; };
 		63F5941A2064A9F1001F627A /* MyScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyScrollView.swift; sourceTree = "<group>"; };
+		63F8780A206758FA009D0A29 /* Models+UIKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Models+UIKit.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -243,6 +245,7 @@
 				636E13942000DC73005C8AD8 /* LogDetailViewController.swift */,
 				6385AF291FE0A436009E8483 /* LogViewController.swift */,
 				63D9709B1FE4961700AA0168 /* Models.swift */,
+				63F8780A206758FA009D0A29 /* Models+UIKit.swift */,
 				63F5941A2064A9F1001F627A /* MyScrollView.swift */,
 				638C976B20030F8E00EC0D99 /* PillView.swift */,
 				636E139C2000E19B005C8AD8 /* PulleyDrawerViewController.swift */,
@@ -384,6 +387,7 @@
 				636E13952000DC73005C8AD8 /* LogDetailViewController.swift in Sources */,
 				6385AF2A1FE0A436009E8483 /* LogViewController.swift in Sources */,
 				63D9709C1FE4961700AA0168 /* Models.swift in Sources */,
+				63F8780B206758FA009D0A29 /* Models+UIKit.swift in Sources */,
 				63F5941B2064A9F1001F627A /* MyScrollView.swift in Sources */,
 				638C976C20030F8E00EC0D99 /* PillView.swift in Sources */,
 				636E139D2000E19B005C8AD8 /* PulleyDrawerViewController.swift in Sources */,

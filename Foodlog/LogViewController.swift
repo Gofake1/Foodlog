@@ -12,13 +12,18 @@ import UIKit
 class LogViewController: UIViewController {
     @IBOutlet weak var tableView: UITableView!
     
-    private var currentLogTableController: LogTableController!
+    private var currentLogTableController: Either<LogTableController>!
     private let defaultLogTableController = DefaultLogTableController()
     private let filteredLogTableController = FilteredLogTableController()
     
     override func viewDidLoad() {
-        currentLogTableController = defaultLogTableController
-        currentLogTableController.setup(tableView)
+        let onSwitchController: (LogTableController, LogTableController) -> () = { [weak self] in
+            $0.tearDown()
+            $1.setup(self!.tableView)
+        }
+        currentLogTableController = Either(a: defaultLogTableController, b: filteredLogTableController,
+                                           onAtoB: onSwitchController, onBtoA: onSwitchController)
+        currentLogTableController.current.setup(tableView)
         
         tableView.contentInset = UIEdgeInsets(top: 0.0, left: 0.0, bottom: 64.0, right: 0.0)
         tableView.scrollIndicatorInsets = UIEdgeInsets(top: 0.0, left: 0.0, bottom: 64.0, right: 0.0)
@@ -30,28 +35,51 @@ class LogViewController: UIViewController {
     }
     
     func filter(_ food: Food) {
-        if currentLogTableController != filteredLogTableController {
-            currentLogTableController = filteredLogTableController
-            defaultLogTableController.tearDown()
-            filteredLogTableController.setup(tableView)
-        }
+        currentLogTableController.change(to: .b)
         filteredLogTableController.filter(food)
     }
     
     func filter(_ tag: Tag) {
-        if currentLogTableController != filteredLogTableController {
-            currentLogTableController = filteredLogTableController
-            defaultLogTableController.tearDown()
-            filteredLogTableController.setup(tableView)
-        }
+        currentLogTableController.change(to: .b)
         filteredLogTableController.filter(tag)
     }
     
     func clearFilter() {
-        if currentLogTableController != defaultLogTableController {
-            currentLogTableController = defaultLogTableController
-            filteredLogTableController.tearDown()
-            defaultLogTableController.setup(tableView)
+        currentLogTableController.change(to: .a)
+    }
+}
+
+struct Either<T> {
+    enum Side {
+        case a
+        case b
+    }
+    
+    var current: T {
+        switch side {
+        case .a: return a
+        case .b: return b
+        }
+    }
+    private let a: T
+    private let b: T
+    private let onAtoB: (T, T) -> ()
+    private let onBtoA: (T, T) -> ()
+    private var side: Side = .a
+    
+    init(a: T, b: T, onAtoB: @escaping (T, T) -> (), onBtoA: @escaping (T, T) -> ()) {
+        self.a = a
+        self.b = b
+        self.onAtoB = onAtoB
+        self.onBtoA = onBtoA
+    }
+    
+    mutating func change(to side: Side) {
+        guard side != self.side else { return }
+        self.side = side
+        switch side {
+        case .a: onBtoA(b, a)
+        case .b: onAtoB(a, b)
         }
     }
 }
@@ -107,7 +135,8 @@ extension DefaultLogTableController: UITableViewDataSource {
         let foodEntry = sortedDays[indexPath.section].sortedFoodEntries[indexPath.row]
         cell.displaysFraction = foodEntry.measurementValueRepresentation == .fraction
         cell.titleLabel?.text = foodEntry.food?.name ?? "Unnamed"
-        cell.subtitleLabel?.text = foodEntry.date.noDateShortTimeString
+        cell.subtitleLabel?.attributedText = ([(foodEntry.date.noDateShortTimeString, UIColor.darkText)] +
+            foodEntry.tags.prefix(5).map { ($0.name, $0.color) }).attributedString
         cell.detailLabel?.text = foodEntry.measurementLabelText ?? "?"
         return cell
     }
@@ -144,38 +173,9 @@ extension DefaultLogTableController: UITableViewDelegate {
     }
 }
 
-protocol FilteredResultType {
-    var filteredDetail: String { get }
-    var filteredDetailDisplaysFraction: Bool { get }
-    var filteredTitle: String { get }
-    var filteredSubtitle: String { get }
-    func filteredOnDelete()
-}
-
-struct AnyFilteredResult: FilteredResultType {
-    var filteredDetail: String {
-        return base.filteredDetail
-    }
-    var filteredDetailDisplaysFraction: Bool {
-        return base.filteredDetailDisplaysFraction
-    }
-    var filteredTitle: String {
-        return base.filteredTitle
-    }
-    var filteredSubtitle: String {
-        return base.filteredSubtitle
-    }
-    var logDetailPresentable: LogDetailPresentable {
-        return base as! LogDetailPresentable
-    }
-    private let base: FilteredResultType
-    
-    init(_ base: FilteredResultType) {
-        self.base = base
-    }
-    
-    func filteredOnDelete() {
-        base.filteredOnDelete()
+extension Day {
+    var sortedFoodEntries: Results<FoodEntry> {
+        return foodEntries.sorted(byKeyPath: #keyPath(FoodEntry.date), ascending: false)
     }
 }
 
@@ -278,7 +278,7 @@ extension FilteredLogTableController: UITableViewDataSource {
         let item = tableData[indexPath.section][AnyIndex(indexPath.row)]
         cell.displaysFraction = item.filteredDetailDisplaysFraction
         cell.titleLabel?.text = item.filteredTitle
-        cell.subtitleLabel?.text = item.filteredSubtitle
+        cell.subtitleLabel?.attributedText = item.filteredSubtitle
         cell.detailLabel?.text = item.filteredDetail
         return cell
     }
@@ -307,43 +307,38 @@ extension FilteredLogTableController: UITableViewDelegate {
     }
 }
 
-private let _defaultFont = UIFont.monospacedDigitSystemFont(ofSize: 17.0, weight: .regular)
-private let _fractionFont: UIFont = {
-    let descriptor = UIFont.systemFont(ofSize: 20.0, weight: .light).fontDescriptor.addingAttributes([
-        .featureSettings: [
-            [
-                UIFontDescriptor.FeatureKey.featureIdentifier: kFractionsType,
-                UIFontDescriptor.FeatureKey.typeIdentifier: kDiagonalFractionsSelector
-            ]
-        ]
-    ])
-    return UIFont(descriptor: descriptor, size: 0.0)
-}()
-
-class DetailSubtitleTableViewCell: UITableViewCell {
-    @IBOutlet weak var titleLabel: UILabel!
-    @IBOutlet weak var detailLabel: UILabel! {
-        didSet {
-            detailLabel.font = _defaultFont
-        }
-    }
-    @IBOutlet weak var subtitleLabel: UILabel!
-    
-    var displaysFraction = false {
-        didSet {
-            guard displaysFraction != oldValue else { return }
-            if displaysFraction {
-                detailLabel.font = _fractionFont
-            } else {
-                detailLabel.font = _defaultFont
-            }
-        }
-    }
+protocol FilteredResultType {
+    var filteredDetail: String { get }
+    var filteredDetailDisplaysFraction: Bool { get }
+    var filteredTitle: String { get }
+    var filteredSubtitle: NSAttributedString { get }
+    func filteredOnDelete()
 }
 
-extension Day {
-    var sortedFoodEntries: Results<FoodEntry> {
-        return foodEntries.sorted(byKeyPath: #keyPath(FoodEntry.date), ascending: false)
+struct AnyFilteredResult: FilteredResultType {
+    var filteredDetail: String {
+        return base.filteredDetail
+    }
+    var filteredDetailDisplaysFraction: Bool {
+        return base.filteredDetailDisplaysFraction
+    }
+    var filteredTitle: String {
+        return base.filteredTitle
+    }
+    var filteredSubtitle: NSAttributedString {
+        return base.filteredSubtitle
+    }
+    var logDetailPresentable: LogDetailPresentable {
+        return base as! LogDetailPresentable
+    }
+    private let base: FilteredResultType
+    
+    init(_ base: FilteredResultType) {
+        self.base = base
+    }
+    
+    func filteredOnDelete() {
+        base.filteredOnDelete()
     }
 }
 
@@ -357,8 +352,9 @@ extension Food: FilteredResultType {
     var filteredTitle: String {
         return name
     }
-    var filteredSubtitle: String {
-        return String(entries.count)+" entries"
+    var filteredSubtitle: NSAttributedString {
+        return ([(String(entries.count)+" entries", UIColor.darkText)] +
+            tags.prefix(5).map { ($0.name, $0.color) }).attributedString
     }
     
     func filteredOnDelete() {
@@ -379,12 +375,77 @@ extension FoodEntry: FilteredResultType {
     var filteredTitle: String {
         return food!.name
     }
-    var filteredSubtitle: String {
-        return date.mediumDateShortTimeString
+    var filteredSubtitle: NSAttributedString {
+        return ([(date.mediumDateShortTimeString, UIColor.darkText)] +
+            tags.prefix(5).map { ($0.name, $0.color) }).attributedString
     }
     
     func filteredOnDelete() {
         FoodEntry.delete(self)
+    }
+}
+
+class DetailSubtitleTableViewCell: UITableViewCell {
+    @IBOutlet weak var titleLabel: UILabel!
+    @IBOutlet weak var detailLabel: UILabel! {
+        didSet {
+            detailLabel.font = DetailSubtitleTableViewCell.defaultFont
+        }
+    }
+    @IBOutlet weak var subtitleLabel: UILabel!
+    
+    private static let defaultFont = UIFont.monospacedDigitSystemFont(ofSize: 17.0, weight: .regular)
+    private static let fractionFont: UIFont = {
+        let descriptor = UIFont.systemFont(ofSize: 20.0, weight: .light).fontDescriptor.addingAttributes([
+            .featureSettings: [
+                [
+                    UIFontDescriptor.FeatureKey.featureIdentifier: kFractionsType,
+                    UIFontDescriptor.FeatureKey.typeIdentifier: kDiagonalFractionsSelector
+                ]
+            ]
+            ])
+        return UIFont(descriptor: descriptor, size: 0.0)
+    }()
+    
+    var displaysFraction = false {
+        didSet {
+            guard displaysFraction != oldValue else { return }
+            if displaysFraction {
+                detailLabel.font = DetailSubtitleTableViewCell.fractionFont
+            } else {
+                detailLabel.font = DetailSubtitleTableViewCell.defaultFont
+            }
+        }
+    }
+}
+
+extension Array where Element == (String, UIColor) {
+    var attributedString: NSAttributedString {
+        guard count > 0 else { return NSAttributedString() }
+        guard count > 1 else {
+            let string = self[0].0, color = self[0].1
+            let attrString = NSMutableAttributedString(string: string)
+            attrString.addAttribute(.foregroundColor, value: color, range: NSRange(location: 0, length: string.count))
+            return attrString
+        }
+        var interleaved = [(String, UIColor)]()
+        for el in self[0..<count-1] {
+            interleaved.append(el)
+            interleaved.append((" · ", UIColor.darkText))
+        }
+        interleaved.append(self[count-1])
+        assert(interleaved.count == count*2-1)
+        var string = ""
+        var ranges = [NSRange]()
+        for (str, _) in interleaved {
+            ranges.append(NSRange(location: string.count, length: str.count))
+            string += str
+        }
+        let attrString = NSMutableAttributedString(string: string)
+        for (color, range) in zip(interleaved.map({ $0.1 }), ranges) {
+            attrString.addAttribute(.foregroundColor, value: color, range: range)
+        }
+        return attrString
     }
 }
 

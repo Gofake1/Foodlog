@@ -8,10 +8,6 @@
 
 import UIKit
 
-protocol DateControllerContext {
-    var date: Date { get set }
-}
-
 class DateController: NSObject {
     @IBOutlet weak var scrollController: ScrollController!
     @IBOutlet weak var toolbar: UIToolbar!
@@ -58,6 +54,10 @@ extension DateController: UITextFieldDelegate {
             textField.text = context.date.shortDateShortTimeString
         }
     }
+}
+
+protocol DateControllerContext {
+    var date: Date { get set }
 }
 
 final class DefaultDateControllerContext: DateControllerContext {
