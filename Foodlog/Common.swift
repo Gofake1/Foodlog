@@ -228,7 +228,12 @@ extension NutritionKind: CustomStringConvertible {
 }
 
 final class Ref<T> {
-    var value: T
+    var value: T {
+        didSet {
+            onChange(value)
+        }
+    }
+    var onChange: (T) -> () = { _ in }
     
     init(_ value: T) {
         self.value = value

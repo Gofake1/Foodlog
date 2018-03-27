@@ -68,7 +68,7 @@ class TagController: NSObject {
         }
         
         self.context = context
-        context.didDismissModal = { [weak self] tags in
+        context.onDismissModal = { [weak self] tags in
             self!.activeTagsView.subviews.forEach { $0.removeFromSuperview() }
             self!.fillForView[self!.activeTagsView]!(tags)
         }
@@ -204,17 +204,17 @@ extension TagController: UIViewControllerTransitioningDelegate {
 }
 
 protocol TagControllerContext: class {
-    var didDismissModal: (AnyCollection<Tag>) -> () { get set }
     var disableFoodTagsView: Bool { get }
+    var onDismissModal: (AnyCollection<Tag>) -> () { get set }
     var tags: (AnyCollection<Tag>, AnyCollection<Tag>) { get }
     var vcDelegates: (TagViewControllerDelegate, TagViewControllerDelegate) { get }
 }
 
 final class AddEntryForExistingFoodTagControllerContext: TagControllerContext {
-    var didDismissModal: (AnyCollection<Tag>) -> () = { _ in }
     var disableFoodTagsView: Bool {
         return true
     }
+    var onDismissModal: (AnyCollection<Tag>) -> () = { _ in }
     var tags: (AnyCollection<Tag>, AnyCollection<Tag>) {
         return (AnyCollection(foodEntry.tags), AnyCollection(foodEntry.food!.tags))
     }
@@ -228,11 +228,11 @@ final class AddEntryForExistingFoodTagControllerContext: TagControllerContext {
     }
 }
 
-final class DefaultTagControllerContext: TagControllerContext {
-    var didDismissModal: (AnyCollection<Tag>) -> () = { _ in }
+final class AddEntryForNewFoodTagControllerContext: TagControllerContext {
     var disableFoodTagsView: Bool {
         return false
     }
+    var onDismissModal: (AnyCollection<Tag>) -> () = { _ in }
     var tags: (AnyCollection<Tag>, AnyCollection<Tag>) {
         return (AnyCollection(foodEntry.tags), AnyCollection(foodEntry.food!.tags))
     }
@@ -247,20 +247,45 @@ final class DefaultTagControllerContext: TagControllerContext {
 }
 
 final class EditFoodTagControllerContext: TagControllerContext {
-    var didDismissModal: (AnyCollection<Tag>) -> () = { _ in }
     var disableFoodTagsView: Bool {
         return false
     }
+    var onDismissModal: (AnyCollection<Tag>) -> () = { _ in }
     var tags: (AnyCollection<Tag>, AnyCollection<Tag>) {
         return (AnyCollection([]), AnyCollection(food.tags))
     }
     var vcDelegates: (TagViewControllerDelegate, TagViewControllerDelegate) {
-        return (DummyTagViewControllerDelegate(), FoodTagViewControllerDelegate(self, food))
+        return (DummyTagViewControllerDelegate(), FoodTagViewControllerDelegate(self, food, foodInfoChanged))
     }
     private let food: Food
+    private let foodInfoChanged: Ref<Bool>
     
-    init(_ food: Food) {
+    init(_ food: Food, _ foodInfoChanged: Ref<Bool>) {
         self.food = food
+        self.foodInfoChanged = foodInfoChanged
+    }
+}
+
+final class EditFoodEntryTagControllerContext: TagControllerContext {
+    var disableFoodTagsView: Bool {
+        return false
+    }
+    var onDismissModal: (AnyCollection<Tag>) -> () = { _ in }
+    var tags: (AnyCollection<Tag>, AnyCollection<Tag>) {
+        return (AnyCollection(foodEntry.tags), AnyCollection(foodEntry.food!.tags))
+    }
+    var vcDelegates: (TagViewControllerDelegate, TagViewControllerDelegate) {
+        return (FoodEntryTagViewControllerDelegate(self, foodEntry, foodEntryInfoChanged),
+                FoodTagViewControllerDelegate(self, foodEntry.food!, foodInfoChanged))
+    }
+    private let foodEntry: FoodEntry
+    private let foodEntryInfoChanged: Ref<Bool>
+    private let foodInfoChanged: Ref<Bool>
+    
+    init(_ foodEntry: FoodEntry, _ foodEntryInfoChanged: Ref<Bool>, _ foodInfoChanged: Ref<Bool>) {
+        self.foodEntry = foodEntry
+        self.foodEntryInfoChanged = foodEntryInfoChanged
+        self.foodInfoChanged = foodInfoChanged
     }
 }
 
@@ -404,18 +429,21 @@ final class FoodTagViewControllerDelegate: TagViewControllerDelegate {
     }
     private weak var context: TagControllerContext!
     private let food: Food
+    private let foodInfoChanged: Ref<Bool>?
     
-    init(_ context: TagControllerContext, _ food: Food) {
+    init(_ context: TagControllerContext, _ food: Food, _ foodInfoChanged: Ref<Bool>? = nil) {
         self.context = context
         self.food = food
+        self.foodInfoChanged = foodInfoChanged
     }
     
     func toggleTag(name: String) -> Bool {
+        foodInfoChanged?.value = true
         return food.tags.toggle(name)
     }
     
     func willBeDismissed() {
-        context.didDismissModal(tags)
+        context.onDismissModal(tags)
     }
 }
 
@@ -425,18 +453,21 @@ final class FoodEntryTagViewControllerDelegate: TagViewControllerDelegate {
     }
     private weak var context: TagControllerContext!
     private let foodEntry: FoodEntry
+    private let foodEntryInfoChanged: Ref<Bool>?
     
-    init(_ context: TagControllerContext, _ foodEntry: FoodEntry) {
+    init(_ context: TagControllerContext, _ foodEntry: FoodEntry, _ foodEntryInfoChanged: Ref<Bool>? = nil) {
         self.context = context
         self.foodEntry = foodEntry
+        self.foodEntryInfoChanged = foodEntryInfoChanged
     }
     
     func toggleTag(name: String) -> Bool {
+        foodEntryInfoChanged?.value = true
         return foodEntry.tags.toggle(name)
     }
     
     func willBeDismissed() {
-        context.didDismissModal(tags)
+        context.onDismissModal(tags)
     }
 }
 

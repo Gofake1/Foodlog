@@ -57,7 +57,7 @@ final class AddEntryForNewFoodContext: AddOrEditContextType {
         vc.dateController.setup(DefaultDateControllerContext(foodEntry))
         vc.foodNutritionController.setup(AddEntryForNewFoodNutritionControllerContext(foodEntry.food!))
         vc.measurementController.setup(AddEntryForNewFoodMeasurementControllerContext(foodEntry))
-        vc.tagController.setup(DefaultTagControllerContext(foodEntry))
+        vc.tagController.setup(AddEntryForNewFoodTagControllerContext(foodEntry))
         vc.foodNameLabel.text = name
     }
     
@@ -87,14 +87,16 @@ final class EditFoodContext: AddOrEditContextType {
     }
     
     func configure(_ vc: AddOrEditFoodViewController) {
+        foodInfoChanged.onChange = { [weak vc] in vc?.addToLogButton.isEnabled = $0 }
         vc.foodNutritionController.setup(DefaultFoodNutritionControllerContext(food, foodInfoChanged))
         vc.measurementController.setup(EditFoodMeasurementControllerContext(food, foodInfoChanged))
-        vc.tagController.setup(EditFoodTagControllerContext(food))
+        vc.tagController.setup(EditFoodTagControllerContext(food, foodInfoChanged))
         vc.foodEntryInfoView.subviews.forEach { $0.removeFromSuperview() }
         vc.foodNameLabel.isHidden = true
         vc.foodNameField.isHidden = false
         vc.foodNameField.text = name
         vc.addToLogButton.setTitle("Update Log", for: .normal)
+        vc.addToLogButton.isEnabled = false
     }
     
     func save() -> (Int, () -> ())? {
@@ -115,6 +117,7 @@ final class EditFoodEntryContext: AddOrEditContextType {
         }
     }
     private let foodEntry: FoodEntry
+    private let foodEntryInfoChanged = Ref(false)
     private let foodInfoChanged = Ref(false)
     private let originalDay: Day
     private let originalFood: Food
@@ -127,14 +130,18 @@ final class EditFoodEntryContext: AddOrEditContextType {
     }
     
     func configure(_ vc: AddOrEditFoodViewController) {
-        vc.dateController.setup(DefaultDateControllerContext(foodEntry))
+        foodEntryInfoChanged.onChange = { [weak vc] in vc?.addToLogButton.isEnabled = $0 }
+        foodInfoChanged.onChange = { [weak vc] in vc?.addToLogButton.isEnabled = $0 }
+        vc.dateController.setup(EditFoodEntryDateControllerContext(foodEntry, foodEntryInfoChanged))
         vc.foodNutritionController.setup(DefaultFoodNutritionControllerContext(foodEntry.food!, foodInfoChanged))
-        vc.measurementController.setup(EditFoodEntryMeasurementControllerContext(foodEntry, foodInfoChanged))
-        vc.tagController.setup(DefaultTagControllerContext(foodEntry))
+        vc.measurementController.setup(EditFoodEntryMeasurementControllerContext(foodEntry, foodEntryInfoChanged,
+                                                                                 foodInfoChanged))
+        vc.tagController.setup(EditFoodEntryTagControllerContext(foodEntry, foodEntryInfoChanged, foodInfoChanged))
         vc.foodNameLabel.isHidden = true
         vc.foodNameField.isHidden = false
         vc.foodNameField.text = name
         vc.addToLogButton.setTitle("Update Log", for: .normal)
+        vc.addToLogButton.isEnabled = false
     }
     
     func save() -> (Int, () -> ())? {

@@ -71,3 +71,20 @@ final class DefaultDateControllerContext: DateControllerContext {
         self.foodEntry = foodEntry
     }
 }
+
+final class EditFoodEntryDateControllerContext: DateControllerContext {
+    var date: Date {
+        get { return foodEntry.date }
+        set {
+            foodEntryInfoChanged.value ||= newValue != foodEntry.date
+            foodEntry.date = newValue
+        }
+    }
+    private let foodEntry: FoodEntry
+    private let foodEntryInfoChanged: Ref<Bool>
+    
+    init(_ foodEntry: FoodEntry, _ foodEntryInfoChanged: Ref<Bool>) {
+        self.foodEntry = foodEntry
+        self.foodEntryInfoChanged = foodEntryInfoChanged
+    }
+}

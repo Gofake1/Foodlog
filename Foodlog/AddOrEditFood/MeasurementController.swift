@@ -207,11 +207,17 @@ final class EditFoodEntryMeasurementControllerContext: MeasurementControllerCont
     }
     var measurementValue: Data {
         get { return foodEntry.measurementValue }
-        set { foodEntry.measurementValue = newValue }
+        set {
+            foodEntryInfoChanged.value ||= newValue != foodEntry.measurementValue
+            foodEntry.measurementValue = newValue
+        }
     }
     var measurementValueRepresentation: FoodEntry.MeasurementValueRepresentation {
         get { return foodEntry.measurementValueRepresentation }
-        set { foodEntry.measurementValueRepresentationRaw = newValue.rawValue }
+        set {
+            foodEntryInfoChanged.value ||= newValue.rawValue != foodEntry.measurementValueRepresentationRaw
+            foodEntry.measurementValueRepresentationRaw = newValue.rawValue
+        }
     }
     var measurementRepresentation: Food.MeasurementRepresentation {
         get { return foodEntry.food!.measurementRepresentation }
@@ -221,10 +227,12 @@ final class EditFoodEntryMeasurementControllerContext: MeasurementControllerCont
         }
     }
     private let foodEntry: FoodEntry
+    private let foodEntryInfoChanged: Ref<Bool>
     private var foodInfoChanged: Ref<Bool>
     
-    init(_ foodEntry: FoodEntry, _ foodInfoChanged: Ref<Bool>) {
+    init(_ foodEntry: FoodEntry, _ foodEntryInfoChanged: Ref<Bool>, _ foodInfoChanged: Ref<Bool>) {
         self.foodEntry = foodEntry
+        self.foodEntryInfoChanged = foodEntryInfoChanged
         self.foodInfoChanged = foodInfoChanged
     }
 }
