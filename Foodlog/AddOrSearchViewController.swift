@@ -10,8 +10,6 @@ import RealmSwift
 import UIKit
 
 // TODO: iPhone X UI
-// TODO: Show tags for food suggestions
-// TODO: Show tag color for tag suggestions
 class AddOrSearchViewController: PulleyDrawerViewController {
     @IBOutlet weak var suggestionTableController: SuggestionTableController!
     @IBOutlet weak var suggestionTableViewVisibilityController: SuggestionTableViewVisibilityController!
@@ -94,41 +92,6 @@ extension AddOrSearchViewController: UISearchBarDelegate {
 }
 
 class SuggestionTableController: NSObject {
-    class NewFoodPlaceholder: SuggestionType {
-        var name: String
-        var suggestionCanBeAddedToLog: Bool {
-            return true
-        }
-        var suggestionCanBeDeleted: Bool {
-            return false
-        }
-        var suggestionCanBeSearched: Bool {
-            return true
-        }
-        var suggestionLabelText: String {
-            return "\"\(name)\""
-        }
-        
-        func suggestionOnAdd() {
-            let foodEntry = FoodEntry()
-            foodEntry.food = Food()
-            foodEntry.food!.name = name
-            VCController.addEntryForNewFood(foodEntry)
-        }
-        
-        func suggestionOnDelete() {
-            assert(false)
-        }
-        
-        func suggestionOnSearch() {
-            // TODO: Search foods and entries using text
-        }
-        
-        init(name: String) {
-            self.name = name
-        }
-    }
-    
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var tableViewVisibilityController: SuggestionTableViewVisibilityController!
     
@@ -201,10 +164,7 @@ extension SuggestionTableController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "Suggestion", for: indexPath)
-            as! SuggestionTableViewCell
-        cell.suggestion = tableData[indexPath.section][AnyIndex(indexPath.row)]
-        return cell
+        return tableData[indexPath.section][AnyIndex(indexPath.row)].suggestionCell(from: tableView, for: indexPath)
     }
     
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
@@ -274,50 +234,87 @@ class SuggestionTableViewVisibilityController: NSObject {
     }
 }
 
-class SuggestionTableViewCell: UITableViewCell {
-    @IBOutlet weak var label: UILabel!
-    @IBOutlet weak var addButton: UIButton!
+class DefaultSuggestionTableViewCell: UITableViewCell {
+    @IBOutlet weak var titleLabel: UILabel!
+    @IBOutlet weak var subtitleLabel: UILabel!
+    @IBOutlet weak var addButton: MyButton!
     
-    var suggestion: SuggestionType! {
-        didSet {
-            label.text = suggestion.suggestionLabelText
-            addButton.isHidden = !suggestion.suggestionCanBeAddedToLog
-        }
-    }
-    
-    @IBAction func add() {
-        suggestion.suggestionOnAdd()
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        subtitleLabel.text = ""
+        addButton.removeTarget(nil, action: nil, for: .touchUpInside)
     }
 }
 
+class TagSuggestionTableViewCell: UITableViewCell {
+    @IBOutlet weak var padderView: UIView!
+    @IBOutlet weak var label: UILabel!
+}
+
 protocol SuggestionType {
-    var suggestionCanBeAddedToLog: Bool { get }
     var suggestionCanBeDeleted: Bool { get }
     var suggestionCanBeSearched: Bool { get }
-    var suggestionLabelText: String { get }
-    func suggestionOnAdd()
+    func suggestionCell(from tableView: UITableView, for indexPath: IndexPath) -> UITableViewCell
     func suggestionOnDelete()
     func suggestionOnSearch()
 }
 
-extension Food: SuggestionType {
-    var suggestionCanBeAddedToLog: Bool {
-        return true
+extension SuggestionTableController {
+    class NewFoodPlaceholder: SuggestionType {
+        var name: String
+        var suggestionCanBeDeleted: Bool {
+            return false
+        }
+        var suggestionCanBeSearched: Bool {
+            return true
+        }
+        
+        func suggestionCell(from tableView: UITableView, for indexPath: IndexPath) -> UITableViewCell {
+            let cell = tableView.dequeueReusableCell(withIdentifier: "DefaultSuggestion", for: indexPath)
+                as! DefaultSuggestionTableViewCell
+            cell.titleLabel.text = "\""+name+"\""
+            cell.addButton.onTouchUpInside { [name] in
+                let foodEntry = FoodEntry()
+                foodEntry.food = Food()
+                foodEntry.food!.name = name
+                VCController.addEntryForNewFood(foodEntry)
+            }
+            return cell
+        }
+        
+        func suggestionOnDelete() {
+            assert(false)
+        }
+        
+        func suggestionOnSearch() {
+            // TODO: Search foods and entries using text
+        }
+        
+        init(name: String) {
+            self.name = name
+        }
     }
+}
+
+extension Food: SuggestionType {
     var suggestionCanBeDeleted: Bool {
         return true
     }
     var suggestionCanBeSearched: Bool {
         return true
     }
-    var suggestionLabelText: String {
-        return name
-    }
     
-    func suggestionOnAdd() {
-        let foodEntry = FoodEntry()
-        foodEntry.food = self
-        VCController.addEntryForExistingFood(foodEntry)
+    func suggestionCell(from tableView: UITableView, for indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "DefaultSuggestion", for: indexPath)
+            as! DefaultSuggestionTableViewCell
+        cell.titleLabel.text = name
+        cell.subtitleLabel.attributedText = tags.prefix(5).map({ ($0.name, $0.color) }).attributedString
+        cell.addButton.onTouchUpInside {
+            let foodEntry = FoodEntry()
+            foodEntry.food = self
+            VCController.addEntryForExistingFood(foodEntry)
+        }
+        return cell
     }
     
     func suggestionOnDelete() {
@@ -333,21 +330,15 @@ extension Food: SuggestionType {
 }
 
 extension FoodGroupingTemplate: SuggestionType {
-    var suggestionCanBeAddedToLog: Bool {
-        return true
-    }
     var suggestionCanBeDeleted: Bool {
         return true
     }
     var suggestionCanBeSearched: Bool {
         return false
     }
-    var suggestionLabelText: String {
-        return name
-    }
     
-    func suggestionOnAdd() {
-        // TODO
+    func suggestionCell(from tableView: UITableView, for indexPath: IndexPath) -> UITableViewCell {
+        fatalError("TODO: FoodGroupingTemplate")
     }
     
     func suggestionOnDelete() {
@@ -360,21 +351,19 @@ extension FoodGroupingTemplate: SuggestionType {
 }
 
 extension Tag: SuggestionType {
-    var suggestionCanBeAddedToLog: Bool {
-        return false
-    }
     var suggestionCanBeDeleted: Bool {
         return true
     }
     var suggestionCanBeSearched: Bool {
         return true
     }
-    var suggestionLabelText: String {
-        return name
-    }
     
-    func suggestionOnAdd() {
-        assert(false)
+    func suggestionCell(from tableView: UITableView, for indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "TagSuggestion", for: indexPath)
+            as! TagSuggestionTableViewCell
+        cell.padderView.backgroundColor = color
+        cell.label.text = name
+        return cell
     }
     
     func suggestionOnDelete() {
@@ -393,5 +382,18 @@ extension SearchSuggestion {
         case .group:    return groups.first!
         case .tag:      return tags.first!
         }
+    }
+}
+
+class MyButton: UIButton {
+    private var touchUpInside: () -> () = {}
+    
+    func onTouchUpInside(_ handler: @escaping () -> ()) {
+        touchUpInside = handler
+        addTarget(self, action: #selector(didTouchUpOnside), for: .touchUpInside)
+    }
+    
+    @objc func didTouchUpOnside() {
+        touchUpInside()
     }
 }

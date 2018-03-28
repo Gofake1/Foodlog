@@ -419,36 +419,6 @@ class DetailSubtitleTableViewCell: UITableViewCell {
     }
 }
 
-extension Array where Element == (String, UIColor) {
-    var attributedString: NSAttributedString {
-        guard count > 0 else { return NSAttributedString() }
-        guard count > 1 else {
-            let string = self[0].0, color = self[0].1
-            let attrString = NSMutableAttributedString(string: string)
-            attrString.addAttribute(.foregroundColor, value: color, range: NSRange(location: 0, length: string.count))
-            return attrString
-        }
-        var interleaved = [(String, UIColor)]()
-        for el in self[0..<count-1] {
-            interleaved.append(el)
-            interleaved.append((" · ", UIColor.darkText))
-        }
-        interleaved.append(self[count-1])
-        assert(interleaved.count == count*2-1)
-        var string = ""
-        var ranges = [NSRange]()
-        for (str, _) in interleaved {
-            ranges.append(NSRange(location: string.count, length: str.count))
-            string += str
-        }
-        let attrString = NSMutableAttributedString(string: string)
-        for (color, range) in zip(interleaved.map({ $0.1 }), ranges) {
-            attrString.addAttribute(.foregroundColor, value: color, range: range)
-        }
-        return attrString
-    }
-}
-
 extension FoodEntry {
     var measurementLabelText: String? {
         guard let food = food, let measurementString = measurementString else { return nil }

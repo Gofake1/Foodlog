@@ -107,3 +107,13 @@ class ScrollController: NSObject {
         NotificationCenter.default.removeObserver(self)
     }
 }
+
+class MyScrollView: UIScrollView {
+    var shouldScroll = false
+    
+    override func setContentOffset(_ contentOffset: CGPoint, animated: Bool) {
+        if shouldScroll {
+            super.setContentOffset(contentOffset, animated: animated)
+        }
+    }
+}

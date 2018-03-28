@@ -9,6 +9,7 @@
 import UIKit
 
 // TODO: Update `Tag.lastUsed` when added to `Food` or `FoodEntry`
+// TODO: UI to choose tag color
 class TagController: NSObject {
     @IBOutlet weak var scrollController: ScrollController!
     @IBOutlet weak var foodEntryTagsView: FlowContainerView!
@@ -51,7 +52,16 @@ class TagController: NSObject {
                 let label = UILabel()
                 label.textColor = .lightGray
                 label.text = "no tags"
-                return label
+                label.translatesAutoresizingMaskIntoConstraints = false
+                let padderView = UIView()
+                padderView.translatesAutoresizingMaskIntoConstraints = false
+                padderView.addSubview(label)
+                let left = padderView.leftAnchor.constraint(equalTo: label.leftAnchor, constant: -6.0)
+                let right = padderView.rightAnchor.constraint(equalTo: label.rightAnchor)
+                let top = padderView.topAnchor.constraint(equalTo: label.topAnchor)
+                let bottom = padderView.bottomAnchor.constraint(equalTo: label.bottomAnchor)
+                NSLayoutConstraint.activate([left, right, top, bottom])
+                return padderView
             }, make: {
                 $0.disabledButton
             })
@@ -117,18 +127,11 @@ extension TagController: UIViewControllerAnimatedTransitioning {
             (left: NSLayoutConstraint, right: NSLayoutConstraint, height: NSLayoutConstraint,
             centerY: NSLayoutConstraint)
         {
-            return (NSLayoutConstraint(item: view, attribute: .left, relatedBy: .equal,
-                                       toItem: transitionContext.containerView, attribute: .left,
-                                       multiplier: 1.0, constant: left),
-                    NSLayoutConstraint(item: view, attribute: .right, relatedBy: .equal,
-                                       toItem: transitionContext.containerView, attribute: .right,
-                                       multiplier: 1.0, constant: right),
-                    NSLayoutConstraint(item: view, attribute: .height, relatedBy: .equal,
-                                       toItem: nil, attribute: .notAnAttribute,
-                                       multiplier: 1.0, constant: height),
-                    NSLayoutConstraint(item: view, attribute: .centerY, relatedBy: .equal,
-                                       toItem: transitionContext.containerView, attribute: .centerY,
-                                       multiplier: 1.0, constant: centerY))
+            let view2 = transitionContext.containerView
+            return (view.leftAnchor.constraint(equalTo: view2.leftAnchor, constant: left),
+                    view.rightAnchor.constraint(equalTo: view2.rightAnchor, constant: right),
+                    view.heightAnchor.constraint(equalToConstant: height),
+                    view.centerYAnchor.constraint(equalTo: view2.centerYAnchor, constant: centerY))
         }
         
         if let toVC = transitionContext.viewController(forKey: .to) as? TagViewController {
