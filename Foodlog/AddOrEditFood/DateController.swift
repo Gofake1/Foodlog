@@ -8,6 +8,7 @@
 
 import UIKit
 
+// TODO: UI to round to nearest :30
 class DateController: NSObject {
     @IBOutlet weak var scrollController: ScrollController!
     @IBOutlet weak var toolbar: UIToolbar!

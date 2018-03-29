@@ -8,7 +8,6 @@
 
 import UIKit
 
-// TODO: Update `Tag.lastUsed` when added to `Food` or `FoodEntry`
 // TODO: UI to choose tag color
 class TagController: NSObject {
     @IBOutlet weak var scrollController: ScrollController!
@@ -95,7 +94,9 @@ class TagController: NSObject {
     }
     
     private func showModal(tagView: FlowContainerView, delegate: TagViewControllerDelegate) {
+        // Workaround: Disable scroll behavior when creating new tag
         scrollController.scrollToView(nil)
+        
         activeTagsView = tagView
         let tagVC: TagViewController = VCController.makeVC(.tag)
         tagVC.delegate = delegate
@@ -442,7 +443,16 @@ final class FoodTagViewControllerDelegate: TagViewControllerDelegate {
     
     func toggleTag(name: String) -> Bool {
         foodInfoChanged?.value = true
-        return food.tags.toggle(name)
+        if let index = food.tags.index(where: { $0.name == name }) {
+            food.tags.remove(at: index)
+            return false
+        } else {
+            let tag = Tag(value: DataStore.tags.first(where: { $0.name == name })!)
+            tag.searchSuggestion! = SearchSuggestion(value: tag.searchSuggestion!)
+            tag.searchSuggestion!.lastUsed = Date()
+            food.tags.append(tag)
+            return true
+        }
     }
     
     func willBeDismissed() {
@@ -466,7 +476,16 @@ final class FoodEntryTagViewControllerDelegate: TagViewControllerDelegate {
     
     func toggleTag(name: String) -> Bool {
         foodEntryInfoChanged?.value = true
-        return foodEntry.tags.toggle(name)
+        if let index = foodEntry.tags.index(where: { $0.name == name }) {
+            foodEntry.tags.remove(at: index)
+            return false
+        } else {
+            let tag = Tag(value: DataStore.tags.first(where: { $0.name == name })!)
+            tag.searchSuggestion! = SearchSuggestion(value: tag.searchSuggestion!)
+            tag.searchSuggestion!.lastUsed = Date()
+            foodEntry.tags.append(tag)
+            return true
+        }
     }
     
     func willBeDismissed() {

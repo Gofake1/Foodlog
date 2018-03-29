@@ -37,7 +37,8 @@ final class AddEntryForExistingFoodContext: AddOrEditContextType {
     }
     
     func save() -> (Int, () -> ())? {
-        _addFoodEntry(foodEntry, SearchSuggestion(value: foodEntry.food!.searchSuggestion!))
+        foodEntry.food!.searchSuggestion! = SearchSuggestion(value: foodEntry.food!.searchSuggestion!)
+        _addFoodEntry(foodEntry)
         return nil
     }
 }
@@ -62,9 +63,10 @@ final class AddEntryForNewFoodContext: AddOrEditContextType {
     }
     
     func save() -> (Int, () -> ())? {
-        let searchSuggestion = SearchSuggestion()
-        searchSuggestion.kindRaw = SearchSuggestion.Kind.food.rawValue
-        _addFoodEntry(foodEntry, searchSuggestion)
+        foodEntry.food!.searchSuggestion = SearchSuggestion()
+        foodEntry.food!.searchSuggestion!.kindRaw = SearchSuggestion.Kind.food.rawValue
+        foodEntry.food!.searchSuggestion!.text = name
+        _addFoodEntry(foodEntry)
         return nil
     }
 }
@@ -171,10 +173,8 @@ final class EditFoodEntryContext: AddOrEditContextType {
     }
 }
 
-private func _addFoodEntry(_ foodEntry: FoodEntry, _ searchSuggestion: SearchSuggestion) {
-    searchSuggestion.lastUsed = Date()
-    searchSuggestion.text = foodEntry.food!.name
-    foodEntry.food!.searchSuggestion = searchSuggestion
+private func _addFoodEntry(_ foodEntry: FoodEntry) {
+    foodEntry.food!.searchSuggestion!.lastUsed = Date()
     let day = Day.get(for: foodEntry)
     day.foodEntries.append(foodEntry)
     DataStore.update(day)

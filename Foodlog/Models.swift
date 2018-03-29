@@ -280,17 +280,11 @@ extension Date {
         var dc = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: self)
         if let minute = dc.minute {
             switch minute {
-            case 0, 30:
-                break
-            case 1...15:
-                dc.minute = 0
-            case 16...44:
-                dc.minute = 30
-            case 45...59:
-                dc.minute = 0
-                dc.hour? += 1
-            default:
-                dc.minute = 0
+            case 0, 30:     break
+            case 1...15:    dc.minute = 0
+            case 16...44:   dc.minute = 30
+            case 45...59:   dc.minute = 0; dc.hour? += 1
+            default:        dc.minute = 0
             }
         } else {
             dc.minute = 0
@@ -303,17 +297,5 @@ extension Fraction {
     var floatValue: Float? {
         guard denominator > 0 else { return nil }
         return Float(numerator) / Float(denominator)
-    }
-}
-
-extension List where Element == Tag {
-    func toggle(_ name: String) -> Bool {
-        if let index = index(where: { $0.name == name }) {
-            remove(at: index)
-            return false
-        } else {
-            append(DataStore.tags.first(where: { $0.name == name })!)
-            return true
-        }
     }
 }

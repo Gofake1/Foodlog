@@ -159,10 +159,11 @@
                                             <rect key="frame" x="0.0" y="0.0" width="320" height="43.5"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Title" textAlignment="natural" lineBreakMode="tailTruncation" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VNn-ec-SWf">
+                                                <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" horizontalHuggingPriority="251" text="Title" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VNn-ec-SWf">
                                                     <rect key="frame" x="15" y="5" width="34" height="21"/>
                                                     <constraints>
                                                         <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="21" id="NLA-WT-qUi"/>
+                                                        <constraint firstAttribute="height" relation="lessThanOrEqual" constant="34" id="U92-k3-OUx"/>
                                                     </constraints>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <nil key="textColor"/>
@@ -175,10 +176,10 @@
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="JAq-kT-Pye" customClass="MyButton" customModule="Foodlog" customModuleProvider="target">
-                                                    <rect key="frame" x="267" y="1" width="46" height="41"/>
+                                                    <rect key="frame" x="267" y="2" width="46" height="40.5"/>
                                                     <constraints>
                                                         <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="46" id="60c-KL-gSl"/>
-                                                        <constraint firstAttribute="height" constant="41.5" id="ZlO-ix-w4H"/>
+                                                        <constraint firstAttribute="height" constant="40.5" id="dbG-cH-gbt"/>
                                                     </constraints>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <state key="normal" title="Add"/>
@@ -189,7 +190,7 @@
                                                 <constraint firstItem="VNn-ec-SWf" firstAttribute="top" secondItem="Vsq-Nx-N64" secondAttribute="top" constant="5" id="Zv6-QP-j93"/>
                                                 <constraint firstItem="VNn-ec-SWf" firstAttribute="leading" secondItem="Vsq-Nx-N64" secondAttribute="leading" constant="15" id="bqX-nk-9L7"/>
                                                 <constraint firstItem="Wet-f0-oZd" firstAttribute="leading" secondItem="Vsq-Nx-N64" secondAttribute="leading" constant="15" id="dqO-SR-piN"/>
-                                                <constraint firstItem="JAq-kT-Pye" firstAttribute="top" secondItem="Vsq-Nx-N64" secondAttribute="top" constant="1" id="f3d-eh-fc3"/>
+                                                <constraint firstItem="JAq-kT-Pye" firstAttribute="top" secondItem="Vsq-Nx-N64" secondAttribute="top" constant="2" id="f3d-eh-fc3"/>
                                                 <constraint firstAttribute="bottom" secondItem="JAq-kT-Pye" secondAttribute="bottom" constant="1" id="iEj-BB-AOL"/>
                                                 <constraint firstAttribute="trailing" secondItem="JAq-kT-Pye" secondAttribute="trailing" constant="7" id="qY0-DN-VVL"/>
                                                 <constraint firstItem="VNn-ec-SWf" firstAttribute="bottom" secondItem="Wet-f0-oZd" secondAttribute="top" constant="1" id="v3Q-sJ-pII"/>
