@@ -147,7 +147,7 @@ final class EditFoodEntryContext: AddOrEditContextType {
     }
     
     func save() -> (Int, () -> ())? {
-        func _save(_ context: EditFoodEntryContext) {
+        func _save(_ context: EditFoodEntryContext, _ foodEntries: AnyCollection<FoodEntry>?) {
             if context.originalDay.startOfDay != context.foodEntry.date.startOfDay {
                 let correctDay = Day.get(for: context.foodEntry)
                 correctDay.foodEntries.append(context.foodEntry)
@@ -160,14 +160,14 @@ final class EditFoodEntryContext: AddOrEditContextType {
             } else {
                 DataStore.update(context.foodEntry)
             }
-            HealthKitStore.shared.update(AnyCollection([context.foodEntry]))
+            HealthKitStore.shared.update(foodEntries ?? AnyCollection([context.foodEntry]))
         }
         
         if foodInfoChanged.value {
             let affectedFoodEntries = DataStore.foodEntries.filter("food == %@", originalFood)
-            return (affectedFoodEntries.count, { [weak self] in _save(self!) })
+            return (affectedFoodEntries.count, { [weak self] in _save(self!, AnyCollection(affectedFoodEntries)) })
         } else {
-            _save(self)
+            _save(self, nil)
             return nil
         }
     }
