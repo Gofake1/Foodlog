@@ -12,7 +12,8 @@ class MeasurementController: NSObject {
     @IBOutlet weak var scrollController: ScrollController!
     @IBOutlet weak var toolbar: UIToolbar!
     @IBOutlet weak var valueRepresentationControl: UISegmentedControl!
-    @IBOutlet weak var representationButton: UIButton!
+    @IBOutlet weak var representationButton: UIBarButtonItem!
+    @IBOutlet weak var representationLabel: UILabel!
     @IBOutlet weak var field: UITextField!
     @IBOutlet weak var perRepresentationLabel: UILabel!
     
@@ -21,7 +22,8 @@ class MeasurementController: NSObject {
         func action(_ representation: Food.MeasurementRepresentation) -> UIAlertAction {
             return UIAlertAction(title: representation.plural, style: .default, handler: { [weak self] (_) in
                 self!.context.measurementRepresentation = representation
-                self!.representationButton.setTitle(representation.plural, for: .normal)
+                self!.representationButton.title = representation.plural
+                self!.representationLabel.text = representation.plural
                 self!.perRepresentationLabel.text = "Information Per \(representation.singular)"
             })
         }
@@ -41,8 +43,9 @@ class MeasurementController: NSObject {
         self.context = context
         if context.hasMeasurementValue {
             valueRepresentationControl.selectedSegmentIndex = context.measurementValueRepresentation.rawValue
-            representationButton.setTitle(context.measurementRepresentation.plural, for: .normal)
+            representationButton.title = context.measurementRepresentation.plural
             representationButton.isEnabled = context.canChangeRepresentation
+            representationLabel.text = context.measurementRepresentation.plural
             field.inputAccessoryView = toolbar
             switch context.measurementValueRepresentation {
             case .decimal:  field.text = context.measurementValue.to(Float.self).pretty

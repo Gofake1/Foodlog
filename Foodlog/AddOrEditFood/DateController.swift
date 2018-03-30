@@ -8,7 +8,6 @@
 
 import UIKit
 
-// TODO: UI to round to nearest :30
 class DateController: NSObject {
     @IBOutlet weak var scrollController: ScrollController!
     @IBOutlet weak var toolbar: UIToolbar!
@@ -17,6 +16,7 @@ class DateController: NSObject {
     private static let dp: UIDatePicker = {
         let dp = UIDatePicker()
         dp.datePickerMode = .dateAndTime
+        dp.minuteInterval = 30
         return dp
     }()
     private var context: DateControllerContext!
