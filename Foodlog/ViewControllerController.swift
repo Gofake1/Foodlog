@@ -25,11 +25,11 @@ final class VCController {
         case detail
     }
     
-    static var drawerStack = [(vc: PulleyDrawerViewController, state: DrawerState)]()
     static let pulleyVC: PulleyViewController = {
         defer { drawerStack.append((addOrSearchVC, .addOrSearch)) }
         return PulleyViewController(contentViewController: logVC, drawerViewController: addOrSearchVC)
     }()
+    private(set) static var drawerStack = [(vc: PulleyDrawerViewController, state: DrawerState)]()
     private static let addOrSearchVC: AddOrSearchViewController = makeVC(.addOrSearch)
     private static let logVC: LogViewController = makeVC(.log)
     private static let storyboard = UIStoryboard(name: "Main", bundle: nil)
@@ -66,13 +66,11 @@ final class VCController {
         let logDetailVC: LogDetailViewController = makeVC(.logDetail)
         logDetailVC.detailPresentable = presentable
         switch drawerStack.last!.state {
-        case .addOrSearch:
-            push(logDetailVC, .detail)
-        case .addFoodEntry: fallthrough
-        case .editFood: fallthrough
-        case .editFoodEntry: fallthrough
-        case .detail:
-            popAndPush(logDetailVC, .detail)
+        case .addOrSearch:      push(logDetailVC, .detail)
+        case .addFoodEntry:     fallthrough
+        case .editFood:         fallthrough
+        case .editFoodEntry:    fallthrough
+        case .detail:           popAndPush(logDetailVC, .detail)
         }
     }
     
@@ -112,5 +110,21 @@ final class VCController {
     
     static func makeVC<A: UIViewController>(_ kind: Kind) -> A {
         return storyboard.instantiateViewController(withIdentifier: kind.rawValue) as! A
+    }
+}
+
+class PulleyDrawerViewController: UIViewController {}
+
+extension PulleyDrawerViewController: PulleyDrawerViewControllerDelegate {
+    func collapsedDrawerHeight(bottomSafeArea: CGFloat) -> CGFloat {
+        return 64.0 + bottomSafeArea
+    }
+    
+    func partialRevealDrawerHeight(bottomSafeArea: CGFloat) -> CGFloat {
+        return 264.0 + bottomSafeArea
+    }
+    
+    func supportedDrawerPositions() -> [PulleyPosition] {
+        return [.collapsed, .open, .partiallyRevealed]
     }
 }
