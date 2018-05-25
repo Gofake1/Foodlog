@@ -11,43 +11,33 @@ import UIKit
 // TODO: UI to choose tag color
 class TagController: NSObject {
     @IBOutlet weak var scrollController: ScrollController!
-    @IBOutlet weak var foodEntryTagsView: FlowContainerView!
-    @IBOutlet weak var foodTagsView: FlowContainerView!
+    @IBOutlet weak var tagsView: FlowContainerView!
     
     private static let shadowDuration = 0.4
     private static let shadowRelativeDuration = shadowDuration / animationDuration
     private static let translationDuration = 0.4
     private static let translationRelativeDuration = translationDuration / animationDuration
     private static let animationDuration = shadowDuration + translationDuration
-    private weak var activeTagsView: FlowContainerView!
     private var context: TagControllerContext!
-    private var fillForView = [FlowContainerView: (AnyCollection<Tag>) -> ()]()
+    private var viewForEmpty: UIView!
+    private var viewForTag = [String: UIView]()
     
     func setup(_ context: TagControllerContext) {
-        func makeFill(for view: UIView, empty: @escaping () -> UIView, make: @escaping (Tag) -> UIView)
-            -> (AnyCollection<Tag>) -> ()
-        {
-            return { [weak view] tags in
-                if tags.count == 0 {
-                    view!.addSubview(empty())
-                } else {
-                    tags.map({ make($0) }).forEach({ view!.addSubview($0) })
-                }
+        func makeFill(nonempty: @escaping (Tag) -> UIView) -> (AnyCollection<Tag>) -> () {
+            return { [tagsView, weak self] tags in
+                tags.map({ ($0.name, nonempty($0)) }).forEach({
+                    tagsView!.addSubview($0.1)
+                    self!.viewForTag[$0.0] = $0.1
+                })
             }
         }
         
-        fillForView[foodEntryTagsView] = makeFill(for: foodEntryTagsView, empty: {
-            let button = UIButton(pillFilled: "add tags to entry", color: .lightGray)
-            button.addTarget(self, action: #selector(TagController.foodEntryTagPressed), for: .touchUpInside)
-            return button
-        }, make: {
-            let button = $0.activeButton
-            button.addTarget(self, action: #selector(TagController.foodEntryTagPressed), for: .touchUpInside)
-            return button
-        })
-        
-        if context.disableFoodTagsView {
-            fillForView[foodTagsView] = makeFill(for: foodTagsView, empty: {
+        self.context = context
+        let fill: (AnyCollection<Tag>) -> ()
+        switch context.presentation {
+        case .disabled:
+            fill = makeFill { $0.disabledButton }
+            viewForEmpty = {
                 let label = UILabel()
                 label.textColor = .lightGray
                 label.text = "no tags"
@@ -55,54 +45,62 @@ class TagController: NSObject {
                 let padderView = UIView()
                 padderView.translatesAutoresizingMaskIntoConstraints = false
                 padderView.addSubview(label)
-                let left = padderView.leftAnchor.constraint(equalTo: label.leftAnchor, constant: -6.0)
-                let right = padderView.rightAnchor.constraint(equalTo: label.rightAnchor)
-                let top = padderView.topAnchor.constraint(equalTo: label.topAnchor)
-                let bottom = padderView.bottomAnchor.constraint(equalTo: label.bottomAnchor)
-                NSLayoutConstraint.activate([left, right, top, bottom])
+                NSLayoutConstraint.activate([
+                    padderView.topAnchor.constraint(equalTo: label.topAnchor),
+                    padderView.bottomAnchor.constraint(equalTo: label.bottomAnchor),
+                    padderView.leftAnchor.constraint(equalTo: label.leftAnchor, constant: -6.0),
+                    padderView.rightAnchor.constraint(equalTo: label.rightAnchor)
+                    ])
                 return padderView
-            }, make: {
-                $0.disabledButton
-            })
-        } else {
-            fillForView[foodTagsView] = makeFill(for: foodTagsView, empty: {
-                let button = UIButton(pillFilled: "add tags to food", color: .lightGray)
-                button.addTarget(self, action: #selector(TagController.foodTagPressed), for: .touchUpInside)
-                return button
-            }, make: {
+            }()
+        case .enabled(let titleForEmpty):
+            fill = makeFill {
                 let button = $0.activeButton
-                button.addTarget(self, action: #selector(TagController.foodTagPressed), for: .touchUpInside)
+                button.addTarget(self, action: #selector(TagController.tagPressed), for: .touchUpInside)
                 return button
-            })
+            }
+            viewForEmpty = {
+                let button = UIButton(pillFilled: titleForEmpty, color: .lightGray)
+                button.addTarget(self, action: #selector(TagController.tagPressed), for: .touchUpInside)
+                return button
+            }()
         }
         
-        self.context = context
-        context.onDismissModal = { [weak self] tags in
-            self!.activeTagsView.subviews.forEach { $0.removeFromSuperview() }
-            self!.fillForView[self!.activeTagsView]!(tags)
+        if context.tags.count == 0 {
+            tagsView.addSubview(viewForEmpty)
+            viewForTag[""] = viewForEmpty
+        } else {
+            fill(context.tags)
         }
-        fillForView[foodEntryTagsView]!(context.tags.0)
-        fillForView[foodTagsView]!(context.tags.1)
+        
+        context.onTagAdded { [tagsView, viewForEmpty, weak self] in
+            let view = $0.makeControlButton(toggled: true, self!, #selector(self!.tagPressed))
+            self!.viewForTag[$0.name] = view
+            tagsView!.addSubview(view)
+            if self!.viewForTag[""] != nil {
+                viewForEmpty!.removeFromSuperview()
+                self!.viewForTag[""] = nil
+            }
+        }
+        context.onTagRemoved { [tagsView, viewForEmpty, weak self] in
+            self!.viewForTag[$0]!.removeFromSuperview()
+            self!.viewForTag[$0] = nil
+            if self!.viewForTag.count == 0 {
+                tagsView!.addSubview(viewForEmpty!)
+                self!.viewForTag[""] = viewForEmpty!
+            }
+        }
     }
     
-    @objc func foodEntryTagPressed() {
-        showModal(tagView: foodEntryTagsView, delegate: context.vcDelegates.0)
-    }
-    
-    @objc func foodTagPressed() {
-        showModal(tagView: foodTagsView, delegate: context.vcDelegates.1)
-    }
-    
-    private func showModal(tagView: FlowContainerView, delegate: TagViewControllerDelegate) {
+    @objc private func tagPressed() {
         // Workaround: Disable scroll behavior when creating new tag
         scrollController.scrollToView(nil)
         
-        activeTagsView = tagView
         let tagVC: TagViewController = VCController.makeVC(.tag)
-        tagVC.delegate = delegate
+        tagVC.context = context
         tagVC.modalPresentationStyle = .overCurrentContext
         tagVC.transitioningDelegate = self
-        UIApplication.shared.keyWindow?.rootViewController?.present(tagVC, animated: true)
+        UIApplication.shared.keyWindow!.rootViewController!.present(tagVC, animated: true)
     }
 }
 
@@ -140,7 +138,7 @@ extension TagController: UIViewControllerAnimatedTransitioning {
             animatedView.alpha = 0.0
             transitionContext.containerView.addSubview(animatedView)
             
-            let startFrame = activeTagsView.convert(activeTagsView.bounds, to: nil)
+            let startFrame = tagsView.convert(tagsView.bounds, to: nil)
             let (left, right, height, centerY) =
                 makeConstraints(view: animatedView, left: 4.0, right: -4.0, height: startFrame.height,
                                 centerY: startFrame.midY - toVC.view.frame.height/2)
@@ -177,7 +175,7 @@ extension TagController: UIViewControllerAnimatedTransitioning {
             NSLayoutConstraint.activate([left, right, height, centerY])
             transitionContext.containerView.layoutIfNeeded()
             
-            let endFrame = activeTagsView.convert(activeTagsView.bounds, to: nil)
+            let endFrame = tagsView.convert(tagsView.bounds, to: nil)
             UIView.animateKeyframes(withDuration: TagController.animationDuration, delay: 0.0, animations: {
                 UIView.addKeyframe(withRelativeStartTime: 0.0,
                                    relativeDuration: TagController.translationRelativeDuration)
@@ -198,7 +196,8 @@ extension TagController: UIViewControllerAnimatedTransitioning {
 
 extension TagController: UIViewControllerTransitioningDelegate {
     func animationController(forPresented presented: UIViewController, presenting: UIViewController,
-                             source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+                             source: UIViewController) -> UIViewControllerAnimatedTransitioning?
+    {
         return self
     }
     
@@ -207,103 +206,206 @@ extension TagController: UIViewControllerTransitioningDelegate {
     }
 }
 
+extension TagController {
+    enum Presentation {
+        case disabled
+        case enabled(String)
+    }
+    
+    class Common {
+        var tagAdded: (Tag) -> () = { _ in }
+        var tagRemoved: (String) -> () = { _ in }
+    }
+    
+    final class DisabledFood: Common {
+        private let food: Food
+        
+        init(_ food: Food) {
+            self.food = food
+        }
+    }
+    
+    final class EnabledExistingFood: Common {
+        private let food: Food
+        private let foodChanges: Changes<Food>
+        
+        init(_ food: Food, _ foodChanges: Changes<Food>) {
+            self.food = food
+            self.foodChanges = foodChanges
+        }
+    }
+    
+    final class EnabledNewFood: Common {
+        private let food: Food
+        
+        init(_ food: Food) {
+            self.food = food
+        }
+    }
+    
+    final class ExistingFoodEntry: Common {
+        private let foodEntry: FoodEntry
+        private let foodEntryChanges: Changes<FoodEntry>
+        
+        init(_ foodEntry: FoodEntry, _ foodEntryChanges: Changes<FoodEntry>) {
+            self.foodEntry = foodEntry
+            self.foodEntryChanges = foodEntryChanges
+        }
+    }
+    
+    final class NewFoodEntry: Common {
+        private let foodEntry: FoodEntry
+        
+        init(_ foodEntry: FoodEntry) {
+            self.foodEntry = foodEntry
+        }
+    }
+}
+
 protocol TagControllerContext: class {
-    var disableFoodTagsView: Bool { get }
-    var onDismissModal: (AnyCollection<Tag>) -> () { get set }
-    var tags: (AnyCollection<Tag>, AnyCollection<Tag>) { get }
-    var vcDelegates: (TagViewControllerDelegate, TagViewControllerDelegate) { get }
+    var presentation: TagController.Presentation { get }
+    var tags: AnyCollection<Tag> { get }
+    func onTagAdded(_ block: @escaping (Tag) -> ())
+    func onTagRemoved(_ block: @escaping (String) -> ())
+    func updatedTags(_ changes: [String: Tag.Change])
 }
 
-final class AddEntryForExistingFoodTagControllerContext: TagControllerContext {
-    var disableFoodTagsView: Bool {
-        return true
+extension TagControllerContext where Self: TagController.Common {
+    func onTagAdded(_ block: @escaping (Tag) -> ()) {
+        tagAdded = block
     }
-    var onDismissModal: (AnyCollection<Tag>) -> () = { _ in }
-    var tags: (AnyCollection<Tag>, AnyCollection<Tag>) {
-        return (AnyCollection(foodEntry.tags), AnyCollection(foodEntry.food!.tags))
-    }
-    var vcDelegates: (TagViewControllerDelegate, TagViewControllerDelegate) {
-        return (FoodEntryTagViewControllerDelegate(self, foodEntry), FoodTagViewControllerDelegate(self, foodEntry.food!))
-    }
-    private let foodEntry: FoodEntry
     
-    init(_ foodEntry: FoodEntry) {
-        self.foodEntry = foodEntry
+    func onTagRemoved(_ block: @escaping (String) -> ()) {
+        tagRemoved = block
     }
 }
 
-final class AddEntryForNewFoodTagControllerContext: TagControllerContext {
-    var disableFoodTagsView: Bool {
-        return false
+extension TagController.DisabledFood: TagControllerContext {
+    var presentation: TagController.Presentation {
+        return .disabled
     }
-    var onDismissModal: (AnyCollection<Tag>) -> () = { _ in }
-    var tags: (AnyCollection<Tag>, AnyCollection<Tag>) {
-        return (AnyCollection(foodEntry.tags), AnyCollection(foodEntry.food!.tags))
+    var tags: AnyCollection<Tag> {
+        return AnyCollection(food.tags)
     }
-    var vcDelegates: (TagViewControllerDelegate, TagViewControllerDelegate) {
-        return (FoodEntryTagViewControllerDelegate(self, foodEntry), FoodTagViewControllerDelegate(self, foodEntry.food!))
-    }
-    private let foodEntry: FoodEntry
     
-    init(_ foodEntry: FoodEntry) {
-        self.foodEntry = foodEntry
+    func updatedTags(_ changes: [String: Tag.Change]) {
+        assert(changes == [:])
     }
 }
 
-final class EditFoodTagControllerContext: TagControllerContext {
-    var disableFoodTagsView: Bool {
-        return false
+extension TagController.EnabledExistingFood: TagControllerContext {
+    var presentation: TagController.Presentation {
+        return .enabled("add tag for food")
     }
-    var onDismissModal: (AnyCollection<Tag>) -> () = { _ in }
-    var tags: (AnyCollection<Tag>, AnyCollection<Tag>) {
-        return (AnyCollection([]), AnyCollection(food.tags))
+    var tags: AnyCollection<Tag> {
+        return AnyCollection(food.tags)
     }
-    var vcDelegates: (TagViewControllerDelegate, TagViewControllerDelegate) {
-        return (DummyTagViewControllerDelegate(), FoodTagViewControllerDelegate(self, food, foodInfoChanged))
-    }
-    private let food: Food
-    private let foodInfoChanged: Ref<Bool>
     
-    init(_ food: Food, _ foodInfoChanged: Ref<Bool>) {
-        self.food = food
-        self.foodInfoChanged = foodInfoChanged
+    func updatedTags(_ changes: [String: Tag.Change]) {
+        guard changes != [:] else { return }
+        food.tagsChanged(changes, added: tagAdded, removed: tagRemoved)
+        foodChanges.insert(change: \Food.tagsCKReferences)
     }
 }
 
-final class EditFoodEntryTagControllerContext: TagControllerContext {
-    var disableFoodTagsView: Bool {
-        return false
+extension TagController.EnabledNewFood: TagControllerContext {
+    var presentation: TagController.Presentation {
+        return .enabled("add tag for food")
     }
-    var onDismissModal: (AnyCollection<Tag>) -> () = { _ in }
-    var tags: (AnyCollection<Tag>, AnyCollection<Tag>) {
-        return (AnyCollection(foodEntry.tags), AnyCollection(foodEntry.food!.tags))
+    var tags: AnyCollection<Tag> {
+        return AnyCollection(food.tags)
     }
-    var vcDelegates: (TagViewControllerDelegate, TagViewControllerDelegate) {
-        return (FoodEntryTagViewControllerDelegate(self, foodEntry, foodEntryInfoChanged),
-                FoodTagViewControllerDelegate(self, foodEntry.food!, foodInfoChanged))
-    }
-    private let foodEntry: FoodEntry
-    private let foodEntryInfoChanged: Ref<Bool>
-    private let foodInfoChanged: Ref<Bool>
     
-    init(_ foodEntry: FoodEntry, _ foodEntryInfoChanged: Ref<Bool>, _ foodInfoChanged: Ref<Bool>) {
-        self.foodEntry = foodEntry
-        self.foodEntryInfoChanged = foodEntryInfoChanged
-        self.foodInfoChanged = foodInfoChanged
+    func updatedTags(_ changes: [String: Tag.Change]) {
+        food.tagsChanged(changes, added: tagAdded, removed: tagRemoved)
+    }
+}
+
+extension TagController.ExistingFoodEntry: TagControllerContext {
+    var presentation: TagController.Presentation {
+        return .enabled("add tag for entry")
+    }
+    var tags: AnyCollection<Tag> {
+        return AnyCollection(foodEntry.tags)
+    }
+    
+    func updatedTags(_ changes: [String: Tag.Change]) {
+        guard changes != [:] else { return }
+        foodEntry.tagsChanged(changes, added: tagAdded, removed: tagRemoved)
+        foodEntryChanges.insert(change: \FoodEntry.tagsCKReferences)
+    }
+}
+
+extension TagController.NewFoodEntry: TagControllerContext {
+    var presentation: TagController.Presentation {
+        return .enabled("add tag for entry")
+    }
+    var tags: AnyCollection<Tag> {
+        return AnyCollection(foodEntry.tags)
+    }
+    
+    func updatedTags(_ changes: [String: Tag.Change]) {
+        foodEntry.tagsChanged(changes, added: tagAdded, removed: tagRemoved)
+    }
+}
+
+extension Food {
+    fileprivate func tagsChanged(_ changes: [String: Tag.Change], added: (Tag) -> (), removed: (String) -> ()) {
+        for (name, change) in changes {
+            switch change {
+            case .added:
+                let tag = Tag(value: DataStore.tags.first(where: { $0.name == name })!)
+                tag.searchSuggestion = SearchSuggestion(value: tag.searchSuggestion!)
+                tag.searchSuggestion!.lastUsed = Date()
+                tags.append(tag)
+                added(tag)
+            case .removed:
+                tags.remove(at: tags.index(where: { $0.name == name })!)
+                removed(name)
+            case .unchanged:
+                fatalError()
+            }
+        }
+    }
+}
+
+extension FoodEntry {
+    fileprivate func tagsChanged(_ changes: [String: Tag.Change], added: (Tag) -> (), removed: (String) -> ()) {
+        for (name, change) in changes {
+            switch change {
+            case .added:
+                let tag = Tag(value: DataStore.tags.first(where: { $0.name == name })!)
+                tag.searchSuggestion = SearchSuggestion(value: tag.searchSuggestion!)
+                tag.searchSuggestion!.lastUsed = Date()
+                tags.append(tag)
+                added(tag)
+            case .removed:
+                tags.remove(at: tags.index(where: { $0.name == name })!)
+                removed(name)
+            case .unchanged:
+                fatalError()
+            }
+        }
     }
 }
 
 class TagViewController: UIViewController {
-    @IBOutlet weak var addNewTagTextField: UITextField!
+    @IBOutlet weak var addNewTagNameField: UITextField!
     @IBOutlet weak var addNewTagView: UIView!
     @IBOutlet weak var centerYConstraint: NSLayoutConstraint!
     @IBOutlet weak var tagsView: FlowContainerView!
     
-    var delegate: TagViewControllerDelegate!
+    fileprivate var context: TagControllerContext!
+    private var statusForTag = [String: Tag.Change]()
     
     override func viewDidLoad() {
+        for tag in context.tags {
+            statusForTag[tag.name] = .unchanged
+        }
+        
         for tag in DataStore.tags {
-            tagsView.addSubview(tag.makeControlButton(delegate.tags.contains(tag), self, #selector(toggleTag(_:))))
+            tagsView.addSubview(tag.makeControlButton(toggled: statusForTag[tag.name] != nil, self,
+                                                      #selector(toggleTag(_:))))
         }
         let button = UIButton(pillFilled: "add new tag", color: .lightGray)
         button.addTarget(self, action: #selector(startAddNewTag), for: .touchUpInside)
@@ -315,74 +417,103 @@ class TagViewController: UIViewController {
                                                name: .UIKeyboardWillHide, object: nil)
     }
     
-    @objc func keyboardWasShown(_ aNotification: NSNotification) {
-        guard let userInfo = aNotification.userInfo,
-            let keyboardFrame = userInfo[UIKeyboardFrameEndUserInfoKey] as? CGRect
-            else { return }
-        centerYConstraint.constant -= keyboardFrame.height/2
-        UIView.animate(withDuration: 0.3) { [weak self] in self?.view.layoutIfNeeded() }
-    }
-    
-    @objc func keyboardWillBeHidden() {
-        centerYConstraint.constant = -23
-        UIView.animate(withDuration: 0.5) { [weak self] in self?.view.layoutIfNeeded() }
-    }
-    
-    @objc func toggleTag(_ sender: DualLabelButton) {
-        let isMember = delegate.toggleTag(name: sender.currentTitle!)
-        let color = sender.backgroundColor
-        UIView.animate(withDuration: 0.2, animations: { sender.backgroundColor = .white }) { _ in
-            sender.setLeftTitle(isMember ? "×" : "+")
-            UIView.animate(withDuration: 0.2, animations: { sender.backgroundColor = color })
-        }
-    }
-    
-    @objc func startAddNewTag() {
-        addNewTagView.alpha = 0.0
-        addNewTagView.isHidden = false
-        UIView.animate(withDuration: 0.5, animations: { [weak self] in self?.addNewTagView.alpha = 1.0 },
-                       completion: { [weak self] _ in self?.addNewTagTextField.becomeFirstResponder() })
-    }
-    
     @IBAction func cancelAddNewTag() {
-        addNewTagTextField.resignFirstResponder()
-        UIView.animate(withDuration: 0.5, animations: { [weak self] in self?.addNewTagView.alpha = 0.0 },
-                       completion: { [weak self] _ in self?.addNewTagView.isHidden = true })
+        addNewTagNameField.resignFirstResponder()
+        UIView.animate(withDuration: 0.5, animations: { [addNewTagView] in addNewTagView!.alpha = 0.0 },
+                       completion: { [addNewTagView] _ in addNewTagView!.isHidden = true })
     }
     
     @IBAction func finishAddNewTag() {
-        if addNewTagTextField.text != "" {
-            do {
-                let tag = try delegate.createTag(name: addNewTagTextField.text!)
-                // TODO: Animate creation of new tag
-                tagsView.addSubview(tag.makeControlButton(false, self, #selector(toggleTag(_:))))
-            } catch {
-                UIApplication.shared.alert(error: error)
+        func addTag(_ name: String, completion completionHandler: @escaping (Error?) -> ()) {
+            let tag = Tag()
+            tag.name = name
+            tag.localCKRecord = CloudKitRecord()
+            tag.localCKRecord!.kind = .tag
+            tag.localCKRecord!.recordName = tag.id
+            tag.searchSuggestion = SearchSuggestion()
+            tag.searchSuggestion!.kind = .tag
+            tag.searchSuggestion!.lastUsed = Date()
+            tag.searchSuggestion!.text = name
+            let ckRecords = [tag.ckRecord(from: Tag.changedAll)]
+            DataStore.update([tag]) { [tagsView, weak self] in
+                if let error = $0 {
+                    completionHandler(error)
+                } else {
+                    // TODO: Animate creation of new tag
+                    tagsView!.addSubview(tag.makeControlButton(toggled: false, self!, #selector(self!.toggleTag(_:))))
+                    CloudStore.save(ckRecords, completion: completionHandler)
+                }
             }
         }
-        addNewTagTextField.resignFirstResponder()
-        UIView.animate(withDuration: 0.5, animations: { [weak self] in self?.addNewTagView.alpha = 0.0 }) {
-            [weak self] _ in
-            self?.addNewTagView.isHidden = true
-            self?.addNewTagTextField.text = nil
+        
+        func dismissView() {
+            addNewTagNameField.resignFirstResponder()
+            UIView.animate(withDuration: 0.5, animations: { [addNewTagView] in addNewTagView!.alpha = 0.0}) {
+                [addNewTagNameField, addNewTagView] _ in
+                addNewTagNameField!.text = nil
+                addNewTagView!.isHidden = true
+            }
+        }
+        
+        guard let name = addNewTagNameField.text?.trimmingCharacters(in: .whitespaces), name != "" else { return }
+        if DataStore.object(Tag.self, primaryKey: name) != nil {
+            UIApplication.shared.alert(error: TagError.alreadyExists)
+        } else {
+            addTag(name) {
+                if let error = $0 {
+                    UIApplication.shared.alert(error: error)
+                }
+            }
+            dismissView()
         }
     }
     
     @IBAction func dismiss() {
-        delegate.willBeDismissed()
-        presentingViewController?.dismiss(animated: true)
+        context.updatedTags(statusForTag.filter { $0.1 != .unchanged })
+        presentingViewController!.dismiss(animated: true)
+    }
+    
+    @objc private func keyboardWasShown(_ aNotification: NSNotification) {
+        guard let userInfo = aNotification.userInfo,
+            let keyboardFrame = userInfo[UIKeyboardFrameEndUserInfoKey] as? CGRect
+            else { return }
+        centerYConstraint.constant -= keyboardFrame.height/2
+        UIView.animate(withDuration: 0.3) { [view] in view!.layoutIfNeeded() }
+    }
+    
+    @objc private func keyboardWillBeHidden() {
+        centerYConstraint.constant = -23
+        UIView.animate(withDuration: 0.5) { [view] in view!.layoutIfNeeded() }
+    }
+    
+    @objc private func toggleTag(_ sender: DualLabelButton) {
+        guard let name = sender.currentTitle else { return }
+        let status: Tag.Change?, leftTitle: String
+        switch statusForTag[name] {
+        case .added?:       status = nil;           leftTitle = "+"
+        case .removed?:     status = .unchanged;    leftTitle = "×"
+        case .unchanged?:   status = .removed;      leftTitle = "+"
+        case .none:         status = .added;        leftTitle = "×"
+        }
+        
+        statusForTag[name] = status
+        let color = sender.backgroundColor
+        UIView.animate(withDuration: 0.2, animations: { sender.backgroundColor = .white }) { _ in
+            sender.setLeftTitle(leftTitle)
+            UIView.animate(withDuration: 0.2, animations: { sender.backgroundColor = color })
+        }
+    }
+    
+    @objc private func startAddNewTag() {
+        addNewTagView.alpha = 0.0
+        addNewTagView.isHidden = false
+        UIView.animate(withDuration: 0.5, animations: { [addNewTagView] in addNewTagView!.alpha = 1.0 },
+                       completion: { [addNewTagNameField] _ in addNewTagNameField!.becomeFirstResponder() })
     }
     
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
-}
-
-protocol TagViewControllerDelegate {
-    var tags: AnyCollection<Tag> { get }
-    func createTag(name: String) throws -> Tag
-    func toggleTag(name: String) -> Bool
-    func willBeDismissed()
 }
 
 enum TagError: LocalizedError {
@@ -395,107 +526,22 @@ enum TagError: LocalizedError {
     }
 }
 
-extension TagViewControllerDelegate {
-    /// - precondition: `name` must not be an empty `String`
-    func createTag(name: String) throws -> Tag {
-        guard DataStore.tags.first(where: { $0.name == name }) == nil else { throw TagError.alreadyExists }
-        let tag = Tag()
-        tag.name = name
-        tag.searchSuggestion = SearchSuggestion()
-        tag.searchSuggestion?.kindRaw = SearchSuggestion.Kind.tag.rawValue
-        tag.searchSuggestion?.text = name
-        DataStore.update(tag)
-        return tag
-    }
-}
-
-final class DummyTagViewControllerDelegate: TagViewControllerDelegate {
-    var tags: AnyCollection<Tag> {
-        fatalError()
-    }
-    
-    func createTag(name: String) throws -> Tag {
-        fatalError()
-    }
-    
-    func toggleTag(name: String) -> Bool {
-        fatalError()
-    }
-    
-    func willBeDismissed() {
-        fatalError()
-    }
-}
-
-final class FoodTagViewControllerDelegate: TagViewControllerDelegate {
-    var tags: AnyCollection<Tag> {
-        return AnyCollection(food.tags)
-    }
-    private weak var context: TagControllerContext!
-    private let food: Food
-    private let foodInfoChanged: Ref<Bool>?
-    
-    init(_ context: TagControllerContext, _ food: Food, _ foodInfoChanged: Ref<Bool>? = nil) {
-        self.context = context
-        self.food = food
-        self.foodInfoChanged = foodInfoChanged
-    }
-    
-    func toggleTag(name: String) -> Bool {
-        foodInfoChanged?.value = true
-        if let index = food.tags.index(where: { $0.name == name }) {
-            food.tags.remove(at: index)
-            return false
-        } else {
-            let tag = Tag(value: DataStore.tags.first(where: { $0.name == name })!)
-            tag.searchSuggestion! = SearchSuggestion(value: tag.searchSuggestion!)
-            tag.searchSuggestion!.lastUsed = Date()
-            food.tags.append(tag)
-            return true
-        }
-    }
-    
-    func willBeDismissed() {
-        context.onDismissModal(tags)
-    }
-}
-
-final class FoodEntryTagViewControllerDelegate: TagViewControllerDelegate {
-    var tags: AnyCollection<Tag> {
-        return AnyCollection(foodEntry.tags)
-    }
-    private weak var context: TagControllerContext!
-    private let foodEntry: FoodEntry
-    private let foodEntryInfoChanged: Ref<Bool>?
-    
-    init(_ context: TagControllerContext, _ foodEntry: FoodEntry, _ foodEntryInfoChanged: Ref<Bool>? = nil) {
-        self.context = context
-        self.foodEntry = foodEntry
-        self.foodEntryInfoChanged = foodEntryInfoChanged
-    }
-    
-    func toggleTag(name: String) -> Bool {
-        foodEntryInfoChanged?.value = true
-        if let index = foodEntry.tags.index(where: { $0.name == name }) {
-            foodEntry.tags.remove(at: index)
-            return false
-        } else {
-            let tag = Tag(value: DataStore.tags.first(where: { $0.name == name })!)
-            tag.searchSuggestion! = SearchSuggestion(value: tag.searchSuggestion!)
-            tag.searchSuggestion!.lastUsed = Date()
-            foodEntry.tags.append(tag)
-            return true
-        }
-    }
-    
-    func willBeDismissed() {
-        context.onDismissModal(tags)
-    }
-}
-
 extension Tag {
-    func makeControlButton(_ isMember: Bool, _ target: Any, _ action: Selector) -> DualLabelButton {
-        let button = isMember ? DualLabelButton(pillLeft: "×", right: name, color: color) :
+    enum Change {
+        case added
+        case removed
+        case unchanged
+    }
+    
+    fileprivate static var changedAll: Changes<Tag> {
+        let keyPaths = Set(arrayLiteral: \Tag.colorCodeRaw,
+                           \Tag.lastUsed,
+                           \Tag.name)
+        return Changes(keyPaths)
+    }
+    
+    fileprivate func makeControlButton(toggled: Bool, _ target: Any, _ action: Selector) -> DualLabelButton {
+        let button = toggled ? DualLabelButton(pillLeft: "×", right: name, color: color) :
             DualLabelButton(pillLeft: "+", right: name, color: color)
         button.addTarget(target, action: action, for: .touchUpInside)
         return button

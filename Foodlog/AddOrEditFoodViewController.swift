@@ -8,22 +8,62 @@
 
 import UIKit
 
-class AddOrEditFoodViewController: PulleyDrawerViewController {    
-    @IBOutlet weak var dateController:          DateController!
-    @IBOutlet weak var foodNutritionController: FoodNutritionController!
-    @IBOutlet weak var measurementController:   MeasurementController!
-    @IBOutlet weak var tagController:           TagController!
-    @IBOutlet weak var scrollController:        ScrollController!
-    @IBOutlet weak var foodNameLabel:           UILabel!
-    @IBOutlet weak var foodNameField:           UITextField!
-    @IBOutlet weak var addToLogButton:          UIButton!
-    @IBOutlet weak var foodEntryInfoView:       UIView!
+class AddOrEditFoodViewController: PulleyDrawerViewController {
+    @IBOutlet weak var dateController:              DateController!
+    @IBOutlet weak var foodEntryTagController:      TagController!
+    @IBOutlet weak var foodNutritionController:     FoodNutritionController!
+    @IBOutlet weak var foodTagController:           TagController!
+    @IBOutlet weak var measurementUnitController:   MeasurementUnitController!
+    @IBOutlet weak var measurementValueController:  MeasurementValueController!
+    @IBOutlet weak var scrollController:            ScrollController!
+    @IBOutlet weak var aView:                       UIView!
+    @IBOutlet weak var bView:                       UIView!
+    @IBOutlet weak var foodNameLabel:               UILabel!
+    @IBOutlet weak var foodNameField:               UITextField!
+    @IBOutlet weak var addToLogButton:              UIButton!
+    @IBOutlet weak var placeholderView:             UIView!
 
     var context: AddOrEditContextType!
     
     override func viewDidLoad() {
         context.configure(self)
         scrollController.setup()
+    }
+    
+    func useLabelForName(_ name: String) {
+        foodNameLabel.isHidden = false
+        foodNameLabel.text = name
+    }
+    
+    func useFieldForName(_ name: String) {
+        foodNameField.isHidden = false
+        foodNameField.text = name
+    }
+    
+    func configureAddToLogButton(title: String, isEnabled: Bool) {
+        addToLogButton.setTitle(title, for: .normal)
+        addToLogButton.isEnabled = isEnabled
+    }
+    
+    func useAView() {
+        aView.translatesAutoresizingMaskIntoConstraints = false
+        placeholderView.addSubview(aView)
+        NSLayoutConstraint.activate([
+            placeholderView.topAnchor.constraint(equalTo: aView.topAnchor),
+            placeholderView.bottomAnchor.constraint(equalTo: aView.bottomAnchor),
+            placeholderView.leadingAnchor.constraint(equalTo: aView.leadingAnchor),
+            placeholderView.trailingAnchor.constraint(equalTo: aView.trailingAnchor)
+            ])
+    }
+    
+    func useBView() {
+        bView.translatesAutoresizingMaskIntoConstraints = false
+        placeholderView.addSubview(bView)
+        NSLayoutConstraint.activate([
+            placeholderView.topAnchor.constraint(equalTo: bView.topAnchor),
+            placeholderView.bottomAnchor.constraint(equalTo: bView.bottomAnchor),
+            placeholderView.leadingAnchor.constraint(equalTo: bView.leadingAnchor),
+            placeholderView.trailingAnchor.constraint(equalTo: bView.trailingAnchor)])
     }
     
     @IBAction func foodNameChanged(_ sender: UITextField) {
@@ -33,7 +73,11 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
     @IBAction func addFoodEntryToLog() {
         view.endEditing(false)
         
-        if let (count, onConfirm) = context.save() {
+        if let (count, onConfirm) = context.save(completionHandler: {
+            if let error = $0 {
+                UIApplication.shared.alert(error: error)
+            }
+        }) {
             let warning = "Editing this food item will affect \(count) entries. This cannot be undone."
             UIApplication.shared.alert(warning: warning, confirm: { onConfirm(); VCController.pop() })
         } else {
@@ -86,7 +130,7 @@ class ScrollController: NSObject {
         scrollView.shouldScroll = false
     }
     
-    @objc func keyboardWasShown(_ aNotification: NSNotification) {
+    @objc private func keyboardWasShown(_ aNotification: NSNotification) {
         VCController.pulleyVC.setDrawerPosition(position: .open, animated: true)
         guard let userInfo = aNotification.userInfo,
             let keyboardFrame = userInfo[UIKeyboardFrameEndUserInfoKey] as? CGRect
@@ -97,7 +141,7 @@ class ScrollController: NSObject {
         scrollToActiveView()
     }
     
-    @objc func keyboardWillBeHidden(_ aNotification: NSNotification) {
+    @objc private func keyboardWillBeHidden(_ aNotification: NSNotification) {
         scrollView.contentInset = .zero
         scrollView.scrollIndicatorInsets = .zero
     }

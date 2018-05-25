@@ -35,28 +35,28 @@ final class VCController {
     private static let storyboard = UIStoryboard(name: "Main", bundle: nil)
     
     static func addEntryForExistingFood(_ foodEntry: FoodEntry) {
-        assert(drawerStack.last?.state == .addOrSearch)
+        assert(drawerStack.last!.state == .addOrSearch)
         let vc: AddOrEditFoodViewController = makeVC(.addOrEditFood)
         vc.context = AddEntryForExistingFoodContext(foodEntry)
         push(vc, .addFoodEntry)
     }
     
     static func addEntryForNewFood(_ foodEntry: FoodEntry) {
-        assert(drawerStack.last?.state == .addOrSearch)
+        assert(drawerStack.last!.state == .addOrSearch)
         let vc: AddOrEditFoodViewController = makeVC(.addOrEditFood)
         vc.context = AddEntryForNewFoodContext(foodEntry)
         push(vc, .addFoodEntry)
     }
     
     static func editFood(_ food: Food) {
-        assert(drawerStack.last?.state == .detail)
+        assert(drawerStack.last!.state == .detail)
         let vc: AddOrEditFoodViewController = makeVC(.addOrEditFood)
         vc.context = EditFoodContext(food)
         push(vc, .editFood)
     }
     
     static func editFoodEntry(_ foodEntry: FoodEntry) {
-        assert(drawerStack.last?.state == .detail)
+        assert(drawerStack.last!.state == .detail)
         let vc: AddOrEditFoodViewController = makeVC(.addOrEditFood)
         vc.context = EditFoodEntryContext(foodEntry)
         push(vc, .editFoodEntry)

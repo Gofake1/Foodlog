@@ -7,227 +7,256 @@
 //
 
 import HealthKit
-import UIKit
-
-private enum CachedHealthKitTransaction {
-    case delete([String], () -> ())
-    case save([HKObject])
-}
-
-private var _queue: DispatchQueue? = DispatchQueue(label: "Foodlog.HealthKitStore.serial")
-private var _store: HKHealthStore!
-// Cache transactions that occur before authorization
-private var _cachedHealthKitTransactions: [CachedHealthKitTransaction]? = []
 
 final class HealthKitStore {
-    // We use a singleton because Apple recommends asking for authorization at the point of use:
-    // https://developer.apple.com/ios/human-interface-guidelines/technologies/healthkit/
-    // This rules out using static members because we don't want to ask for authorization immediately after app
-    // finishes launching
-    static let shared = HealthKitStore()
-    private(set) var delete: ([String], @escaping () -> ()) -> () = { ids, completionHandler in
-        guard HKHealthStore.isHealthDataAvailable() else { return }
-        _queue?.sync {
-            _cachedHealthKitTransactions?.append(CachedHealthKitTransaction.delete(ids, completionHandler))
-        }
-    }
-    private(set) var save: ([HKObject]) -> () = { objects in
-        guard HKHealthStore.isHealthDataAvailable() else { return }
-        _queue?.sync {
-            _cachedHealthKitTransactions?.append(CachedHealthKitTransaction.save(objects))
-        }
+    private static let queue = DispatchQueue(label: "net.gofake1.Foodlog.HealthKitStore")
+    /// Implementation is decided by HealthKit availability
+    private static var impl: HealthKitStoreImplType = FirstRunImpl()
+    
+    static func delete(_ ids: [String], completion completionHandler: @escaping (Error?) -> ()) {
+        queue.async { impl.delete(ids, completion: completionHandler) }
     }
     
-    private init() {
-        guard HKHealthStore.isHealthDataAvailable() else {
-            // TEST: Test on iPad
-            delete = { _, _ in }
-            save = { _ in }
-            return
-        }
-        _store = HKHealthStore()
-        let types = Set(arrayLiteral:
-            HKObjectType.quantityType(forIdentifier: .dietaryEnergyConsumed)!,
-            HKObjectType.quantityType(forIdentifier: .dietaryFatTotal)!,
-            HKObjectType.quantityType(forIdentifier: .dietaryFatSaturated)!,
-            HKObjectType.quantityType(forIdentifier: .dietaryFatMonounsaturated)!,
-            HKObjectType.quantityType(forIdentifier: .dietaryFatPolyunsaturated)!,
-            HKObjectType.quantityType(forIdentifier: .dietaryCholesterol)!,
-            HKObjectType.quantityType(forIdentifier: .dietarySodium)!,
-            HKObjectType.quantityType(forIdentifier: .dietaryCarbohydrates)!,
-            HKObjectType.quantityType(forIdentifier: .dietaryFiber)!,
-            HKObjectType.quantityType(forIdentifier: .dietarySugar)!,
-            HKObjectType.quantityType(forIdentifier: .dietaryProtein)!,
-            HKObjectType.quantityType(forIdentifier: .dietaryVitaminA)!,
-            HKObjectType.quantityType(forIdentifier: .dietaryVitaminB6)!,
-            HKObjectType.quantityType(forIdentifier: .dietaryVitaminB12)!,
-            HKObjectType.quantityType(forIdentifier: .dietaryVitaminC)!,
-            HKObjectType.quantityType(forIdentifier: .dietaryVitaminD)!,
-            HKObjectType.quantityType(forIdentifier: .dietaryVitaminE)!,
-            HKObjectType.quantityType(forIdentifier: .dietaryVitaminK)!,
-            HKObjectType.quantityType(forIdentifier: .dietaryCalcium)!,
-            HKObjectType.quantityType(forIdentifier: .dietaryIron)!,
-            HKObjectType.quantityType(forIdentifier: .dietaryMagnesium)!,
-            HKObjectType.quantityType(forIdentifier: .dietaryPotassium)!
-        )
-        _store.requestAuthorization(toShare: types, read: nil) { [weak self] in
-            if $0 {
-                _queue?.sync {
-                    _cachedHealthKitTransactions!.forEach {
-                        switch $0 {
-                        case .delete(let ids, let completionHandler):
-                            _store.delete(foodEntryIds: ids, completionHandler: completionHandler)
-                        case .save(let hkObjects):
-                            _store.save(foodEntryHKObjects: hkObjects)
-                        }
-                    }
-                    _cachedHealthKitTransactions!.removeAll()
-                    _cachedHealthKitTransactions = nil
-                }
-                _queue = nil
-                
-                // Swizzle `delete` and `save` to avoid conditional checks
-                self?.delete = {
-                    _store.delete(foodEntryIds: $0, completionHandler: $1)
-                }
-                self?.save = {
-                    _store.save(foodEntryHKObjects: $0)
-                }
+    static func save(_ objects: [HKObject], completion completionHandler: @escaping (Error?) -> ()) {
+        queue.async { impl.save(objects, completion: completionHandler) }
+    }
+    
+    static func update(ids: [String], hkObjects objects: [HKObject],
+                       completion completionHandler: @escaping (Error?) -> ())
+    {
+        delete(ids) { [save] in
+            if let error = $0 {
+                completionHandler(error)
             } else {
-                // TEST: Test permission denied
-                print("Auth failed") //*
-                _queue?.sync {
-                    _cachedHealthKitTransactions!.removeAll()
-                    _cachedHealthKitTransactions = nil
-                }
-                _queue = nil
-                self?.delete = { _, _ in }
-                self?.save = { _ in }
+                save(objects, completionHandler)
+            }
+        }
+    }
+}
+
+private protocol HealthKitStoreImplType {
+    func delete(_ ids: [String], completion completionHandler: @escaping (Error?) -> ())
+    func save(_ objects: [HKObject], completion completionHandler: @escaping (Error?) -> ())
+}
+
+extension HealthKitStore {
+    fileprivate enum PendingTransaction {
+        case delete([String], (Error?) -> ())
+        case save([HKObject], (Error?) -> ())
+    }
+    
+    fileprivate final class DummyImpl {}
+    
+    /// Will set implementation to either Dummy or Working
+    fileprivate final class FirstRunImpl {}
+    
+    fileprivate final class WorkingImpl {
+        private let store = HKHealthStore()
+        
+        init(pendingTransaction: PendingTransaction) {
+            let types = Set(arrayLiteral: HKObjectType.quantityType(forIdentifier: .dietaryEnergyConsumed)!,
+                            HKObjectType.quantityType(forIdentifier: .dietaryFatTotal)!,
+                            HKObjectType.quantityType(forIdentifier: .dietaryFatSaturated)!,
+                            HKObjectType.quantityType(forIdentifier: .dietaryFatMonounsaturated)!,
+                            HKObjectType.quantityType(forIdentifier: .dietaryFatPolyunsaturated)!,
+                            HKObjectType.quantityType(forIdentifier: .dietaryCholesterol)!,
+                            HKObjectType.quantityType(forIdentifier: .dietarySodium)!,
+                            HKObjectType.quantityType(forIdentifier: .dietaryCarbohydrates)!,
+                            HKObjectType.quantityType(forIdentifier: .dietaryFiber)!,
+                            HKObjectType.quantityType(forIdentifier: .dietarySugar)!,
+                            HKObjectType.quantityType(forIdentifier: .dietaryProtein)!,
+                            HKObjectType.quantityType(forIdentifier: .dietaryVitaminA)!,
+                            HKObjectType.quantityType(forIdentifier: .dietaryVitaminB6)!,
+                            HKObjectType.quantityType(forIdentifier: .dietaryVitaminB12)!,
+                            HKObjectType.quantityType(forIdentifier: .dietaryVitaminC)!,
+                            HKObjectType.quantityType(forIdentifier: .dietaryVitaminD)!,
+                            HKObjectType.quantityType(forIdentifier: .dietaryVitaminE)!,
+                            HKObjectType.quantityType(forIdentifier: .dietaryVitaminK)!,
+                            HKObjectType.quantityType(forIdentifier: .dietaryCalcium)!,
+                            HKObjectType.quantityType(forIdentifier: .dietaryIron)!,
+                            HKObjectType.quantityType(forIdentifier: .dietaryMagnesium)!,
+                            HKObjectType.quantityType(forIdentifier: .dietaryPotassium)!)
+            store.requestAuthorization(toShare: types, read: nil) { [weak self] in
                 if let error = $1 {
-                    UIApplication.shared.alert(error: error)
+                    switch pendingTransaction {
+                    case .delete(_, let completionHandler):
+                        completionHandler(error)
+                    case .save(_, let completionHandler):
+                        completionHandler(error)
+                    }
+                } else {
+                    switch pendingTransaction {
+                    case .delete(let ids, let completionHandler):
+                        self!.delete(ids, completion: completionHandler)
+                    case .save(let objects, let completionHandler):
+                        self!.save(objects, completion: completionHandler)
+                    }
                 }
             }
         }
+    }
+}
+
+extension HealthKitStore.DummyImpl: HealthKitStoreImplType {
+    fileprivate func delete(_ ids: [String], completion completionHandler: @escaping (Error?) -> ()) {
+        completionHandler(nil)
+    }
+    
+    fileprivate func save(_ objects: [HKObject], completion completionHandler: @escaping (Error?) -> ()) {
+        completionHandler(nil)
+    }
+}
+
+extension HealthKitStore.FirstRunImpl: HealthKitStoreImplType {
+    fileprivate func delete(_ ids: [String], completion completionHandler: @escaping (Error?) -> ()) {
+        if HKHealthStore.isHealthDataAvailable() {
+            HealthKitStore.impl = HealthKitStore.WorkingImpl(pendingTransaction: .delete(ids, completionHandler))
+        } else {
+            HealthKitStore.impl = HealthKitStore.DummyImpl()
+            completionHandler(nil)
+        }
+    }
+    
+    fileprivate func save(_ objects: [HKObject], completion completionHandler: @escaping (Error?) -> ()) {
+        if HKHealthStore.isHealthDataAvailable() {
+            HealthKitStore.impl = HealthKitStore.WorkingImpl(pendingTransaction: .save(objects, completionHandler))
+        } else {
+            HealthKitStore.impl = HealthKitStore.DummyImpl()
+            completionHandler(nil)
+        }
+    }
+}
+
+extension HealthKitStore.WorkingImpl: HealthKitStoreImplType {
+    fileprivate func delete(_ ids: [String], completion completionHandler: @escaping (Error?) -> ()) {
+        store.delete(foodEntryIds: ids, completion: completionHandler)
+    }
+    
+    fileprivate func save(_ objects: [HKObject], completion completionHandler: @escaping (Error?) -> ()) {
+        store.save(foodEntryHKObjects: objects, completion: completionHandler)
     }
 }
 
 extension FoodEntry {
     var hkObject: HKObject? {
         var objects = Set<HKSample>()
-        func add(_ nutrition: NutritionKind, _ value: Float) {
+        func add(_ nutrition: NutritionKind) {
+            let value = food![keyPath: nutrition.keyPath]
             guard value > 0.0 else { return }
             let quantity = HKQuantity(unit: nutrition.unit.hkUnit, doubleValue: Double(value * measurementFloat))
             objects.insert(HKQuantitySample(type: nutrition.hkType, quantity: quantity, start: date, end: date))
         }
         
-        add(.calories, food!.calories)
-        add(.totalFat, food!.totalFat)
-        add(.saturatedFat, food!.saturatedFat)
-        add(.monounsaturatedFat, food!.monounsaturatedFat)
-        add(.polyunsaturatedFat, food!.polyunsaturatedFat)
-        add(.cholesterol, food!.cholesterol)
-        add(.sodium, food!.sodium)
-        add(.totalCarbohydrate, food!.totalCarbohydrate)
-        add(.dietaryFiber, food!.dietaryFiber)
-        add(.sugars, food!.sugars)
-        add(.protein, food!.protein)
-        add(.vitaminA, food!.vitaminA)
-        add(.vitaminB6, food!.vitaminB6)
-        add(.vitaminB12, food!.vitaminB12)
-        add(.vitaminC, food!.vitaminC)
-        add(.vitaminD, food!.vitaminD)
-        add(.vitaminE, food!.vitaminE)
-        add(.vitaminK, food!.vitaminK)
-        add(.calcium, food!.calcium)
-        add(.iron, food!.iron)
-        add(.magnesium, food!.magnesium)
-        add(.potassium, food!.potassium)
+        add(.calories)
+        add(.totalFat)
+        add(.saturatedFat)
+        add(.monounsaturatedFat)
+        add(.polyunsaturatedFat)
+        add(.cholesterol)
+        add(.sodium)
+        add(.totalCarbohydrate)
+        add(.dietaryFiber)
+        add(.sugars)
+        add(.protein)
+        add(.vitaminA)
+        add(.vitaminB6)
+        add(.vitaminB12)
+        add(.vitaminC)
+        add(.vitaminD)
+        add(.vitaminE)
+        add(.vitaminK)
+        add(.calcium)
+        add(.iron)
+        add(.magnesium)
+        add(.potassium)
         
         guard objects.count > 0 else { return nil }
         
         let metadata: [String: Any] = [HKMetadataKeyFoodType: food!.name, "FoodlogID": id]
-        return HKCorrelation(type: HKObjectType.correlationType(forIdentifier: .food)!,
+        return HKCorrelation(type: .correlationType(forIdentifier: .food)!,
                              start: date, end: date, objects: objects, metadata: metadata)
     }
 }
 
 extension NutritionKind {
-    var hkType: HKQuantityType {
+    fileprivate var hkType: HKQuantityType {
         switch self {
-        case .calories:             return HKObjectType.quantityType(forIdentifier: .dietaryEnergyConsumed)!
-        case .totalFat:             return HKObjectType.quantityType(forIdentifier: .dietaryFatTotal)!
-        case .saturatedFat:         return HKObjectType.quantityType(forIdentifier: .dietaryFatSaturated)!
-        case .monounsaturatedFat:   return HKObjectType.quantityType(forIdentifier: .dietaryFatMonounsaturated)!
-        case .polyunsaturatedFat:   return HKObjectType.quantityType(forIdentifier: .dietaryFatPolyunsaturated)!
+        case .calories:             return .quantityType(forIdentifier: .dietaryEnergyConsumed)!
+        case .totalFat:             return .quantityType(forIdentifier: .dietaryFatTotal)!
+        case .saturatedFat:         return .quantityType(forIdentifier: .dietaryFatSaturated)!
+        case .monounsaturatedFat:   return .quantityType(forIdentifier: .dietaryFatMonounsaturated)!
+        case .polyunsaturatedFat:   return .quantityType(forIdentifier: .dietaryFatPolyunsaturated)!
         case .transFat:             fatalError()
-        case .cholesterol:          return HKObjectType.quantityType(forIdentifier: .dietaryCholesterol)!
-        case .sodium:               return HKObjectType.quantityType(forIdentifier: .dietarySodium)!
-        case .totalCarbohydrate:    return HKObjectType.quantityType(forIdentifier: .dietaryCarbohydrates)!
-        case .dietaryFiber:         return HKObjectType.quantityType(forIdentifier: .dietaryFiber)!
-        case .sugars:               return HKObjectType.quantityType(forIdentifier: .dietarySugar)!
-        case .protein:              return HKObjectType.quantityType(forIdentifier: .dietaryProtein)!
-        case .vitaminA:             return HKObjectType.quantityType(forIdentifier: .dietaryVitaminA)!
-        case .vitaminB6:            return HKObjectType.quantityType(forIdentifier: .dietaryVitaminB6)!
-        case .vitaminB12:           return HKObjectType.quantityType(forIdentifier: .dietaryVitaminB12)!
-        case .vitaminC:             return HKObjectType.quantityType(forIdentifier: .dietaryVitaminC)!
-        case .vitaminD:             return HKObjectType.quantityType(forIdentifier: .dietaryVitaminD)!
-        case .vitaminE:             return HKObjectType.quantityType(forIdentifier: .dietaryVitaminE)!
-        case .vitaminK:             return HKObjectType.quantityType(forIdentifier: .dietaryVitaminK)!
-        case .calcium:              return HKObjectType.quantityType(forIdentifier: .dietaryCalcium)!
-        case .iron:                 return HKObjectType.quantityType(forIdentifier: .dietaryIron)!
-        case .magnesium:            return HKObjectType.quantityType(forIdentifier: .dietaryMagnesium)!
-        case .potassium:            return HKObjectType.quantityType(forIdentifier: .dietaryPotassium)!
+        case .cholesterol:          return .quantityType(forIdentifier: .dietaryCholesterol)!
+        case .sodium:               return .quantityType(forIdentifier: .dietarySodium)!
+        case .totalCarbohydrate:    return .quantityType(forIdentifier: .dietaryCarbohydrates)!
+        case .dietaryFiber:         return .quantityType(forIdentifier: .dietaryFiber)!
+        case .sugars:               return .quantityType(forIdentifier: .dietarySugar)!
+        case .protein:              return .quantityType(forIdentifier: .dietaryProtein)!
+        case .vitaminA:             return .quantityType(forIdentifier: .dietaryVitaminA)!
+        case .vitaminB6:            return .quantityType(forIdentifier: .dietaryVitaminB6)!
+        case .vitaminB12:           return .quantityType(forIdentifier: .dietaryVitaminB12)!
+        case .vitaminC:             return .quantityType(forIdentifier: .dietaryVitaminC)!
+        case .vitaminD:             return .quantityType(forIdentifier: .dietaryVitaminD)!
+        case .vitaminE:             return .quantityType(forIdentifier: .dietaryVitaminE)!
+        case .vitaminK:             return .quantityType(forIdentifier: .dietaryVitaminK)!
+        case .calcium:              return .quantityType(forIdentifier: .dietaryCalcium)!
+        case .iron:                 return .quantityType(forIdentifier: .dietaryIron)!
+        case .magnesium:            return .quantityType(forIdentifier: .dietaryMagnesium)!
+        case .potassium:            return .quantityType(forIdentifier: .dietaryPotassium)!
         }
     }
 }
 
 extension NutritionKind.Unit {
-    var hkUnit: HKUnit {
+    fileprivate var hkUnit: HKUnit {
         switch self {
-        case .calorie:      return HKUnit.kilocalorie()
-        case .gram:         return HKUnit.gram()
-        case .milligram:    return HKUnit.gramUnit(with: .milli)
-        case .microgram:    return HKUnit.gramUnit(with: .micro)
+        case .calorie:      return .kilocalorie()
+        case .gram:         return .gram()
+        case .milligram:    return .gramUnit(with: .milli)
+        case .microgram:    return .gramUnit(with: .micro)
         }
     }
 }
 
 extension HKHealthStore {
-    func delete(foodEntryIds ids: [String], completionHandler: @escaping () -> () = {}) {
+    fileprivate func delete(foodEntryIds ids: [String], completion completionHandler: @escaping (Error?) -> ()) {
         if ids.count == 0 {
-            completionHandler()
+            completionHandler(nil)
         } else {
             let predicate = NSPredicate(format: "\(HKPredicateKeyPathMetadata).FoodlogID IN %@", ids)
-            delete(foodEntryPredicate: predicate, completionHandler: completionHandler)
-        }
-    }
-    
-    func save(foodEntryHKObjects objects: [HKObject]) {
-        guard objects.count > 0 else { return }
-        save(objects) {
-            if let error = $1 { UIApplication.shared.alert(error: error) }
-        }
-    }
-    
-    private func delete(foodEntryPredicate predicate: NSPredicate, completionHandler: @escaping () -> ()) {
-        let query = HKCorrelationQuery(type: HKObjectType.correlationType(forIdentifier: .food)!,
-                                       predicate: predicate, samplePredicates: nil)
-        { (_, matches, error) in
-            if let error = error {
-                UIApplication.shared.alert(error: error)
-            } else if let matches = matches {
-                guard matches.count > 0 else { completionHandler(); return }
-                _store.delete(matches.flatMap { $0.objects }) {
-                    if let error = $1 { UIApplication.shared.alert(error: error) }
-                    _store.delete(matches) {
-                        if let error = $1 { UIApplication.shared.alert(error: error) }
-                        completionHandler()
+            let query = HKCorrelationQuery(type: .correlationType(forIdentifier: .food)!,
+                                           predicate: predicate, samplePredicates: nil)
+            { [weak self] in
+                if let error = $2 {
+                    completionHandler(error)
+                } else if let matches = $1 {
+                    if matches.count > 0 {
+                        self!.delete(matches.flatMap { $0.objects }) {
+                            if let error = $1 {
+                                completionHandler(error)
+                            } else {
+                                self!.delete(matches) { completionHandler($1) }
+                            }
+                        }
+                    } else {
+                        completionHandler(nil)
                     }
+                } else {
+                    completionHandler(nil)
                 }
-            } else {
-                completionHandler()
             }
+            execute(query)
         }
-        execute(query)
+    }
+    
+    fileprivate func save(foodEntryHKObjects objects: [HKObject],
+                          completion completionHandler: @escaping (Error?) -> ())
+    {
+        if objects.count == 0 {
+            completionHandler(nil)
+        } else {
+            save(objects) { completionHandler($1) }
+        }
     }
 }

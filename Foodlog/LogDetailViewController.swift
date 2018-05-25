@@ -88,14 +88,14 @@ extension Food: LogDetailPresentable {
     }
     
     func makeDetailText(_ representation: NutritionKind.ValueRepresentation) -> String {
-        return "Per \(measurementRepresentation.singular):\n" + NutritionPrinter(self, representation, { $0 }).print
+        return "Per \(measurementUnit.singular):\n" + NutritionPrinter(self, representation, { $0 }).print
     }
 }
 
 extension FoodEntry: LogDetailPresentable {
     var logDetailTitle: String {
-        guard let food = food, let measurementString = measurementString else { return "Error: Log Detail Title" }
-        return "\(measurementString)\(food.measurementRepresentation.longSuffix) \(food.name)"
+        guard let food = food, let measurementString = measurementString else { return "Error: No Information" }
+        return "\(measurementString)\(food.measurementUnit.longSuffix) \(food.name)"
     }
     var logDetailSubtitle: String {
         return date.mediumDateShortTimeString
@@ -110,11 +110,12 @@ extension FoodEntry: LogDetailPresentable {
     }
     
     func makeDetailText(_ representation: NutritionKind.ValueRepresentation) -> String {
-        return NutritionPrinter(food!, representation, { [measurementFloat] in $0 * measurementFloat }).print
+        guard let food = food else { return "Error: No Information\n" }
+        return NutritionPrinter(food, representation, { [measurementFloat] in $0 * measurementFloat }).print
     }
 }
 
-struct NutritionPrinter {
+private struct NutritionPrinter {
     var print: String {
         var str = ""
         str += makeLine(.calories, food.calories)
@@ -140,10 +141,7 @@ struct NutritionPrinter {
         str += makeLine(.iron, food.iron)
         str += makeLine(.magnesium, food.magnesium)
         str += makeLine(.potassium, food.potassium)
-        if str == "" {
-            str = "No Information\n"
-        }
-        return str
+        return str == "" ? "No Information\n" : str
     }
     private let food: Food
     private let makeLine: (NutritionKind, Float) -> String
@@ -169,8 +167,8 @@ struct NutritionPrinter {
     }
 }
 
-extension Food.MeasurementRepresentation {
-    var longSuffix: String {
+extension Food.MeasurementUnit {
+    fileprivate var longSuffix: String {
         switch self {
         case .serving:      return "×"
         case .milligram:    return " mg"

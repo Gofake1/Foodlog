@@ -8,7 +8,10 @@
 
 import UIKit
 
+// TODO: User customizable UI
 class FoodNutritionController: NSObject {
+    private typealias Info = (field: UITextField, kind: NutritionKind, representation: NutritionKind.ValueRepresentation)
+    
     @IBOutlet weak var scrollController:            ScrollController!
     @IBOutlet weak var toolbar:                     UIToolbar!
     @IBOutlet weak var valueRepresentationControl:  UISegmentedControl!
@@ -36,7 +39,6 @@ class FoodNutritionController: NSObject {
     @IBOutlet weak var magnesiumField:              UITextField!
     @IBOutlet weak var potassiumField:              UITextField!
     
-    typealias Info = (field: UITextField, kind: NutritionKind, representation: NutritionKind.ValueRepresentation)
     private lazy var fields = [
         0:  Info(caloriesField, .calories, .real),
         1:  Info(totalFatField, .totalFat, .real),
@@ -172,24 +174,47 @@ extension FoodNutritionController: UITextFieldDelegate {
     }
 }
 
+extension FoodNutritionController {
+    final class Disabled {
+        private let food: Food
+        
+        init(_ food: Food) {
+            self.food = food
+        }
+    }
+    
+    final class EnabledExistingFood {
+        private let food: Food
+        private let foodChanges: Changes<Food>
+        
+        init(_ food: Food, _ foodChanges: Changes<Food>) {
+            self.food = food
+            self.foodChanges = foodChanges
+        }
+    }
+    
+    final class EnabledNewFood {
+        private let food: Food
+        
+        init(_ food: Food) {
+            self.food = food
+        }
+    }
+}
+
 protocol FoodNutritionControllerContext {
     var enableFields: Bool { get }
     func set(kind: NutritionKind, to value: Float)
     func value(for kind: NutritionKind) -> Float
 }
 
-final class AddEntryForExistingFoodNutritionControllerContext: FoodNutritionControllerContext {
+extension FoodNutritionController.Disabled: FoodNutritionControllerContext {
     var enableFields: Bool {
         return false
     }
-    private let food: Food
-    
-    init(_ food: Food) {
-        self.food = food
-    }
     
     func set(kind: NutritionKind, to value: Float) {
-        food[keyPath: kind.keyPath] = value
+        fatalError()
     }
     
     func value(for kind: NutritionKind) -> Float {
@@ -197,39 +222,13 @@ final class AddEntryForExistingFoodNutritionControllerContext: FoodNutritionCont
     }
 }
 
-final class AddEntryForNewFoodNutritionControllerContext: FoodNutritionControllerContext {
+extension FoodNutritionController.EnabledExistingFood: FoodNutritionControllerContext {
     var enableFields: Bool {
         return true
-    }
-    private let food: Food
-    
-    init(_ food: Food) {
-        self.food = food
-    }
-    
-    func set(kind: NutritionKind, to value: Float) {
-        food[keyPath: kind.keyPath] = value
-    }
-    
-    func value(for kind: NutritionKind) -> Float {
-        return food[keyPath: kind.keyPath]
-    }
-}
-
-final class DefaultFoodNutritionControllerContext: FoodNutritionControllerContext {
-    var enableFields: Bool {
-        return true
-    }
-    private let food: Food
-    private let foodInfoChanged: Ref<Bool>
-    
-    init(_ food: Food, _ foodInfoChanged: Ref<Bool>) {
-        self.food = food
-        self.foodInfoChanged = foodInfoChanged
     }
     
     func set(kind: NutritionKind, to newValue: Float) {
-        foodInfoChanged.value ||= newValue != value(for: kind)
+        foodChanges.insert(change: kind.keyPath)
         food[keyPath: kind.keyPath] = newValue
     }
     
@@ -238,66 +237,22 @@ final class DefaultFoodNutritionControllerContext: FoodNutritionControllerContex
     }
 }
 
-extension NutritionKind {
-    var dailyValueReal: Float? {
-        switch self {
-        case .calories:             return 2000
-        case .totalFat:             return 78
-        case .saturatedFat:         return 20
-        case .monounsaturatedFat:   return nil
-        case .polyunsaturatedFat:   return nil
-        case .transFat:             return nil
-        case .cholesterol:          return 300
-        case .sodium:               return 2300
-        case .totalCarbohydrate:    return 275
-        case .dietaryFiber:         return 28
-        case .sugars:               return 50
-        case .protein:              return 50
-        case .vitaminA:             return 900
-        case .vitaminB6:            return 1.7
-        case .vitaminB12:           return 2.4
-        case .vitaminC:             return 90
-        case .vitaminD:             return 20
-        case .vitaminE:             return 15
-        case .vitaminK:             return 120
-        case .calcium:              return 1300
-        case .iron:                 return 18
-        case .magnesium:            return 420
-        case .potassium:            return 4700
-        }
+extension FoodNutritionController.EnabledNewFood: FoodNutritionControllerContext {
+    var enableFields: Bool {
+        return true
     }
     
-    var keyPath: ReferenceWritableKeyPath<Food, Float> {
-        switch self {
-        case .calories:             return \Food.calories
-        case .totalFat:             return \Food.totalFat
-        case .saturatedFat:         return \Food.saturatedFat
-        case .monounsaturatedFat:   return \Food.monounsaturatedFat
-        case .polyunsaturatedFat:   return \Food.polyunsaturatedFat
-        case .transFat:             return \Food.transFat
-        case .cholesterol:          return \Food.cholesterol
-        case .sodium:               return \Food.sodium
-        case .totalCarbohydrate:    return \Food.totalCarbohydrate
-        case .dietaryFiber:         return \Food.dietaryFiber
-        case .sugars:               return \Food.sugars
-        case .protein:              return \Food.protein
-        case .vitaminA:             return \Food.vitaminA
-        case .vitaminB6:            return \Food.vitaminB6
-        case .vitaminB12:           return \Food.vitaminB12
-        case .vitaminC:             return \Food.vitaminC
-        case .vitaminD:             return \Food.vitaminD
-        case .vitaminE:             return \Food.vitaminE
-        case .vitaminK:             return \Food.vitaminK
-        case .calcium:              return \Food.calcium
-        case .iron:                 return \Food.iron
-        case .magnesium:            return \Food.magnesium
-        case .potassium:            return \Food.potassium
-        }
+    func set(kind: NutritionKind, to value: Float) {
+        food[keyPath: kind.keyPath] = value
+    }
+    
+    func value(for kind: NutritionKind) -> Float {
+        return food[keyPath: kind.keyPath]
     }
 }
 
 extension NutritionKind.Unit {
-    var buttonTitle: String {
+    fileprivate var buttonTitle: String {
         switch self {
         case .calorie:      return "kcal"
         case .gram:         return "g"

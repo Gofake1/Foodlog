@@ -9,6 +9,47 @@
 import Foundation
 import RealmSwift
 
+// View controller helpers
+
+/// - returns: `Day` instance that is associated with the date. Creates a new instance if it doesn't exist.
+func _correctDay(startOfDay: Date) -> Day {
+    if let day = DataStore.days.filter("startOfDay == %@", startOfDay).first {
+        return Day(value: day)
+    } else {
+        return Day(startOfDay: startOfDay)
+    }
+}
+
+/// - returns: Affected `FoodEntry`s, `Object`s to be deleted, and `Day`s to be pruned
+func _deleteFood(_ food: Food) -> ([FoodEntry], [Object], Set<Day>) {
+    return (Array(food.entries), food.objectsToDelete, Set(food.entries.map { $0.day }))
+}
+
+final class CloudKitRecord: Object {
+    enum Kind: Int {
+        case food       = 0
+        case foodEntry  = 1
+        case group      = 2
+        case tag        = 3
+    }
+    
+    @objc dynamic var recordName = ""
+    @objc dynamic var kindRaw = -1
+    @objc dynamic var systemFields = Data()
+    let foods       = LinkingObjects(fromType: Food.self, property: "localCKRecord")
+    let foodEntries = LinkingObjects(fromType: FoodEntry.self, property: "localCKRecord")
+    let groups      = LinkingObjects(fromType: FoodGroupingTemplate.self, property: "localCKRecord")
+    let tags        = LinkingObjects(fromType: Tag.self, property: "localCKRecord")
+    var kind: Kind {
+        get { return Kind(rawValue: kindRaw)! }
+        set { kindRaw = newValue.rawValue }
+    }
+    
+    override static func primaryKey() -> String? {
+        return "recordName"
+    }
+}
+
 final class SearchSuggestion: Object {
     enum Kind: Int {
         case food   = 0
@@ -20,21 +61,20 @@ final class SearchSuggestion: Object {
     @objc dynamic var kindRaw = -1
     @objc dynamic var lastUsed = Date()
     @objc dynamic var text = ""
-    
-    let foods = LinkingObjects(fromType: Food.self, property: "searchSuggestion")
+    let foods  = LinkingObjects(fromType: Food.self, property: "searchSuggestion")
     let groups = LinkingObjects(fromType: FoodGroupingTemplate.self, property: "searchSuggestion")
-    let tags = LinkingObjects(fromType: Tag.self, property: "searchSuggestion")
-    
-    override static func primaryKey() -> String? {
-        return "id"
+    let tags   = LinkingObjects(fromType: Tag.self, property: "searchSuggestion")
+    var kind: Kind {
+        get { return Kind(rawValue: kindRaw)! }
+        set { kindRaw = newValue.rawValue }
     }
     
     override static func indexedProperties() -> [String] {
         return ["lastUsed", "text"]
     }
     
-    static func delete(_ suggestion: SearchSuggestion) {
-        DataStore.delete(suggestion)
+    override static func primaryKey() -> String? {
+        return "id"
     }
 }
 
@@ -49,24 +89,29 @@ final class Tag: Object {
         case purple     = 6
     }
     
+    @objc dynamic var id = UUID().uuidString
+    @objc dynamic var localCKRecord: CloudKitRecord?
+    @objc dynamic var searchSuggestion: SearchSuggestion?
     @objc dynamic var name = ""
     @objc dynamic var colorCodeRaw = ColorCode.lightGray.rawValue
-    @objc dynamic var searchSuggestion: SearchSuggestion?
-    let foods = LinkingObjects(fromType: Food.self, property: "tags")
+    let foods       = LinkingObjects(fromType: Food.self, property: "tags")
     let foodEntries = LinkingObjects(fromType: FoodEntry.self, property: "tags")
-    
-    override static func primaryKey() -> String? {
-        return "name"
+    var colorCode: ColorCode {
+        get { return ColorCode(rawValue: colorCodeRaw)! }
+        set { colorCodeRaw = newValue.rawValue }
     }
     
-    static func delete(_ tag: Tag) {
-        SearchSuggestion.delete(tag.searchSuggestion!)
-        DataStore.delete(tag)
+    override static func indexedProperties() -> [String] {
+        return ["name"]
+    }
+    
+    override static func primaryKey() -> String? {
+        return "id"
     }
 }
 
 final class Food: Object {
-    enum MeasurementRepresentation: Int {
+    enum MeasurementUnit: Int {
         case serving    = 0
         case milligram  = 1
         case gram       = 2
@@ -76,10 +121,10 @@ final class Food: Object {
     }
     
     @objc dynamic var id = UUID().uuidString
-    @objc dynamic var name = ""
+    @objc dynamic var localCKRecord: CloudKitRecord?
     @objc dynamic var searchSuggestion: SearchSuggestion?
-    @objc dynamic var measurementRepresentationRaw = MeasurementRepresentation.serving.rawValue
-    @objc dynamic var picture: String? //*
+    @objc dynamic var name = ""
+    @objc dynamic var measurementUnitRaw = MeasurementUnit.serving.rawValue
     @objc dynamic var calories = Float(0.0)
     @objc dynamic var totalFat = Float(0.0)
     @objc dynamic var saturatedFat = Float(0.0)
@@ -103,16 +148,18 @@ final class Food: Object {
     @objc dynamic var iron = Float(0.0)
     @objc dynamic var magnesium = Float(0.0)
     @objc dynamic var potassium = Float(0.0)
-    let entries = LinkingObjects(fromType: FoodEntry.self, property: "food")
-    let tags = List<Tag>()
-    var measurementRepresentation: MeasurementRepresentation {
-        return MeasurementRepresentation(rawValue: measurementRepresentationRaw)!
+    let entries      = LinkingObjects(fromType: FoodEntry.self, property: "food")
+    let servingPairs = LinkingObjects(fromType: FoodServingPair.self, property: "food")
+    let tags         = List<Tag>()
+    var measurementUnit: MeasurementUnit {
+        get { return MeasurementUnit(rawValue: measurementUnitRaw)! }
+        set { measurementUnitRaw = newValue.rawValue }
     }
     
     // HealthKit future-proofing, currently unused
     @objc dynamic var biotin = Float(0.0)
     @objc dynamic var caffeine = Float(0.0)
-    @objc dynamic var chloried = Float(0.0)
+    @objc dynamic var chloride = Float(0.0)
     @objc dynamic var chromium = Float(0.0)
     @objc dynamic var copper = Float(0.0)
     @objc dynamic var folate = Float(0.0)
@@ -134,24 +181,6 @@ final class Food: Object {
     override static func primaryKey() -> String? {
         return "id"
     }
-    
-    /// - returns: If the delete operation requires user confirmation, returns a block that should be called.
-    static func delete(_ food: Food) -> (Int, () -> ())? {
-        let entries = food.entries
-        let searchSuggestion = food.searchSuggestion!
-        if entries.count > 0 {
-            return (entries.count, {
-                entries.forEach { FoodEntry.delete($0) }
-                SearchSuggestion.delete(searchSuggestion)
-                DataStore.delete(food)
-            })
-        } else {
-            entries.forEach { FoodEntry.delete($0) }
-            SearchSuggestion.delete(searchSuggestion)
-            DataStore.delete(food)
-            return nil
-        }
-    }
 }
 
 final class FoodEntry: Object {
@@ -161,14 +190,19 @@ final class FoodEntry: Object {
     }
     
     @objc dynamic var id = UUID().uuidString
+    @objc dynamic var localCKRecord: CloudKitRecord?
     @objc dynamic var date = Date().roundedToNearestHalfHour
     @objc dynamic var food: Food?
     @objc dynamic var measurementValueRepresentationRaw = MeasurementValueRepresentation.decimal.rawValue
     @objc dynamic var measurementValue = Data(Float(0.0))
     let days = LinkingObjects(fromType: Day.self, property: "foodEntries")
     let tags = List<Tag>()
+    var day: Day {
+        return days[0]
+    }
     var measurementValueRepresentation: MeasurementValueRepresentation {
-        return MeasurementValueRepresentation(rawValue: measurementValueRepresentationRaw)!
+        get { return MeasurementValueRepresentation(rawValue: measurementValueRepresentationRaw)! }
+        set { measurementValueRepresentationRaw = newValue.rawValue }
     }
     var measurementFloat: Float {
         switch measurementValueRepresentation {
@@ -190,53 +224,45 @@ final class FoodEntry: Object {
     override static func primaryKey() -> String? {
         return "id"
     }
-    
-    // TODO: Make Realm and HealthKit transactions atomic
-    static func delete(_ foodEntry: FoodEntry, withoutNotifying tokens: [NotificationToken] = [],
-                       completion: (Bool) -> () = { _ in })
-    {
-        HealthKitStore.shared.delete([foodEntry.id], {})
-        
-        let day = foodEntry.days.first!
-        DataStore.delete(foodEntry, withoutNotifying: tokens)
-        let dayWasDeleted = Day.deleteIfNoEntries(day, withoutNotifying: tokens)
-        completion(dayWasDeleted)
-    }
 }
 
 final class Day: Object {
-    @objc dynamic var id = 0
+    @objc dynamic var id = UUID().uuidString
     @objc dynamic var startOfDay = Date()
     let foodEntries = List<FoodEntry>()
     
-    convenience init(_ date: Date) {
+    convenience init(startOfDay: Date) {
         self.init()
-        id = date.hashValue
-        startOfDay = date
+        self.startOfDay = startOfDay
+    }
+    
+    override static func indexedProperties() -> [String] {
+        return ["startOfDay"]
     }
     
     override static func primaryKey() -> String? {
         return "id"
     }
     
-    static func delete(_ day: Day, withoutNotifying tokens: [NotificationToken] = []) {
-        DataStore.delete(day, withoutNotifying: tokens)
+    func remove(foodEntry: FoodEntry) {
+        let index = foodEntries.index(of: foodEntry)!
+        foodEntries.remove(at: index)
+    }
+}
+
+final class FoodGroupingTemplate: Object {
+    @objc dynamic var id = UUID().uuidString
+    @objc dynamic var localCKRecord: CloudKitRecord?
+    @objc dynamic var searchSuggestion: SearchSuggestion?
+    @objc dynamic var name = ""
+    let foodServingPairs = List<FoodServingPair>()
+    
+    override static func indexedProperties() -> [String] {
+        return ["name"]
     }
     
-    static func deleteIfNoEntries(_ day: Day, withoutNotifying tokens: [NotificationToken] = []) -> Bool {
-        if day.foodEntries.count <= 0 {
-            Day.delete(day, withoutNotifying: tokens)
-            return true
-        }
-        return false
-    }
-    
-    static func get(for foodEntry: FoodEntry) -> Day {
-        if let day = DataStore.object(Day.self, primaryKey: foodEntry.date.startOfDay.hashValue) {
-            return Day(value: day)
-        } else {
-            return Day(foodEntry.date.startOfDay)
-        }
+    override static func primaryKey() -> String? {
+        return "id"
     }
 }
 
@@ -248,42 +274,45 @@ final class FoodServingPair: Object {
     override static func primaryKey() -> String? {
         return "id"
     }
-    
-    static func delete(_ pair: FoodServingPair) {
-        DataStore.delete(pair)
+}
+
+protocol CascadeDeletable {
+    var objectsToDelete: [Object] { get }
+}
+
+extension Food: CascadeDeletable {
+    var objectsToDelete: [Object] {
+        return [localCKRecord!, searchSuggestion!, self] + Array(entries) as [Object] + Array(servingPairs) as [Object]
     }
 }
 
-final class FoodGroupingTemplate: Object {
-    @objc dynamic var id = UUID().uuidString
-    @objc dynamic var name = ""
-    @objc dynamic var searchSuggestion: SearchSuggestion?
-    let foodServingPairs = List<FoodServingPair>()
-    
-    override static func indexedProperties() -> [String] {
-        return ["name"]
+extension FoodEntry: CascadeDeletable {
+    var objectsToDelete: [Object] {
+        return [localCKRecord!, self]
     }
-    
-    override static func primaryKey() -> String? {
-        return "id"
+}
+
+extension FoodGroupingTemplate: CascadeDeletable {
+    var objectsToDelete: [Object] {
+        return [localCKRecord!, searchSuggestion!, self] + Array(foodServingPairs)
     }
-    
-    static func delete(_ group: FoodGroupingTemplate) {
-        group.foodServingPairs.forEach { FoodServingPair.delete($0) }
-        SearchSuggestion.delete(group.searchSuggestion!)
-        DataStore.delete(group)
+}
+
+extension Tag: CascadeDeletable {
+    var objectsToDelete: [Object] {
+        return [localCKRecord!, searchSuggestion!, self]
     }
 }
 
 extension Date {
     var roundedToNearestHalfHour: Date {
         var dc = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: self)
-        if let minute = dc.minute {
+        if let minute = dc.minute, let _ = dc.hour {
             switch minute {
             case 0, 30:     break
             case 1...15:    dc.minute = 0
             case 16...44:   dc.minute = 30
-            case 45...59:   dc.minute = 0; dc.hour? += 1
+            case 45...59:   dc.minute = 0; dc.hour! += 1
             default:        dc.minute = 0
             }
         } else {

@@ -74,3 +74,24 @@ class PillView: UIView {
         UIBezierPath(roundedRect: rect, cornerRadius: rect.height/2).fill()
     }
 }
+
+extension UIApplication {
+    func alert(error: Error) {
+        let alert = UIAlertController(title: "Error", message: error.localizedDescription, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        keyWindow!.rootViewController!.present(alert, animated: true, completion: nil)
+    }
+    
+    func alert(warning warningString: String, confirm userConfirmationHandler: @escaping () throws -> ()) {
+        let alert = UIAlertController(title: "Warning", message: warningString, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Confirm", style: .destructive, handler: { [unowned self] _ in
+            do {
+                try userConfirmationHandler()
+            } catch {
+                self.alert(error: error)
+            }
+        }))
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        keyWindow!.rootViewController!.present(alert, animated: true, completion: nil)
+    }
+}

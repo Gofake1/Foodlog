@@ -13,32 +13,28 @@ class DateController: NSObject {
     @IBOutlet weak var toolbar: UIToolbar!
     @IBOutlet weak var field: UITextField!
     
-    private static let dp: UIDatePicker = {
+    private var context: DateControllerContext!
+    private var datePicker: UIDatePicker = {
         let dp = UIDatePicker()
         dp.datePickerMode = .dateAndTime
         dp.minuteInterval = 30
         return dp
     }()
-    private var context: DateControllerContext!
     
     func setup(_ context: DateControllerContext) {
         self.context = context
-        DateController.dp.addTarget(self, action: #selector(dateChanged(_:)), for: .valueChanged)
-        field.inputView = DateController.dp
+        field.inputView = datePicker
         field.inputAccessoryView = toolbar
         field.text = context.date.shortDateShortTimeString
-    }
-    
-    @objc func dateChanged(_ sender: UIDatePicker) {
-        field.text = sender.date.shortDateShortTimeString
+        datePicker.addTarget(self, action: #selector(dateChanged(_:)), for: .valueChanged)
     }
     
     @IBAction func doneEditing() {
         field.resignFirstResponder()
     }
     
-    deinit {
-        DateController.dp.removeTarget(self, action: #selector(dateChanged(_:)), for: .valueChanged)
+    @objc private func dateChanged(_ sender: UIDatePicker) {
+        field.text = sender.date.shortDateShortTimeString
     }
 }
     
@@ -57,35 +53,43 @@ extension DateController: UITextFieldDelegate {
     }
 }
 
+extension DateController {
+    final class ExistingFoodEntry {
+        private let foodEntry: FoodEntry
+        private let foodEntryChanges: Changes<FoodEntry>
+        
+        init(_ foodEntry: FoodEntry, _ foodEntryChanges: Changes<FoodEntry>) {
+            self.foodEntry = foodEntry
+            self.foodEntryChanges = foodEntryChanges
+        }
+    }
+    
+    final class NewFoodEntry {
+        private let foodEntry: FoodEntry
+        
+        init(_ foodEntry: FoodEntry) {
+            self.foodEntry = foodEntry
+        }
+    }
+}
+
 protocol DateControllerContext {
     var date: Date { get set }
 }
 
-final class DefaultDateControllerContext: DateControllerContext {
-    var date: Date {
-        get { return foodEntry.date }
-        set { foodEntry.date = newValue }
-    }
-    private let foodEntry: FoodEntry
-    
-    init(_ foodEntry: FoodEntry) {
-        self.foodEntry = foodEntry
-    }
-}
-
-final class EditFoodEntryDateControllerContext: DateControllerContext {
+extension DateController.ExistingFoodEntry: DateControllerContext {
     var date: Date {
         get { return foodEntry.date }
         set {
-            foodEntryInfoChanged.value ||= newValue != foodEntry.date
+            foodEntryChanges.insert(change: \FoodEntry.date)
             foodEntry.date = newValue
         }
     }
-    private let foodEntry: FoodEntry
-    private let foodEntryInfoChanged: Ref<Bool>
-    
-    init(_ foodEntry: FoodEntry, _ foodEntryInfoChanged: Ref<Bool>) {
-        self.foodEntry = foodEntry
-        self.foodEntryInfoChanged = foodEntryInfoChanged
+}
+
+extension DateController.NewFoodEntry: DateControllerContext {
+    var date: Date {
+        get { return foodEntry.date }
+        set { foodEntry.date = newValue }
     }
 }

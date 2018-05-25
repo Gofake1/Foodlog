@@ -28,21 +28,6 @@ class AddOrSearchViewController: PulleyDrawerViewController {
                                                name: .UIKeyboardWillHide, object: nil)
     }
     
-    @objc func keyboardWasShown(_ aNotification: NSNotification) {
-        guard let userInfo = aNotification.userInfo,
-            let keyboardFrame = userInfo[UIKeyboardFrameEndUserInfoKey] as? CGRect
-            else { return }
-        let insets = UIEdgeInsets(top: 0.0, left: 0.0, bottom: keyboardFrame.height+20.0, right: 0.0)
-        tableView.contentInset = insets
-        tableView.scrollIndicatorInsets = insets
-    }
-    
-    @objc func keyboardWillBeHidden(_ aNotification: NSNotification) {
-        let insets = UIEdgeInsets(top: 0.0, left: 0.0, bottom: 20.0, right: 0.0)
-        tableView.contentInset = insets
-        tableView.scrollIndicatorInsets = insets
-    }
-    
     func drawerPositionDidChange(drawer: PulleyViewController, bottomSafeArea: CGFloat) {
         switch drawer.drawerPosition {
         case .closed:
@@ -54,6 +39,21 @@ class AddOrSearchViewController: PulleyDrawerViewController {
         case .partiallyRevealed:
             searchBar.resignFirstResponder()
         }
+    }
+    
+    @objc private func keyboardWasShown(_ aNotification: NSNotification) {
+        guard let userInfo = aNotification.userInfo,
+            let keyboardFrame = userInfo[UIKeyboardFrameEndUserInfoKey] as? CGRect
+            else { return }
+        let insets = UIEdgeInsets(top: 0.0, left: 0.0, bottom: keyboardFrame.height+20.0, right: 0.0)
+        tableView.contentInset = insets
+        tableView.scrollIndicatorInsets = insets
+    }
+    
+    @objc private func keyboardWillBeHidden(_ aNotification: NSNotification) {
+        let insets = UIEdgeInsets(top: 0.0, left: 0.0, bottom: 20.0, right: 0.0)
+        tableView.contentInset = insets
+        tableView.scrollIndicatorInsets = insets
     }
     
     deinit {
@@ -108,49 +108,39 @@ class SuggestionTableController: NSObject {
         if searchText == "" {
             let suggestions = DataStore.searchSuggestions
                 .sorted(byKeyPath: #keyPath(SearchSuggestion.lastUsed), ascending: false)
-            suggestionsChangeToken = suggestions.observe { [weak self] in
-                switch $0 {
-                case .initial:
-                    break
-                case .update(_, let deletes, let inserts, let mods):
-                    let suggestionResults = suggestions.map { $0.value }
-                    self!.tableData = [AnyRandomAccessCollection(suggestionResults)]
-                    self!.tableView.performBatchUpdates({
-                        self!.tableView.deleteRows(at: deletes.map { IndexPath(row: $0, section: 0) }, with: .automatic)
-                        self!.tableView.insertRows(at: inserts.map { IndexPath(row: $0, section: 0) }, with: .automatic)
-                        self!.tableView.reloadRows(at: mods.map { IndexPath(row: $0, section: 0) }, with: .automatic)
-                    })
-                case .error(let error):
-                    UIApplication.shared.alert(error: error)
-                }
-            }
-            let suggestionResults = suggestions.map { $0.value }
+            let suggestionResults = suggestions.map { $0.suggestion }
             tableData = [AnyRandomAccessCollection(suggestionResults)]
+            suggestionsChangeToken = observe(suggestions, section: 0) { [weak self] in self!.tableData[0] = $0 }
         } else {
             let newSuggestion = [NewFoodPlaceholder(name: searchText)]
             let suggestions = DataStore.searchSuggestions
                 .filter("text CONTAINS[cd] %@", searchText)
                 .sorted(byKeyPath: #keyPath(SearchSuggestion.lastUsed), ascending: false)
-            suggestionsChangeToken = suggestions.observe { [weak self] in
-                switch $0 {
-                case .initial:
-                    break
-                case .update(_, let deletes, let inserts, let mods):
-                    let suggestionResults = suggestions.map { $0.value }
-                    self!.tableData[1] = AnyRandomAccessCollection(suggestionResults)
-                    self!.tableView.performBatchUpdates({
-                        self!.tableView.deleteRows(at: deletes.map { IndexPath(row: $0, section: 1) }, with: .automatic)
-                        self!.tableView.insertRows(at: inserts.map { IndexPath(row: $0, section: 1) }, with: .automatic)
-                        self!.tableView.reloadRows(at: mods.map { IndexPath(row: $0, section: 1) }, with: .automatic)
-                    })
-                case .error(let error):
-                    UIApplication.shared.alert(error: error)
-                }
-            }
-            let suggestionResults = suggestions.map { $0.value }
+            let suggestionResults = suggestions.map { $0.suggestion }
             tableData = [AnyRandomAccessCollection(newSuggestion), AnyRandomAccessCollection(suggestionResults)]
+            suggestionsChangeToken = observe(suggestions, section: 1) { [weak self] in self!.tableData[1] = $0 }
         }
         tableView.reloadData()
+    }
+    
+    private func observe(_ results: Results<SearchSuggestion>, section: Int,
+        updateTableData: @escaping (AnyRandomAccessCollection<SuggestionType>) -> ()) -> NotificationToken
+    {
+        return results.observe { [tableView] in
+            switch $0 {
+            case .initial:
+                break
+            case .update(_, let deletes, let inserts, let reloads):
+                updateTableData(AnyRandomAccessCollection(results.map { $0.suggestion }))
+                tableView!.performBatchUpdates({
+                    tableView!.deleteRows(at: deletes.map { .init(row: $0, section: section) }, with: .automatic)
+                    tableView!.insertRows(at: inserts.map { .init(row: $0, section: section )}, with: .automatic)
+                    tableView!.reloadRows(at: reloads.map { .init(row: $0, section: section )}, with: .automatic)
+                })
+            case .error(let error):
+                UIApplication.shared.alert(error: error)
+            }
+        }
     }
 }
 
@@ -164,17 +154,21 @@ extension SuggestionTableController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        return tableData[indexPath.section][AnyIndex(indexPath.row)].suggestionCell(from: tableView, for: indexPath)
+        return tableData[indexPath.section][AnyIndex(indexPath.row)].dequeueCell(from: tableView, for: indexPath)
     }
     
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        return tableData[indexPath.section][AnyIndex(indexPath.row)].suggestionCanBeDeleted
+        return tableData[indexPath.section][AnyIndex(indexPath.row)].canBeDeleted
     }
     
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle,
                    forRowAt indexPath: IndexPath) {
         guard editingStyle == .delete else { return }
-        tableData[indexPath.section][AnyIndex(indexPath.row)].suggestionOnDelete()
+        tableData[indexPath.section][AnyIndex(indexPath.row)].onDelete {
+            if let error = $0 {
+                UIApplication.shared.alert(error: error)
+            }
+        }
     }
 }
 
@@ -186,12 +180,12 @@ extension SuggestionTableController: UITableViewDelegate {
             VCController.clearLogFilter()
             return nil
         } else {
-            return tableData[indexPath.section][AnyIndex(indexPath.row)].suggestionCanBeDeleted ? indexPath : nil
+            return tableData[indexPath.section][AnyIndex(indexPath.row)].canBeDeleted ? indexPath : nil
         }
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableData[indexPath.section][AnyIndex(indexPath.row)].suggestionOnSearch()
+        tableData[indexPath.section][AnyIndex(indexPath.row)].onSearch()
         tableViewVisibilityController.filterStateChanged(true)
     }
 }
@@ -221,10 +215,8 @@ class SuggestionTableViewVisibilityController: NSObject {
     private func update() {
         if !searchBarIsActive && searchText == "" && !filterIsActive {
             guard !tableView.isHidden else { return }
-            UIView.animate(withDuration: 0.2, animations: { [weak self] in
-                self?.tableView.alpha = 0.0
-            }) { [weak self] _ in
-                self?.tableView.isHidden = true
+            UIView.animate(withDuration: 0.2, animations: { [tableView] in tableView!.alpha = 0.0 }) { [tableView] _ in
+                tableView!.isHidden = true
             }
         } else {
             guard tableView.isHidden else { return }
@@ -241,7 +233,7 @@ class DefaultSuggestionTableViewCell: UITableViewCell {
     
     override func prepareForReuse() {
         super.prepareForReuse()
-        subtitleLabel.text = ""
+        subtitleLabel.text = nil
         addButton.removeTarget(nil, action: nil, for: .touchUpInside)
     }
 }
@@ -251,25 +243,25 @@ class TagSuggestionTableViewCell: UITableViewCell {
     @IBOutlet weak var label: UILabel!
 }
 
-protocol SuggestionType {
-    var suggestionCanBeDeleted: Bool { get }
-    var suggestionCanBeSearched: Bool { get }
-    func suggestionCell(from tableView: UITableView, for indexPath: IndexPath) -> UITableViewCell
-    func suggestionOnDelete()
-    func suggestionOnSearch()
+private protocol SuggestionType {
+    var canBeDeleted: Bool { get }
+    var canBeSearched: Bool { get }
+    func dequeueCell(from tableView: UITableView, for indexPath: IndexPath) -> UITableViewCell
+    func onDelete(completion completionHandler: @escaping (Error?) -> ())
+    func onSearch()
 }
 
 extension SuggestionTableController {
-    class NewFoodPlaceholder: SuggestionType {
+    fileprivate class NewFoodPlaceholder: SuggestionType {
         var name: String
-        var suggestionCanBeDeleted: Bool {
+        var canBeDeleted: Bool {
             return false
         }
-        var suggestionCanBeSearched: Bool {
-            return true
+        var canBeSearched: Bool {
+            return false
         }
         
-        func suggestionCell(from tableView: UITableView, for indexPath: IndexPath) -> UITableViewCell {
+        func dequeueCell(from tableView: UITableView, for indexPath: IndexPath) -> UITableViewCell {
             let cell = tableView.dequeueReusableCell(withIdentifier: "DefaultSuggestion", for: indexPath)
                 as! DefaultSuggestionTableViewCell
             cell.titleLabel.text = "\""+name+"\""
@@ -282,29 +274,30 @@ extension SuggestionTableController {
             return cell
         }
         
-        func suggestionOnDelete() {
-            assert(false)
+        func onDelete(completion completionHandler: @escaping (Error?) -> ()) {
+            fatalError()
         }
         
-        func suggestionOnSearch() {
-            // TODO: Search foods and entries using text
+        func onSearch() {
+            fatalError()
         }
         
         init(name: String) {
+            // TODO: Limit name to 256 chars
             self.name = name
         }
     }
 }
 
 extension Food: SuggestionType {
-    var suggestionCanBeDeleted: Bool {
+    fileprivate var canBeDeleted: Bool {
         return true
     }
-    var suggestionCanBeSearched: Bool {
+    fileprivate var canBeSearched: Bool {
         return true
     }
     
-    func suggestionCell(from tableView: UITableView, for indexPath: IndexPath) -> UITableViewCell {
+    fileprivate func dequeueCell(from tableView: UITableView, for indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "DefaultSuggestion", for: indexPath)
             as! DefaultSuggestionTableViewCell
         cell.titleLabel.text = name
@@ -317,48 +310,82 @@ extension Food: SuggestionType {
         return cell
     }
     
-    func suggestionOnDelete() {
-        if let (count, onConfirm) = Food.delete(self) {
-            let warning = "Deleting this food item will also delete \(count) entries. This cannot be undone."
-            UIApplication.shared.alert(warning: warning, confirm: onConfirm)
+    fileprivate func onDelete(completion completionHandler: @escaping (Error?) -> ()) {
+        func delete(_ foodEntries: [FoodEntry], _ objects: [Object], prune days: Set<Day>) {
+            let hkIds = foodEntries.map { $0.id }
+            let ckRecordIds = foodEntries.map { $0.ckRecordId } + [ckRecordId]
+            DataStore.delete(objects) {
+                if let error = $0 {
+                    completionHandler(error)
+                } else {
+                    DataStore.delete(days.filter { $0.foodEntries.count == 0 }) {
+                        if let error = $0 {
+                            completionHandler(error)
+                        } else {
+                            HealthKitStore.delete(hkIds) {
+                                if let error = $0 {
+                                    completionHandler(error)
+                                } else {
+                                    CloudStore.delete(ckRecordIds, completion: completionHandler)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        let (foodEntries, objects, days) = _deleteFood(self)
+        if foodEntries.count > 0 {
+            let warning = "Deleting this food item will also delete \(foodEntries.count) entries. This cannot be undone."
+            UIApplication.shared.alert(warning: warning, confirm: { delete(foodEntries, objects, prune: days ) })
+        } else {
+            delete(foodEntries, objects, prune: days)
         }
     }
     
-    func suggestionOnSearch() {
+    fileprivate func onSearch() {
         VCController.filterLog(self)
     }
 }
 
 extension FoodGroupingTemplate: SuggestionType {
-    var suggestionCanBeDeleted: Bool {
+    fileprivate var canBeDeleted: Bool {
         return true
     }
-    var suggestionCanBeSearched: Bool {
+    fileprivate var canBeSearched: Bool {
         return false
     }
     
-    func suggestionCell(from tableView: UITableView, for indexPath: IndexPath) -> UITableViewCell {
+    fileprivate func dequeueCell(from tableView: UITableView, for indexPath: IndexPath) -> UITableViewCell {
         fatalError("TODO: FoodGroupingTemplate")
     }
     
-    func suggestionOnDelete() {
-        FoodGroupingTemplate.delete(self)
+    fileprivate func onDelete(completion completionHandler: @escaping (Error?) -> ()) {
+        let ckIds = [ckRecordId]
+        DataStore.delete([self]) {
+            if let error = $0 {
+                completionHandler(error)
+            } else {
+                CloudStore.delete(ckIds, completion: completionHandler)
+            }
+        }
     }
     
-    func suggestionOnSearch() {
-        assert(false)
+    fileprivate func onSearch() {
+        fatalError()
     }
 }
 
 extension Tag: SuggestionType {
-    var suggestionCanBeDeleted: Bool {
+    fileprivate var canBeDeleted: Bool {
         return true
     }
-    var suggestionCanBeSearched: Bool {
+    fileprivate var canBeSearched: Bool {
         return true
     }
     
-    func suggestionCell(from tableView: UITableView, for indexPath: IndexPath) -> UITableViewCell {
+    fileprivate func dequeueCell(from tableView: UITableView, for indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "TagSuggestion", for: indexPath)
             as! TagSuggestionTableViewCell
         cell.padderView.backgroundColor = color
@@ -366,18 +393,26 @@ extension Tag: SuggestionType {
         return cell
     }
     
-    func suggestionOnDelete() {
-        Tag.delete(self)
+    fileprivate func onDelete(completion completionHandler: @escaping (Error?) -> ()) {
+        let ckIds = [ckRecordId]
+        DataStore.delete(objectsToDelete) {
+            if let error = $0 {
+                completionHandler(error)
+            } else {
+                // TEST: `CKReference` to tag is deleted
+                CloudStore.delete(ckIds, completion: completionHandler)
+            }
+        }
     }
     
-    func suggestionOnSearch() {
+    fileprivate func onSearch() {
         VCController.filterLog(self)
     }
 }
 
 extension SearchSuggestion {
-    var value: SuggestionType {
-        switch SearchSuggestion.Kind(rawValue: kindRaw)! {
+    fileprivate var suggestion: SuggestionType {
+        switch kind {
         case .food:     return foods.first!
         case .group:    return groups.first!
         case .tag:      return tags.first!
@@ -393,7 +428,7 @@ class MyButton: UIButton {
         addTarget(self, action: #selector(didTouchUpOnside), for: .touchUpInside)
     }
     
-    @objc func didTouchUpOnside() {
+    @objc private func didTouchUpOnside() {
         touchUpInside()
     }
 }

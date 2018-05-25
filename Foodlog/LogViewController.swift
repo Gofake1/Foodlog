@@ -17,9 +17,9 @@ class LogViewController: UIViewController {
     private let filteredLogTableController = FilteredLogTableController()
     
     override func viewDidLoad() {
-        let onSwitchController: (LogTableController, LogTableController) -> () = { [weak self] in
+        let onSwitchController: (LogTableController, LogTableController) -> () = { [tableView] in
             $0.tearDown()
-            $1.setup(self!.tableView)
+            $1.setup(tableView!)
         }
         currentLogTableController = Either(a: defaultLogTableController, b: filteredLogTableController,
                                            onAtoB: onSwitchController, onBtoA: onSwitchController)
@@ -49,7 +49,7 @@ class LogViewController: UIViewController {
     }
 }
 
-struct Either<T> {
+private struct Either<T> {
     enum Side {
         case a
         case b
@@ -84,12 +84,12 @@ struct Either<T> {
     }
 }
 
-class LogTableController: NSObject {
+private class LogTableController: NSObject {
     func setup(_ tableView: UITableView) {}
     func tearDown() {}
 }
 
-class DefaultLogTableController: LogTableController {
+private class DefaultLogTableController: LogTableController {
     private var daysChangeToken: NotificationToken!
     private let sortedDays = DataStore.days.sorted(byKeyPath: #keyPath(Day.startOfDay), ascending: false)
 
@@ -144,15 +144,31 @@ extension DefaultLogTableController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle,
                    forRowAt indexPath: IndexPath) {
         guard editingStyle == .delete else { return }
-        FoodEntry.delete(sortedDays[indexPath.section].sortedFoodEntries[indexPath.row],
-                         withoutNotifying: [daysChangeToken])
-        {
-            if $0 {
-                tableView.deleteSections(IndexSet([indexPath.section]), with: .automatic)
+        let day = sortedDays[indexPath.section]
+        let foodEntry = day.sortedFoodEntries[indexPath.row]
+        let (objects, delete) = day.foodEntries.count <= 1 ?
+            ([foodEntry, day], { tableView.deleteSections(.init([indexPath.section]), with: .automatic)}) :
+            ([foodEntry], { tableView.deleteRows(at: [indexPath], with: .automatic )})
+        let hkIds = [foodEntry.id]
+        let ckIds = [foodEntry.ckRecordId]
+        DataStore.delete(objects, withoutNotifying: [daysChangeToken]) {
+            if let error = $0 {
+                UIApplication.shared.alert(error: error)
             } else {
-                tableView.deleteRows(at: [indexPath], with: .automatic)
+                HealthKitStore.delete(hkIds) {
+                    if let error = $0 {
+                        UIApplication.shared.alert(error: error)
+                    } else {
+                        CloudStore.delete(ckIds) {
+                            if let error = $0 {
+                                UIApplication.shared.alert(error: error)
+                            }
+                        }
+                    }
+                }
             }
         }
+        delete()
     }
 }
 
@@ -174,12 +190,12 @@ extension DefaultLogTableController: UITableViewDelegate {
 }
 
 extension Day {
-    var sortedFoodEntries: Results<FoodEntry> {
+    fileprivate var sortedFoodEntries: Results<FoodEntry> {
         return foodEntries.sorted(byKeyPath: #keyPath(FoodEntry.date), ascending: false)
     }
 }
 
-class FilteredLogTableController: LogTableController {    
+private class FilteredLogTableController: LogTableController {
     private weak var tableView: UITableView!
     private var tableData = [AnyRandomAccessCollection<AnyFilteredResult>]()
     private var tableDataChangeTokens = [NotificationToken]()
@@ -198,69 +214,48 @@ class FilteredLogTableController: LogTableController {
         tableDataChangeTokens.forEach { $0.invalidate() }
         let foodEntries = DataStore.foodEntries.filter("food == %@", food)
             .sorted(byKeyPath: #keyPath(FoodEntry.date), ascending: false)
-        let foodEntriesChangeToken = foodEntries.observe { [weak self] in
-            switch $0 {
-            case .initial:
-                break
-            case .update(_, let deletions, let insertions, let mods):
-                let foodEntryResults = foodEntries.map(AnyFilteredResult.init)
-                self!.tableData = [AnyRandomAccessCollection(foodEntryResults)]
-                self!.tableView.performBatchUpdates({
-                    self!.tableView.deleteRows(at: deletions.map { IndexPath(row: $0, section: 0) }, with: .automatic)
-                    self!.tableView.insertRows(at: insertions.map { IndexPath(row: $0, section: 0) }, with: .automatic)
-                    self!.tableView.reloadRows(at: mods.map { IndexPath(row: $0, section: 0) }, with: .automatic)
-                })
-            case .error(let error):
-                UIApplication.shared.alert(error: error)
-            }
-        }
-        tableDataChangeTokens = [foodEntriesChangeToken]
+        
         let foodEntryResults = foodEntries.map(AnyFilteredResult.init)
         tableData = [AnyRandomAccessCollection(foodEntryResults)]
         tableView.reloadData()
+        
+        let foodEntriesChangeToken = observe(foodEntries, section: 0) { [weak self] in self!.tableData[0] = $0 }
+        tableDataChangeTokens = [foodEntriesChangeToken]
     }
     
     func filter(_ tag: Tag) {
         tableDataChangeTokens.forEach { $0.invalidate() }
-        let foods = tag.foods.sorted(byKeyPath: #keyPath(Food.name))
+        let foods       = tag.foods.sorted(byKeyPath: #keyPath(Food.name))
         let foodEntries = tag.foodEntries.sorted(byKeyPath: #keyPath(FoodEntry.date), ascending: false)
-        let foodsChangeToken = foods.observe { [weak self] in
-            switch $0 {
-            case .initial:
-                break
-            case .update(_, let deletions, let insertions, let mods):
-                let foodResults = foods.map(AnyFilteredResult.init)
-                self!.tableData[0] = AnyRandomAccessCollection(foodResults)
-                self!.tableView.performBatchUpdates({
-                    self!.tableView.deleteRows(at: deletions.map { IndexPath(row: $0, section: 0) }, with: .automatic)
-                    self!.tableView.insertRows(at: insertions.map { IndexPath(row: $0, section: 0) }, with: .automatic)
-                    self!.tableView.reloadRows(at: mods.map { IndexPath(row: $0, section: 0) }, with: .automatic)
-                })
-            case .error(let error):
-                UIApplication.shared.alert(error: error)
-            }
-        }
-        let foodEntriesChangeToken = foodEntries.observe { [weak self] in
-            switch $0 {
-            case .initial:
-                break
-            case .update(_, let deletions, let insertions, let mods):
-                let foodEntryResults = foodEntries.map(AnyFilteredResult.init)
-                self!.tableData[1] = AnyRandomAccessCollection(foodEntryResults)
-                self!.tableView.performBatchUpdates({
-                    self!.tableView.deleteRows(at: deletions.map { IndexPath(row: $0, section: 1) }, with: .automatic)
-                    self!.tableView.insertRows(at: insertions.map { IndexPath(row: $0, section: 1) }, with: .automatic)
-                    self!.tableView.reloadRows(at: mods.map { IndexPath(row: $0, section: 1) }, with: .automatic)
-                })
-            case .error(let error):
-                UIApplication.shared.alert(error: error)
-            }
-        }
-        tableDataChangeTokens = [foodsChangeToken, foodEntriesChangeToken]
-        let foodResults = foods.map(AnyFilteredResult.init)
+        
+        let foodResults      = foods.map(AnyFilteredResult.init)
         let foodEntryResults = foodEntries.map(AnyFilteredResult.init)
         tableData = [AnyRandomAccessCollection(foodResults), AnyRandomAccessCollection(foodEntryResults)]
         tableView.reloadData()
+        
+        let foodsChangeToken       = observe(foods, section: 0) { [weak self] in self!.tableData[0] = $0 }
+        let foodEntriesChangeToken = observe(foodEntries, section: 1) { [weak self] in self!.tableData[1] = $0 }
+        tableDataChangeTokens = [foodsChangeToken, foodEntriesChangeToken]
+    }
+    
+    private func observe<T: Object & FilteredResultType>(_ results: Results<T>, section: Int,
+        updateTableData: @escaping (AnyRandomAccessCollection<AnyFilteredResult>) -> ()) -> NotificationToken
+    {
+        return results.observe { [tableView] in
+            switch $0 {
+            case .initial:
+                break
+            case .update(_, let deletes, let inserts, let reloads):
+                updateTableData(AnyRandomAccessCollection(results.map(AnyFilteredResult.init)))
+                tableView!.performBatchUpdates({
+                    tableView!.deleteRows(at: deletes.map { .init(row: $0, section: section) }, with: .automatic)
+                    tableView!.insertRows(at: inserts.map { .init(row: $0, section: section) }, with: .automatic)
+                    tableView!.reloadRows(at: reloads.map { .init(row: $0, section: section) }, with: .automatic)
+                })
+            case .error(let error):
+                UIApplication.shared.alert(error: error)
+            }
+        }
     }
 }
 
@@ -286,7 +281,11 @@ extension FilteredLogTableController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle,
                    forRowAt indexPath: IndexPath) {
         guard editingStyle == .delete else { return }
-        tableData[indexPath.section][AnyIndex(indexPath.row)].filteredOnDelete()
+        tableData[indexPath.section][AnyIndex(indexPath.row)].filteredOnDelete {
+            if let error = $0 {
+                UIApplication.shared.alert(error: error)
+            }
+        }
     }
 }
 
@@ -307,15 +306,15 @@ extension FilteredLogTableController: UITableViewDelegate {
     }
 }
 
-protocol FilteredResultType {
+private protocol FilteredResultType {
     var filteredDetail: String { get }
     var filteredDetailDisplaysFraction: Bool { get }
     var filteredTitle: String { get }
     var filteredSubtitle: NSAttributedString { get }
-    func filteredOnDelete()
+    func filteredOnDelete(completion completionHandler: @escaping (Error?) -> ())
 }
 
-struct AnyFilteredResult: FilteredResultType {
+private struct AnyFilteredResult: FilteredResultType {
     var filteredDetail: String {
         return base.filteredDetail
     }
@@ -337,51 +336,94 @@ struct AnyFilteredResult: FilteredResultType {
         self.base = base
     }
     
-    func filteredOnDelete() {
-        base.filteredOnDelete()
+    func filteredOnDelete(completion completionHandler: @escaping (Error?) -> ()) {
+        base.filteredOnDelete(completion: completionHandler)
     }
 }
 
 extension Food: FilteredResultType {
-    var filteredDetail: String {
+    fileprivate var filteredDetail: String {
         return ""
     }
-    var filteredDetailDisplaysFraction: Bool {
+    fileprivate var filteredDetailDisplaysFraction: Bool {
         return false
     }
-    var filteredTitle: String {
+    fileprivate var filteredTitle: String {
         return name
     }
-    var filteredSubtitle: NSAttributedString {
+    fileprivate var filteredSubtitle: NSAttributedString {
         return ([(String(entries.count)+" entries", UIColor.darkText)] +
             tags.prefix(5).map { ($0.name, $0.color) }).attributedString
     }
     
-    func filteredOnDelete() {
-        if let (count, onConfirm) = Food.delete(self) {
-            let warning = "Deleting this food item will also delete \(count) entries. This cannot be undone."
-            UIApplication.shared.alert(warning: warning, confirm: onConfirm)
+    fileprivate func filteredOnDelete(completion completionHandler: @escaping (Error?) -> ()) {
+        func delete(_ foodEntries: [FoodEntry], _ objects: [Object], prune days: Set<Day>) {
+            let hkIds = foodEntries.map { $0.id }
+            let ckIds = [ckRecordId]
+            DataStore.delete(objects) {
+                if let error = $0 {
+                    completionHandler(error)
+                } else {
+                    DataStore.delete(days.filter { $0.foodEntries.count == 0 }) {
+                        if let error = $0 {
+                            completionHandler(error)
+                        } else {
+                            HealthKitStore.delete(hkIds) {
+                                if let error = $0 {
+                                    completionHandler(error)
+                                } else {
+                                    CloudStore.delete(ckIds, completion: completionHandler)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        let (foodEntries, objects, days) = _deleteFood(self)
+        if foodEntries.count > 0 {
+            let warning = "Deleting this food item will also delete \(foodEntries.count) entries. This cannot be undone."
+            UIApplication.shared.alert(warning: warning, confirm: { delete(foodEntries, objects, prune: days) })
+        } else {
+            delete(foodEntries, objects, prune: days)
         }
     }
 }
 
 extension FoodEntry: FilteredResultType {
-    var filteredDetail: String {
+    fileprivate var filteredDetail: String {
         return measurementLabelText ?? "?"
     }
-    var filteredDetailDisplaysFraction: Bool {
+    fileprivate var filteredDetailDisplaysFraction: Bool {
         return measurementValueRepresentation == .fraction
     }
-    var filteredTitle: String {
+    fileprivate var filteredTitle: String {
         return food!.name
     }
-    var filteredSubtitle: NSAttributedString {
+    fileprivate var filteredSubtitle: NSAttributedString {
         return ([(date.mediumDateShortTimeString, UIColor.darkText)] +
             tags.prefix(5).map { ($0.name, $0.color) }).attributedString
     }
     
-    func filteredOnDelete() {
-        FoodEntry.delete(self)
+    fileprivate func filteredOnDelete(completion completionHandler: @escaping (Error?) -> ()) {
+        let _day = day
+        let objects = _day.foodEntries.count <= 1 ? [self, _day] : [self]
+        let hkIds = _day.foodEntries.map { $0.id } as Array
+        let ckIds = _day.foodEntries.map { $0.ckRecordId } as Array
+        DataStore.delete(objects) {
+            if let error = $0 {
+                completionHandler(error)
+            } else {
+                HealthKitStore.delete(hkIds) {
+                    if let error = $0 {
+                        completionHandler(error)
+                    } else {
+                        CloudStore.delete(ckIds, completion: completionHandler)
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -396,13 +438,14 @@ class DetailSubtitleTableViewCell: UITableViewCell {
     
     private static let defaultFont = UIFont.monospacedDigitSystemFont(ofSize: 17.0, weight: .regular)
     private static let fractionFont: UIFont = {
-        let descriptor = UIFont.systemFont(ofSize: 20.0, weight: .light).fontDescriptor.addingAttributes([
-            .featureSettings: [
-                [
-                    UIFontDescriptor.FeatureKey.featureIdentifier: kFractionsType,
-                    UIFontDescriptor.FeatureKey.typeIdentifier: kDiagonalFractionsSelector
+        let descriptor = UIFont.systemFont(ofSize: 20.0, weight: .light).fontDescriptor.addingAttributes(
+            [
+                .featureSettings: [
+                    [
+                        UIFontDescriptor.FeatureKey.featureIdentifier: kFractionsType,
+                        UIFontDescriptor.FeatureKey.typeIdentifier: kDiagonalFractionsSelector
+                    ]
                 ]
-            ]
             ])
         return UIFont(descriptor: descriptor, size: 0.0)
     }()
@@ -420,14 +463,14 @@ class DetailSubtitleTableViewCell: UITableViewCell {
 }
 
 extension FoodEntry {
-    var measurementLabelText: String? {
+    fileprivate var measurementLabelText: String? {
         guard let food = food, let measurementString = measurementString else { return nil }
-        return measurementString+food.measurementRepresentation.shortSuffix
+        return measurementString+food.measurementUnit.shortSuffix
     }
 }
 
-extension Food.MeasurementRepresentation {
-    var shortSuffix: String {
+extension Food.MeasurementUnit {
+    fileprivate var shortSuffix: String {
         switch self {
         case .serving:      return ""
         case .milligram:    return " mg"

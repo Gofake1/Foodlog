@@ -6,7 +6,7 @@ Features:
 * Write to HealthKit
 * Chronological, searchable history
 * Barcode scanning (TODO)
-* Sync over iCloud (TODO)
+* Sync over iCloud
 
 ### Build
 Tested on Xcode 9 and macOS 10.13.

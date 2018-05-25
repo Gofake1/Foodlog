@@ -7,9 +7,11 @@
 //
 
 import Foundation
+import SystemConfiguration
 
 private let _jsonDecoder = JSONDecoder()
 private let _jsonEncoder = JSONEncoder()
+private let _networkReachability = NetworkReachability()
 private let _mediumDateShortTime: DateFormatter = {
     let df = DateFormatter()
     df.dateStyle = .medium
@@ -35,9 +37,25 @@ private let _shortDateShortTime: DateFormatter = {
     return df
 }()
 
-infix operator ||=: AssignmentPrecedence
-func ||=(lhs: inout Bool, rhs: Bool) {
-    lhs = lhs || rhs
+func _retry(_ block: @escaping () -> (), after retryAfter: Double) {
+    print("retrying after", retryAfter) //*
+    DispatchQueue.main.asyncAfter(deadline: .now()+retryAfter, execute: block)
+}
+
+func _retryWhenNetworkAvailable(_ block: @escaping () -> ()) {
+    _networkReachability.add(block: block)
+}
+
+protocol _JSONCoderDefaultType {}
+
+extension _JSONCoderDefaultType where Self: Codable {
+    static func decode(from data: Data) -> Self? {
+        return try? _jsonDecoder.decode(Self.self, from: data)
+    }
+    
+    func encode() -> Data? {
+        return try? _jsonEncoder.encode(self)
+    }
 }
 
 extension Data {
@@ -86,6 +104,19 @@ extension Float {
     }
 }
 
+extension Food.MeasurementUnit {
+    var singular: String {
+        switch self {
+        case .serving:      return "Serving"
+        case .milligram:    return "Milligram"
+        case .gram:         return "Gram"
+        case .ounce:        return "Ounce"
+        case .pound:        return "Pound"
+        case .fluidOunce:   return "Fluid Oz."
+        }
+    }
+}
+
 struct Fraction: Codable {
     enum CodingKeys: String, CodingKey {
         case numerator = "n"
@@ -108,17 +139,55 @@ extension Fraction: CustomStringConvertible {
     }
 }
 
-extension Fraction: JSONCoderProvided {}
+extension Fraction: _JSONCoderDefaultType {}
 
-protocol JSONCoderProvided {}
-
-extension JSONCoderProvided where Self: Codable {
-    static func decode(from data: Data) -> Self? {
-        return try? _jsonDecoder.decode(Self.self, from: data)
+// TODO: Persist to disk
+// https://marcosantadev.com/network-reachability-swift/
+final class NetworkReachability {
+    private let reachability = SCNetworkReachabilityCreateWithName(nil, "www.google.com")!
+    private var blocks = [() -> ()]()
+    private var flags = SCNetworkReachabilityFlags()
+    
+    fileprivate init() {
+        SCNetworkReachabilityGetFlags(reachability, &flags)
+        
+        var context = SCNetworkReachabilityContext(version: 0, info: nil, retain: nil, release: nil, copyDescription: nil)
+        context.info = UnsafeMutableRawPointer(Unmanaged<NetworkReachability>.passUnretained(self).toOpaque())
+        let callback: SCNetworkReachabilityCallBack? = {
+            guard let info = $2 else { return }
+            let newFlags = $1
+            // Workaround: We can't capture `self` because C function pointers don't support capturing
+            let networkReachability = Unmanaged<NetworkReachability>.fromOpaque(info).takeUnretainedValue()
+            DispatchQueue.main.async {
+                networkReachability.reachabilityChanged(newFlags)
+            }
+        }
+        if !SCNetworkReachabilitySetCallback(reachability, callback, &context) {
+            fatalError()
+        }
     }
     
-    func encode() -> Data? {
-        return try? _jsonEncoder.encode(self)
+    fileprivate func add(block: @escaping () -> ()) {
+        blocks.append(block)
+    }
+    
+    private func reachabilityChanged(_ newFlags: SCNetworkReachabilityFlags) {
+        func isReachable(_ flags: SCNetworkReachabilityFlags) -> Bool {
+            let reachable = flags.contains(.reachable)
+            let connectionRequired = flags.contains(.connectionRequired)
+            let canConnectAutomatically = flags.contains(.connectionOnDemand) || flags.contains(.connectionOnTraffic)
+            let canConnectWithoutIntervention = canConnectAutomatically && !flags.contains(.interventionRequired)
+            return reachable && (!connectionRequired || canConnectWithoutIntervention)
+        }
+        
+        guard flags != newFlags else { return }
+        defer { flags = newFlags }
+        print("Reachability changed") //*
+        if isReachable(newFlags) {
+            while !blocks.isEmpty {
+                blocks.removeFirst()()
+            }
+        }
     }
 }
 
@@ -168,6 +237,33 @@ enum NutritionKind {
     case magnesium
     case potassium
     
+    var dailyValueReal: Float? {
+        switch self {
+        case .calories:             return 2000
+        case .totalFat:             return 78
+        case .saturatedFat:         return 20
+        case .monounsaturatedFat:   return nil
+        case .polyunsaturatedFat:   return nil
+        case .transFat:             return nil
+        case .cholesterol:          return 300
+        case .sodium:               return 2300
+        case .totalCarbohydrate:    return 275
+        case .dietaryFiber:         return 28
+        case .sugars:               return 50
+        case .protein:              return 50
+        case .vitaminA:             return 900
+        case .vitaminB6:            return 1.7
+        case .vitaminB12:           return 2.4
+        case .vitaminC:             return 90
+        case .vitaminD:             return 20
+        case .vitaminE:             return 15
+        case .vitaminK:             return 120
+        case .calcium:              return 1300
+        case .iron:                 return 18
+        case .magnesium:            return 420
+        case .potassium:            return 4700
+        }
+    }
     var unit: Unit {
         switch self {
         case .calories:             return .calorie
@@ -193,6 +289,33 @@ enum NutritionKind {
         case .iron:                 return .milligram
         case .magnesium:            return .milligram
         case .potassium:            return .milligram
+        }
+    }
+    var keyPath: ReferenceWritableKeyPath<Food, Float> {
+        switch self {
+        case .calories:             return \.calories
+        case .totalFat:             return \.totalFat
+        case .saturatedFat:         return \.saturatedFat
+        case .monounsaturatedFat:   return \.monounsaturatedFat
+        case .polyunsaturatedFat:   return \.polyunsaturatedFat
+        case .transFat:             return \.transFat
+        case .cholesterol:          return \.cholesterol
+        case .sodium:               return \.sodium
+        case .totalCarbohydrate:    return \.totalCarbohydrate
+        case .dietaryFiber:         return \.dietaryFiber
+        case .sugars:               return \.sugars
+        case .protein:              return \.protein
+        case .vitaminA:             return \.vitaminA
+        case .vitaminB6:            return \.vitaminB6
+        case .vitaminB12:           return \.vitaminB12
+        case .vitaminC:             return \.vitaminC
+        case .vitaminD:             return \.vitaminD
+        case .vitaminE:             return \.vitaminE
+        case .vitaminK:             return \.vitaminK
+        case .calcium:              return \.calcium
+        case .iron:                 return \.iron
+        case .magnesium:            return \.magnesium
+        case .potassium:            return \.potassium
         }
     }
 }
