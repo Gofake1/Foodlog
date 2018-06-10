@@ -12,7 +12,6 @@ import UIKit
 // TODO: iPhone X UI
 final class AddOrSearchViewController: PulleyDrawerViewController {
     @IBOutlet weak var suggestionTableController: SuggestionTableController!
-    @IBOutlet weak var suggestionTableViewVisibilityController: SuggestionTableViewVisibilityController!
     @IBOutlet weak var searchBar: UISearchBar!
     @IBOutlet weak var tableView: UITableView!
     
@@ -63,7 +62,6 @@ final class AddOrSearchViewController: PulleyDrawerViewController {
 
 extension AddOrSearchViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        suggestionTableViewVisibilityController.filterStateChanged(false)
         VCController.clearLogFilter()
         guard let searchText = searchBar.text else { return }
         suggestionTableController.searchText = searchText
@@ -72,18 +70,19 @@ extension AddOrSearchViewController: UISearchBarDelegate {
     func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
         VCController.pulleyVC.setDrawerPosition(position: .open, animated: true)
         searchBar.setShowsCancelButton(true, animated: true)
-        suggestionTableViewVisibilityController.searchBarStateChanged(true)
-    }
-    
-    func searchBarTextDidEndEditing(_ searchBar: UISearchBar) {
-        suggestionTableViewVisibilityController.searchBarStateChanged(false)
-        suggestionTableViewVisibilityController.searchTextChanged(searchBar.text)
-        searchBar.setShowsCancelButton(false, animated: true)
+        if tableView.isHidden {
+            tableView.alpha = 1.0
+            tableView.isHidden = false
+        }
     }
     
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         searchBar.text = ""
         searchBar.resignFirstResponder()
+        searchBar.setShowsCancelButton(false, animated: true)
+        UIView.animate(withDuration: 0.2, animations: { [tableView] in tableView!.alpha = 0.0 }) {
+            [tableView] _ in tableView!.isHidden = true
+        }
     }
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
@@ -93,7 +92,6 @@ extension AddOrSearchViewController: UISearchBarDelegate {
 
 final class SuggestionTableController: NSObject {
     @IBOutlet weak var tableView: UITableView!
-    @IBOutlet weak var tableViewVisibilityController: SuggestionTableViewVisibilityController!
     
     var searchText = "" {
         didSet {
@@ -176,7 +174,6 @@ extension SuggestionTableController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
         if tableView.cellForRow(at: indexPath)!.isSelected {
             tableView.deselectRow(at: indexPath, animated: true)
-            tableViewVisibilityController.filterStateChanged(false)
             VCController.clearLogFilter()
             return nil
         } else {
@@ -186,43 +183,6 @@ extension SuggestionTableController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableData[indexPath.section][AnyIndex(indexPath.row)].onSearch()
-        tableViewVisibilityController.filterStateChanged(true)
-    }
-}
-
-class SuggestionTableViewVisibilityController: NSObject {
-    @IBOutlet weak var tableView: UITableView!
-    
-    private var searchBarIsActive = false
-    private var searchText: String?
-    private var filterIsActive = false
-    
-    func searchBarStateChanged(_ isActive: Bool) {
-        searchBarIsActive = isActive
-        update()
-    }
-    
-    func searchTextChanged(_ text: String?) {
-        searchText = text
-        update()
-    }
-    
-    func filterStateChanged(_ isActive: Bool) {
-        filterIsActive = isActive
-        update()
-    }
-    
-    private func update() {
-        if !searchBarIsActive && searchText == "" && !filterIsActive {
-            guard !tableView.isHidden else { return }
-            UIView.animate(withDuration: 0.2, animations: { [tableView] in tableView!.alpha = 0.0 }) { [tableView] _ in
-                tableView!.isHidden = true
-            }
-        } else {
-            guard tableView.isHidden else { return }
-            tableView.alpha = 1.0
-            tableView.isHidden = false
-        }
     }
 }
 

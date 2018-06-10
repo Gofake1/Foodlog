@@ -263,7 +263,6 @@
                     <connections>
                         <outlet property="searchBar" destination="Bp7-zS-1Cq" id="Kug-Kb-QWF"/>
                         <outlet property="suggestionTableController" destination="gQb-oc-Mcp" id="9le-tz-az7"/>
-                        <outlet property="suggestionTableViewVisibilityController" destination="fvV-Mq-G2b" id="WeV-BF-jcY"/>
                         <outlet property="tableView" destination="GaF-W9-zaw" id="P3R-eu-gpu"/>
                     </connections>
                 </viewController>
@@ -271,12 +270,6 @@
                 <customObject id="gQb-oc-Mcp" customClass="SuggestionTableController" customModule="Foodlog" customModuleProvider="target">
                     <connections>
                         <outlet property="tableView" destination="GaF-W9-zaw" id="AsS-Fk-2Qu"/>
-                        <outlet property="tableViewVisibilityController" destination="fvV-Mq-G2b" id="utp-RW-CIg"/>
-                    </connections>
-                </customObject>
-                <customObject id="fvV-Mq-G2b" customClass="SuggestionTableViewVisibilityController" customModule="Foodlog" customModuleProvider="target">
-                    <connections>
-                        <outlet property="tableView" destination="GaF-W9-zaw" id="aaf-GO-ehm"/>
                     </connections>
                 </customObject>
             </objects>
