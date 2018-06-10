@@ -10,7 +10,7 @@ import RealmSwift
 import UIKit
 
 // TODO: iPhone X UI
-class AddOrSearchViewController: PulleyDrawerViewController {
+final class AddOrSearchViewController: PulleyDrawerViewController {
     @IBOutlet weak var suggestionTableController: SuggestionTableController!
     @IBOutlet weak var suggestionTableViewVisibilityController: SuggestionTableViewVisibilityController!
     @IBOutlet weak var searchBar: UISearchBar!
@@ -91,7 +91,7 @@ extension AddOrSearchViewController: UISearchBarDelegate {
     }
 }
 
-class SuggestionTableController: NSObject {
+final class SuggestionTableController: NSObject {
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var tableViewVisibilityController: SuggestionTableViewVisibilityController!
     
@@ -134,8 +134,8 @@ class SuggestionTableController: NSObject {
                 updateTableData(AnyRandomAccessCollection(results.map { $0.suggestion }))
                 tableView!.performBatchUpdates({
                     tableView!.deleteRows(at: deletes.map { .init(row: $0, section: section) }, with: .automatic)
-                    tableView!.insertRows(at: inserts.map { .init(row: $0, section: section )}, with: .automatic)
-                    tableView!.reloadRows(at: reloads.map { .init(row: $0, section: section )}, with: .automatic)
+                    tableView!.insertRows(at: inserts.map { .init(row: $0, section: section) }, with: .automatic)
+                    tableView!.reloadRows(at: reloads.map { .init(row: $0, section: section) }, with: .automatic)
                 })
             case .error(let error):
                 UIApplication.shared.alert(error: error)
@@ -226,7 +226,7 @@ class SuggestionTableViewVisibilityController: NSObject {
     }
 }
 
-class DefaultSuggestionTableViewCell: UITableViewCell {
+final class DefaultSuggestionTableViewCell: UITableViewCell {
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var subtitleLabel: UILabel!
     @IBOutlet weak var addButton: MyButton!
@@ -238,7 +238,7 @@ class DefaultSuggestionTableViewCell: UITableViewCell {
     }
 }
 
-class TagSuggestionTableViewCell: UITableViewCell {
+final class TagSuggestionTableViewCell: UITableViewCell {
     @IBOutlet weak var padderView: UIView!
     @IBOutlet weak var label: UILabel!
 }
@@ -318,7 +318,7 @@ extension Food: SuggestionType {
                 if let error = $0 {
                     completionHandler(error)
                 } else {
-                    DataStore.delete(days.filter { $0.foodEntries.count == 0 }) {
+                    DataStore.delete(days.filter { $0.foodEntries.isEmpty }) {
                         if let error = $0 {
                             completionHandler(error)
                         } else {
@@ -399,7 +399,6 @@ extension Tag: SuggestionType {
             if let error = $0 {
                 completionHandler(error)
             } else {
-                // TEST: `CKReference` to tag is deleted
                 CloudStore.delete(ckIds, completion: completionHandler)
             }
         }
@@ -420,7 +419,7 @@ extension SearchSuggestion {
     }
 }
 
-class MyButton: UIButton {
+final class MyButton: UIButton {
     private var touchUpInside: () -> () = {}
     
     func onTouchUpInside(_ handler: @escaping () -> ()) {

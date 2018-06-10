@@ -11,7 +11,7 @@ import UIKit
 extension Tag {
     var color: UIColor {
         switch ColorCode(rawValue: colorCodeRaw)! {
-        case .lightGray:    return .lightGray
+        case .gray:         return .lightGray
         case .red:          return .red
         case .orange:       return .orange
         case .yellow:       return .yellow

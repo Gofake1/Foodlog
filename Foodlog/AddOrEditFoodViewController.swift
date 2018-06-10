@@ -8,24 +8,38 @@
 
 import UIKit
 
-class AddOrEditFoodViewController: PulleyDrawerViewController {
+final class AddOrEditFoodViewController: PulleyDrawerViewController {
+    @IBOutlet weak var amountController:            AmountController!
     @IBOutlet weak var dateController:              DateController!
     @IBOutlet weak var foodEntryTagController:      TagController!
-    @IBOutlet weak var foodNutritionController:     FoodNutritionController!
     @IBOutlet weak var foodTagController:           TagController!
-    @IBOutlet weak var measurementUnitController:   MeasurementUnitController!
-    @IBOutlet weak var measurementValueController:  MeasurementValueController!
     @IBOutlet weak var scrollController:            ScrollController!
-    @IBOutlet weak var aView:                       UIView!
-    @IBOutlet weak var bView:                       UIView!
-    @IBOutlet weak var foodNameLabel:               UILabel!
-    @IBOutlet weak var foodNameField:               UITextField!
+    @IBOutlet weak var servingSizeController:       ServingSizeController!
+    @IBOutlet weak var nutritionController:         NutritionController!
     @IBOutlet weak var addToLogButton:              UIButton!
+    @IBOutlet weak var foodNameField:               UITextField!
+    @IBOutlet weak var foodNameLabel:               UILabel!
+    @IBOutlet weak var foodTagsView:                FlowContainerView!
     @IBOutlet weak var placeholderView:             UIView!
+    // A
+    @IBOutlet weak var aView:                       UIView!
+    @IBOutlet weak var aServingSizeField:           UITextField!
+    @IBOutlet weak var aDateField:                  UITextField!
+    @IBOutlet weak var aAmountField:                UITextField!
+    @IBOutlet weak var aTagsView:                   FlowContainerView!
+    // B
+    @IBOutlet weak var bView:                       UIView!
+    @IBOutlet weak var bDateField:                  UITextField!
+    @IBOutlet weak var bAmountField:                UITextField!
+    @IBOutlet weak var bTagsView:                   FlowContainerView!
+    // C
+    @IBOutlet weak var cView:                       UIView!
+    @IBOutlet weak var cServingSizeField:           UITextField!
 
     var context: AddOrEditContextType!
     
     override func viewDidLoad() {
+        foodTagController.tagsView = foodTagsView
         context.configure(self)
         scrollController.setup()
     }
@@ -46,24 +60,23 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
     }
     
     func useAView() {
-        aView.translatesAutoresizingMaskIntoConstraints = false
-        placeholderView.addSubview(aView)
-        NSLayoutConstraint.activate([
-            placeholderView.topAnchor.constraint(equalTo: aView.topAnchor),
-            placeholderView.bottomAnchor.constraint(equalTo: aView.bottomAnchor),
-            placeholderView.leadingAnchor.constraint(equalTo: aView.leadingAnchor),
-            placeholderView.trailingAnchor.constraint(equalTo: aView.trailingAnchor)
-            ])
+        amountController.field = aAmountField
+        dateController.field = aDateField
+        foodEntryTagController.tagsView = aTagsView
+        servingSizeController.field = aServingSizeField
+        placeholderView.embedSubview(aView)
     }
     
     func useBView() {
-        bView.translatesAutoresizingMaskIntoConstraints = false
-        placeholderView.addSubview(bView)
-        NSLayoutConstraint.activate([
-            placeholderView.topAnchor.constraint(equalTo: bView.topAnchor),
-            placeholderView.bottomAnchor.constraint(equalTo: bView.bottomAnchor),
-            placeholderView.leadingAnchor.constraint(equalTo: bView.leadingAnchor),
-            placeholderView.trailingAnchor.constraint(equalTo: bView.trailingAnchor)])
+        amountController.field = bAmountField
+        dateController.field = bDateField
+        foodEntryTagController.tagsView = bTagsView
+        placeholderView.embedSubview(bView)
+    }
+    
+    func useCView() {
+        servingSizeController.field = cServingSizeField
+        placeholderView.embedSubview(cView)
     }
     
     @IBAction func foodNameChanged(_ sender: UITextField) {
@@ -106,7 +119,7 @@ class AddOrEditFoodViewController: PulleyDrawerViewController {
 class ScrollController: NSObject {
     @IBOutlet weak var scrollView: MyScrollView!
     
-    private weak var activeView: UIView?
+    private var targetFrame: CGRect? = .zero
     
     func setup() {
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWasShown(_:)),
@@ -115,19 +128,10 @@ class ScrollController: NSObject {
                                                name: .UIKeyboardWillHide, object: nil)
     }
     
-    func scrollToView(_ view: UIView?) {
-        activeView = view
-        scrollToActiveView()
-    }
-    
-    private func scrollToActiveView() {
-        guard let view = activeView else { return }
-        // Workaround: View's frame is translated down by Pulley
-        let fixedViewFrame = scrollView.superview!.convert(view.frame, to: nil)
-        // Workaround: `UIScrollView` scrolls to incorrect first responder frame
-        scrollView.shouldScroll = true
-        scrollView.scrollRectToVisible(fixedViewFrame, animated: true)
-        scrollView.shouldScroll = false
+    /// - precondition: `frame` must be in `scrollView`'s coordinate space
+    func scroll(to frame: CGRect?) {
+        targetFrame = frame
+        scrollToFrame()
     }
     
     @objc private func keyboardWasShown(_ aNotification: NSNotification) {
@@ -138,7 +142,7 @@ class ScrollController: NSObject {
         let insets = UIEdgeInsets(top: 0.0, left: 0.0, bottom: keyboardFrame.height, right: 0.0)
         scrollView.contentInset = insets
         scrollView.scrollIndicatorInsets = insets
-        scrollToActiveView()
+        scrollToFrame()
     }
     
     @objc private func keyboardWillBeHidden(_ aNotification: NSNotification) {
@@ -146,12 +150,22 @@ class ScrollController: NSObject {
         scrollView.scrollIndicatorInsets = .zero
     }
     
+    private func scrollToFrame() {
+        guard let targetFrame = targetFrame else { return }
+        // Workaround: View's frame is translated down by Pulley
+        let fixedViewFrame = scrollView.superview!.convert(targetFrame, to: nil)
+        // Workaround: `UIScrollView` scrolls to incorrect first responder frame
+        scrollView.shouldScroll = true
+        scrollView.scrollRectToVisible(fixedViewFrame, animated: true)
+        scrollView.shouldScroll = false
+    }
+    
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
 }
 
-class MyScrollView: UIScrollView {
+final class MyScrollView: UIScrollView {
     var shouldScroll = false
     
     override func setContentOffset(_ contentOffset: CGPoint, animated: Bool) {

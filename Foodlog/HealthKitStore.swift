@@ -54,28 +54,7 @@ extension HealthKitStore {
         private let store = HKHealthStore()
         
         init(pendingTransaction: PendingTransaction) {
-            let types = Set(arrayLiteral: HKObjectType.quantityType(forIdentifier: .dietaryEnergyConsumed)!,
-                            HKObjectType.quantityType(forIdentifier: .dietaryFatTotal)!,
-                            HKObjectType.quantityType(forIdentifier: .dietaryFatSaturated)!,
-                            HKObjectType.quantityType(forIdentifier: .dietaryFatMonounsaturated)!,
-                            HKObjectType.quantityType(forIdentifier: .dietaryFatPolyunsaturated)!,
-                            HKObjectType.quantityType(forIdentifier: .dietaryCholesterol)!,
-                            HKObjectType.quantityType(forIdentifier: .dietarySodium)!,
-                            HKObjectType.quantityType(forIdentifier: .dietaryCarbohydrates)!,
-                            HKObjectType.quantityType(forIdentifier: .dietaryFiber)!,
-                            HKObjectType.quantityType(forIdentifier: .dietarySugar)!,
-                            HKObjectType.quantityType(forIdentifier: .dietaryProtein)!,
-                            HKObjectType.quantityType(forIdentifier: .dietaryVitaminA)!,
-                            HKObjectType.quantityType(forIdentifier: .dietaryVitaminB6)!,
-                            HKObjectType.quantityType(forIdentifier: .dietaryVitaminB12)!,
-                            HKObjectType.quantityType(forIdentifier: .dietaryVitaminC)!,
-                            HKObjectType.quantityType(forIdentifier: .dietaryVitaminD)!,
-                            HKObjectType.quantityType(forIdentifier: .dietaryVitaminE)!,
-                            HKObjectType.quantityType(forIdentifier: .dietaryVitaminK)!,
-                            HKObjectType.quantityType(forIdentifier: .dietaryCalcium)!,
-                            HKObjectType.quantityType(forIdentifier: .dietaryIron)!,
-                            HKObjectType.quantityType(forIdentifier: .dietaryMagnesium)!,
-                            HKObjectType.quantityType(forIdentifier: .dietaryPotassium)!)
+            let types = Set(NutritionKind.writableToHealthKit.map { $0.hkType })
             store.requestAuthorization(toShare: types, read: nil) { [weak self] in
                 if let error = $1 {
                     switch pendingTransaction {
@@ -139,39 +118,22 @@ extension HealthKitStore.WorkingImpl: HealthKitStoreImplType {
 
 extension FoodEntry {
     var hkObject: HKObject? {
-        var objects = Set<HKSample>()
-        func add(_ nutrition: NutritionKind) {
-            let value = food![keyPath: nutrition.keyPath]
-            guard value > 0.0 else { return }
-            let quantity = HKQuantity(unit: nutrition.unit.hkUnit, doubleValue: Double(value * measurementFloat))
-            objects.insert(HKQuantitySample(type: nutrition.hkType, quantity: quantity, start: date, end: date))
+        let factor: Float
+        do {
+            factor = try conversionFactor()
+        } catch {
+            return nil
         }
         
-        add(.calories)
-        add(.totalFat)
-        add(.saturatedFat)
-        add(.monounsaturatedFat)
-        add(.polyunsaturatedFat)
-        add(.cholesterol)
-        add(.sodium)
-        add(.totalCarbohydrate)
-        add(.dietaryFiber)
-        add(.sugars)
-        add(.protein)
-        add(.vitaminA)
-        add(.vitaminB6)
-        add(.vitaminB12)
-        add(.vitaminC)
-        add(.vitaminD)
-        add(.vitaminE)
-        add(.vitaminK)
-        add(.calcium)
-        add(.iron)
-        add(.magnesium)
-        add(.potassium)
+        func hkSample(_ kind: NutritionKind) -> HKQuantitySample? {
+            let value = food![keyPath: kind.keyPath]
+            guard value > 0.0 else { return nil }
+            let quantity = HKQuantity(unit: kind.unit.hkUnit, doubleValue: Double(value * factor))
+            return HKQuantitySample(type: kind.hkType, quantity: quantity, start: date, end: date)
+        }
         
+        let objects = Set(NutritionKind.writableToHealthKit.compactMap(hkSample))
         guard objects.count > 0 else { return nil }
-        
         let metadata: [String: Any] = [HKMetadataKeyFoodType: food!.name, "FoodlogID": id]
         return HKCorrelation(type: .correlationType(forIdentifier: .food)!,
                              start: date, end: date, objects: objects, metadata: metadata)
@@ -181,18 +143,37 @@ extension FoodEntry {
 extension NutritionKind {
     fileprivate var hkType: HKQuantityType {
         switch self {
+        case .biotin:               return .quantityType(forIdentifier: .dietaryBiotin)!
+        case .caffeine:             return .quantityType(forIdentifier: .dietaryCaffeine)!
+        case .calcium:              return .quantityType(forIdentifier: .dietaryCalcium)!
         case .calories:             return .quantityType(forIdentifier: .dietaryEnergyConsumed)!
-        case .totalFat:             return .quantityType(forIdentifier: .dietaryFatTotal)!
-        case .saturatedFat:         return .quantityType(forIdentifier: .dietaryFatSaturated)!
-        case .monounsaturatedFat:   return .quantityType(forIdentifier: .dietaryFatMonounsaturated)!
-        case .polyunsaturatedFat:   return .quantityType(forIdentifier: .dietaryFatPolyunsaturated)!
-        case .transFat:             fatalError()
+        case .chloride:             return .quantityType(forIdentifier: .dietaryChloride)!
         case .cholesterol:          return .quantityType(forIdentifier: .dietaryCholesterol)!
-        case .sodium:               return .quantityType(forIdentifier: .dietarySodium)!
-        case .totalCarbohydrate:    return .quantityType(forIdentifier: .dietaryCarbohydrates)!
+        case .chromium:             return .quantityType(forIdentifier: .dietaryChromium)!
+        case .copper:               return .quantityType(forIdentifier: .dietaryCopper)!
         case .dietaryFiber:         return .quantityType(forIdentifier: .dietaryFiber)!
-        case .sugars:               return .quantityType(forIdentifier: .dietarySugar)!
+        case .folate:               return .quantityType(forIdentifier: .dietaryFolate)!
+        case .iodine:               return .quantityType(forIdentifier: .dietaryIodine)!
+        case .iron:                 return .quantityType(forIdentifier: .dietaryIron)!
+        case .magnesium:            return .quantityType(forIdentifier: .dietaryMagnesium)!
+        case .manganese:            return .quantityType(forIdentifier: .dietaryManganese)!
+        case .molybdenum:           return .quantityType(forIdentifier: .dietaryMolybdenum)!
+        case .monounsaturatedFat:   return .quantityType(forIdentifier: .dietaryFatMonounsaturated)!
+        case .niacin:               return .quantityType(forIdentifier: .dietaryNiacin)!
+        case .pantothenicAcid:      return .quantityType(forIdentifier: .dietaryPantothenicAcid)!
+        case .phosphorus:           return .quantityType(forIdentifier: .dietaryPhosphorus)!
+        case .polyunsaturatedFat:   return .quantityType(forIdentifier: .dietaryFatPolyunsaturated)!
+        case .potassium:            return .quantityType(forIdentifier: .dietaryPotassium)!
         case .protein:              return .quantityType(forIdentifier: .dietaryProtein)!
+        case .riboflavin:           return .quantityType(forIdentifier: .dietaryRiboflavin)!
+        case .saturatedFat:         return .quantityType(forIdentifier: .dietaryFatSaturated)!
+        case .selenium:             return .quantityType(forIdentifier: .dietarySelenium)!
+        case .sodium:               return .quantityType(forIdentifier: .dietarySodium)!
+        case .sugars:               return .quantityType(forIdentifier: .dietarySugar)!
+        case .thiamin:              return .quantityType(forIdentifier: .dietaryThiamin)!
+        case .totalCarbohydrate:    return .quantityType(forIdentifier: .dietaryCarbohydrates)!
+        case .totalFat:             return .quantityType(forIdentifier: .dietaryFatTotal)!
+        case .transFat:             fatalError()
         case .vitaminA:             return .quantityType(forIdentifier: .dietaryVitaminA)!
         case .vitaminB6:            return .quantityType(forIdentifier: .dietaryVitaminB6)!
         case .vitaminB12:           return .quantityType(forIdentifier: .dietaryVitaminB12)!
@@ -200,11 +181,17 @@ extension NutritionKind {
         case .vitaminD:             return .quantityType(forIdentifier: .dietaryVitaminD)!
         case .vitaminE:             return .quantityType(forIdentifier: .dietaryVitaminE)!
         case .vitaminK:             return .quantityType(forIdentifier: .dietaryVitaminK)!
-        case .calcium:              return .quantityType(forIdentifier: .dietaryCalcium)!
-        case .iron:                 return .quantityType(forIdentifier: .dietaryIron)!
-        case .magnesium:            return .quantityType(forIdentifier: .dietaryMagnesium)!
-        case .potassium:            return .quantityType(forIdentifier: .dietaryPotassium)!
+        case .zinc:                 return .quantityType(forIdentifier: .dietaryZinc)!
         }
+    }
+    
+    // Excludes `transFat`
+    fileprivate static var writableToHealthKit: [NutritionKind] {
+        return [.biotin, .caffeine, .calcium, .calories, .chloride, .cholesterol, .chromium, .copper, .dietaryFiber,
+                .folate, .iodine, .iron, .magnesium, .manganese, .molybdenum, .monounsaturatedFat, .niacin,
+                .pantothenicAcid, .phosphorus, .polyunsaturatedFat, .potassium, .protein, .riboflavin, .saturatedFat,
+                .selenium, .sodium, .sugars, .thiamin, .totalCarbohydrate, .totalFat, .vitaminA, .vitaminB6,
+                .vitaminB12, .vitaminC, .vitaminD, .vitaminE, .vitaminK, .zinc]
     }
 }
 
@@ -221,7 +208,7 @@ extension NutritionKind.Unit {
 
 extension HKHealthStore {
     fileprivate func delete(foodEntryIds ids: [String], completion completionHandler: @escaping (Error?) -> ()) {
-        if ids.count == 0 {
+        if ids.isEmpty {
             completionHandler(nil)
         } else {
             let predicate = NSPredicate(format: "\(HKPredicateKeyPathMetadata).FoodlogID IN %@", ids)
@@ -253,7 +240,7 @@ extension HKHealthStore {
     fileprivate func save(foodEntryHKObjects objects: [HKObject],
                           completion completionHandler: @escaping (Error?) -> ())
     {
-        if objects.count == 0 {
+        if objects.isEmpty {
             completionHandler(nil)
         } else {
             save(objects) { completionHandler($1) }

@@ -8,25 +8,25 @@
 
 import UIKit
 
-class DateController: NSObject {
-    @IBOutlet weak var scrollController: ScrollController!
+final class DateController: NSObject {
     @IBOutlet weak var toolbar: UIToolbar!
-    @IBOutlet weak var field: UITextField!
     
+    var field: UITextField!
     private var context: DateControllerContext!
     private var datePicker: UIDatePicker = {
         let dp = UIDatePicker()
-        dp.datePickerMode = .dateAndTime
         dp.minuteInterval = 30
         return dp
     }()
     
     func setup(_ context: DateControllerContext) {
         self.context = context
+        datePicker.date = context.date
+        datePicker.addTarget(self, action: #selector(dateChanged(_:)), for: .valueChanged)
+        field.delegate = self
         field.inputView = datePicker
         field.inputAccessoryView = toolbar
         field.text = context.date.shortDateShortTimeString
-        datePicker.addTarget(self, action: #selector(dateChanged(_:)), for: .valueChanged)
     }
     
     @IBAction func doneEditing() {
@@ -39,28 +39,19 @@ class DateController: NSObject {
 }
     
 extension DateController: UITextFieldDelegate {
-    func textFieldDidBeginEditing(_ textField: UITextField) {
-        scrollController.scrollToView(textField)
-    }
-    
     func textFieldDidEndEditing(_ textField: UITextField, reason: UITextFieldDidEndEditingReason) {
-        if let newDate = textField.text?.dateFromShortDateShortTime {
-            context.date = newDate
-        } else {
-            context.date = Date()
-            textField.text = context.date.shortDateShortTimeString
-        }
+        context.date = datePicker.date
     }
 }
 
 extension DateController {
     final class ExistingFoodEntry {
         private let foodEntry: FoodEntry
-        private let foodEntryChanges: Changes<FoodEntry>
+        private let changes: Changes<FoodEntry>
         
-        init(_ foodEntry: FoodEntry, _ foodEntryChanges: Changes<FoodEntry>) {
+        init(_ foodEntry: FoodEntry, _ changes: Changes<FoodEntry>) {
             self.foodEntry = foodEntry
-            self.foodEntryChanges = foodEntryChanges
+            self.changes = changes
         }
     }
     
@@ -81,7 +72,7 @@ extension DateController.ExistingFoodEntry: DateControllerContext {
     var date: Date {
         get { return foodEntry.date }
         set {
-            foodEntryChanges.insert(change: \FoodEntry.date)
+            changes.insert(change: \FoodEntry.date)
             foodEntry.date = newValue
         }
     }

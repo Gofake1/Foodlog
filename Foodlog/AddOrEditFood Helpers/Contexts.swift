@@ -31,14 +31,13 @@ final class AddEntryForExistingFoodContext: AddOrEditContextType {
     
     func configure(_ vc: AddOrEditFoodViewController) {
         vc.useLabelForName(name)
-        vc.useAView()
+        vc.useBView()
         
-        vc.foodEntryTagController.setup(TagController.NewFoodEntry(foodEntry))
+        vc.amountController.setup(AmountController.NewFoodEntry(foodEntry))
         vc.dateController.setup(DateController.NewFoodEntry(foodEntry))
-        vc.measurementUnitController.setup(MeasurementUnitController.DisabledExistingFood(foodEntry.food!))
-        vc.measurementValueController.setup(MeasurementValueController.NewFoodEntry(foodEntry))
-        vc.foodNutritionController.setup(FoodNutritionController.Disabled(foodEntry.food!))
+        vc.foodEntryTagController.setup(TagController.NewFoodEntry(foodEntry))
         vc.foodTagController.setup(TagController.DisabledFood(foodEntry.food!))
+        vc.nutritionController.setup(NutritionController.Disabled(foodEntry.food!))
     }
     
     func save(completionHandler: @escaping (Error?) -> ()) -> (Int, () -> ())? {
@@ -67,12 +66,12 @@ final class AddEntryForNewFoodContext: AddOrEditContextType {
         vc.useLabelForName(name)
         vc.useAView()
         
-        vc.foodEntryTagController.setup(TagController.NewFoodEntry(foodEntry))
+        vc.amountController.setup(AmountController.NewFoodEntry(foodEntry))
         vc.dateController.setup(DateController.NewFoodEntry(foodEntry))
-        vc.measurementUnitController.setup(MeasurementUnitController.NewFood(foodEntry.food!))
-        vc.measurementValueController.setup(MeasurementValueController.NewFoodEntry(foodEntry))
-        vc.foodNutritionController.setup(FoodNutritionController.EnabledNewFood(foodEntry.food!))
+        vc.foodEntryTagController.setup(TagController.NewFoodEntry(foodEntry))
         vc.foodTagController.setup(TagController.EnabledNewFood(foodEntry.food!))
+        vc.nutritionController.setup(NutritionController.EnabledNewFood(foodEntry.food!))
+        vc.servingSizeController.setup(ServingSizeController.NewFood(foodEntry.food!, vc))
     }
     
     func save(completionHandler: @escaping (Error?) -> ()) -> (Int, () -> ())? {
@@ -112,12 +111,12 @@ final class EditFoodContext: AddOrEditContextType {
     func configure(_ vc: AddOrEditFoodViewController) {
         vc.useFieldForName(name)
         vc.configureAddToLogButton(title: "Update Log", isEnabled: false)
-        vc.useBView()
+        vc.useCView()
         
         foodChanges.onInsertOnce { [weak vc] in vc?.addToLogButton.isEnabled = true }
-        vc.measurementUnitController.setup(MeasurementUnitController.EnabledExistingFood(food, foodChanges))
-        vc.foodNutritionController.setup(FoodNutritionController.EnabledExistingFood(food, foodChanges))
         vc.foodTagController.setup(TagController.EnabledExistingFood(food, foodChanges))
+        vc.nutritionController.setup(NutritionController.EnabledExistingFood(food, foodChanges))
+        vc.servingSizeController.setup(ServingSizeController.ExistingFood(food, foodChanges, vc))
     }
     
     func save(completionHandler: @escaping (Error?) -> ()) -> (Int, () -> ())? {
@@ -159,15 +158,14 @@ final class EditFoodEntryContext: AddOrEditContextType {
     func configure(_ vc: AddOrEditFoodViewController) {
         vc.useFieldForName(name)
         vc.configureAddToLogButton(title: "Update Log", isEnabled: false)
-        vc.useAView()
+        vc.useBView()
         
         foodEntryChanges.onInsertOnce { [weak vc] in vc?.addToLogButton.isEnabled = true }
-        vc.foodEntryTagController.setup(TagController.ExistingFoodEntry(foodEntry, foodEntryChanges))
+        vc.amountController.setup(AmountController.ExistingFoodEntry(foodEntry, foodEntryChanges))
         vc.dateController.setup(DateController.ExistingFoodEntry(foodEntry, foodEntryChanges))
-        vc.measurementUnitController.setup(MeasurementUnitController.DisabledExistingFood(foodEntry.food!))
-        vc.measurementValueController.setup(MeasurementValueController.ExistingFoodEntry(foodEntry, foodEntryChanges))
-        vc.foodNutritionController.setup(FoodNutritionController.Disabled(foodEntry.food!))
+        vc.foodEntryTagController.setup(TagController.ExistingFoodEntry(foodEntry, foodEntryChanges))
         vc.foodTagController.setup(TagController.DisabledFood(foodEntry.food!))
+        vc.nutritionController.setup(NutritionController.Disabled(foodEntry.food!))
     }
     
     func save(completionHandler: @escaping (Error?) -> ()) -> (Int, () -> ())? {
@@ -257,7 +255,6 @@ extension Food {
                            \Food.lastUsed,
                            \Food.magnesium,
                            \Food.manganese,
-                           \Food.measurementUnitRaw,
                            \Food.molybdenum,
                            \Food.monounsaturatedFat,
                            \Food.name,
@@ -270,6 +267,8 @@ extension Food {
                            \Food.riboflavin,
                            \Food.saturatedFat,
                            \Food.selenium,
+                           \Food.servingSize,
+                           \Food.servingSizeUnitRaw,
                            \Food.sodium,
                            \Food.sugars,
                            \Food.tagsCKReferences,
@@ -293,8 +292,9 @@ extension FoodEntry {
     fileprivate static var changedAll: Changes<FoodEntry> {
         let keyPaths = Set(arrayLiteral: \FoodEntry.date,
                            \FoodEntry.foodCKReference,
-                           \FoodEntry.measurementValue,
-                           \FoodEntry.measurementValueRepresentationRaw,
+                           \FoodEntry.measurement,
+                           \FoodEntry.measurementRepresentationRaw,
+                           \FoodEntry.measurementUnitRaw,
                            \FoodEntry.tagsCKReferences)
         return Changes(keyPaths)
     }

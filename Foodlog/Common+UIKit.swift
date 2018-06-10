@@ -38,7 +38,7 @@ extension Array where Element == (String, UIColor) {
     }
 }
 
-class FlowContainerView: UIView {
+final class FlowContainerView: UIView {
     override var intrinsicContentSize: CGSize {
         return CGSize(width: bounds.width, height: intrinsicHeight)
     }
@@ -66,7 +66,7 @@ class FlowContainerView: UIView {
 }
 
 @IBDesignable
-class PillView: UIView {
+final class PillView: UIView {
     @IBInspectable var fillColor: UIColor?
     
     override func draw(_ rect: CGRect) {
@@ -93,5 +93,16 @@ extension UIApplication {
         }))
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
         keyWindow!.rootViewController!.present(alert, animated: true, completion: nil)
+    }
+}
+
+extension UIView {
+    func embedSubview(_ view: UIView) {
+        view.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(view)
+        NSLayoutConstraint.activate([topAnchor.constraint(equalTo: view.topAnchor),
+                                     bottomAnchor.constraint(equalTo: view.bottomAnchor),
+                                     leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                                     trailingAnchor.constraint(equalTo: view.trailingAnchor)])
     }
 }

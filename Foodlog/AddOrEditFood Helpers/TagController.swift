@@ -9,10 +9,10 @@
 import UIKit
 
 // TODO: UI to choose tag color
-class TagController: NSObject {
+final class TagController: NSObject {
     @IBOutlet weak var scrollController: ScrollController!
-    @IBOutlet weak var tagsView: FlowContainerView!
     
+    var tagsView: FlowContainerView!
     private static let shadowDuration = 0.4
     private static let shadowRelativeDuration = shadowDuration / animationDuration
     private static let translationDuration = 0.4
@@ -66,7 +66,7 @@ class TagController: NSObject {
             }()
         }
         
-        if context.tags.count == 0 {
+        if context.tags.isEmpty {
             tagsView.addSubview(viewForEmpty)
             viewForTag[""] = viewForEmpty
         } else {
@@ -85,7 +85,7 @@ class TagController: NSObject {
         context.onTagRemoved { [tagsView, viewForEmpty, weak self] in
             self!.viewForTag[$0]!.removeFromSuperview()
             self!.viewForTag[$0] = nil
-            if self!.viewForTag.count == 0 {
+            if self!.viewForTag.isEmpty {
                 tagsView!.addSubview(viewForEmpty!)
                 self!.viewForTag[""] = viewForEmpty!
             }
@@ -94,7 +94,7 @@ class TagController: NSObject {
     
     @objc private func tagPressed() {
         // Workaround: Disable scroll behavior when creating new tag
-        scrollController.scrollToView(nil)
+        scrollController.scroll(to: nil)
         
         let tagVC: TagViewController = VCController.makeVC(.tag)
         tagVC.context = context
@@ -227,11 +227,11 @@ extension TagController {
     
     final class EnabledExistingFood: Common {
         private let food: Food
-        private let foodChanges: Changes<Food>
+        private let changes: Changes<Food>
         
-        init(_ food: Food, _ foodChanges: Changes<Food>) {
+        init(_ food: Food, _ changes: Changes<Food>) {
             self.food = food
-            self.foodChanges = foodChanges
+            self.changes = changes
         }
     }
     
@@ -245,11 +245,11 @@ extension TagController {
     
     final class ExistingFoodEntry: Common {
         private let foodEntry: FoodEntry
-        private let foodEntryChanges: Changes<FoodEntry>
+        private let changes: Changes<FoodEntry>
         
-        init(_ foodEntry: FoodEntry, _ foodEntryChanges: Changes<FoodEntry>) {
+        init(_ foodEntry: FoodEntry, _ changes: Changes<FoodEntry>) {
             self.foodEntry = foodEntry
-            self.foodEntryChanges = foodEntryChanges
+            self.changes = changes
         }
     }
     
@@ -304,7 +304,7 @@ extension TagController.EnabledExistingFood: TagControllerContext {
     func updatedTags(_ changes: [String: Tag.Change]) {
         guard changes != [:] else { return }
         food.tagsChanged(changes, added: tagAdded, removed: tagRemoved)
-        foodChanges.insert(change: \Food.tagsCKReferences)
+        self.changes.insert(change: \Food.tagsCKReferences)
     }
 }
 
@@ -332,7 +332,7 @@ extension TagController.ExistingFoodEntry: TagControllerContext {
     func updatedTags(_ changes: [String: Tag.Change]) {
         guard changes != [:] else { return }
         foodEntry.tagsChanged(changes, added: tagAdded, removed: tagRemoved)
-        foodEntryChanges.insert(change: \FoodEntry.tagsCKReferences)
+        self.changes.insert(change: \FoodEntry.tagsCKReferences)
     }
 }
 
@@ -389,7 +389,7 @@ extension FoodEntry {
     }
 }
 
-class TagViewController: UIViewController {
+final class TagViewController: UIViewController {
     @IBOutlet weak var addNewTagNameField: UITextField!
     @IBOutlet weak var addNewTagView: UIView!
     @IBOutlet weak var centerYConstraint: NSLayoutConstraint!
@@ -548,7 +548,7 @@ extension Tag {
     }
 }
 
-class DualLabelButton: UIButton {
+final class DualLabelButton: UIButton {
     override var intrinsicContentSize: CGSize {
         let width = contentEdgeInsets.left + leftLabel.intrinsicContentSize.width + 3.0 +
             titleLabel!.intrinsicContentSize.width + contentEdgeInsets.right

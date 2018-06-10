@@ -8,7 +8,7 @@
 
 import UIKit
 
-class LogDetailViewController: PulleyDrawerViewController {
+final class LogDetailViewController: PulleyDrawerViewController {
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var subtitleLabel: UILabel!
     @IBOutlet weak var tagsView: FlowContainerView!
@@ -16,7 +16,14 @@ class LogDetailViewController: PulleyDrawerViewController {
     @IBOutlet weak var textViewHeight: NSLayoutConstraint!
     
     var detailPresentable: LogDetailPresentable!
-    private var detailTextAttributes: [NSAttributedStringKey: Any]!
+    private lazy var detailTextAttributes: [NSAttributedStringKey: Any] = {
+        var attributes = textView.attributedText.attributes(at: 0, effectiveRange: nil)
+        let paragraphStyle = NSParagraphStyle.default.mutableCopy() as! NSMutableParagraphStyle
+        let location = textView.bounds.width - textView.textContainer.lineFragmentPadding * 2
+        paragraphStyle.tabStops = [NSTextTab(textAlignment: .right, location: location)]
+        attributes[.paragraphStyle] = paragraphStyle
+        return attributes
+    }()
     private var valueRepresentation = NutritionKind.ValueRepresentation.real
     
     override func viewWillAppear(_ animated: Bool) {
@@ -26,15 +33,6 @@ class LogDetailViewController: PulleyDrawerViewController {
         subtitleLabel.text = detailPresentable.logDetailSubtitle
         tagsView.subviews.forEach { $0.removeFromSuperview() }
         detailPresentable.fillTagView(tagsView)
-        
-        if detailTextAttributes == nil {
-            detailTextAttributes = textView.attributedText.attributes(at: 0, effectiveRange: nil)
-            let paragraphStyle = NSParagraphStyle.default.mutableCopy() as! NSMutableParagraphStyle
-            let location = textView.bounds.width - textView.textContainer.lineFragmentPadding * 2
-            paragraphStyle.tabStops = [NSTextTab(textAlignment: .right, location: location)]
-            detailTextAttributes[.paragraphStyle] = paragraphStyle
-        }
-        
         resetLogDetailText()
         
         textViewHeight.constant = textView.sizeThatFits(CGSize(width: 0, height: CGFloat.greatestFiniteMagnitude)).height
@@ -88,14 +86,20 @@ extension Food: LogDetailPresentable {
     }
     
     func makeDetailText(_ representation: NutritionKind.ValueRepresentation) -> String {
-        return "Per \(measurementUnit.singular):\n" + NutritionPrinter(self, representation, { $0 }).print
+        let servingText: String
+        if servingSizeUnit != .none, servingSize > 0.0, let pretty = servingSize.pretty {
+            servingText = "Per Serving (\(pretty+servingSizeUnit.suffix)):\n"
+        } else {
+            servingText = "Per Serving:\n"
+        }
+        return servingText + makeNutritionText(representation, { $0 })
     }
 }
 
 extension FoodEntry: LogDetailPresentable {
     var logDetailTitle: String {
         guard let food = food, let measurementString = measurementString else { return "Error: No Information" }
-        return "\(measurementString)\(food.measurementUnit.longSuffix) \(food.name)"
+        return "\(measurementString)\(measurementUnit.detailSuffix) \(food.name)"
     }
     var logDetailSubtitle: String {
         return date.mediumDateShortTimeString
@@ -110,71 +114,64 @@ extension FoodEntry: LogDetailPresentable {
     }
     
     func makeDetailText(_ representation: NutritionKind.ValueRepresentation) -> String {
-        guard let food = food else { return "Error: No Information\n" }
-        return NutritionPrinter(food, representation, { [measurementFloat] in $0 * measurementFloat }).print
-    }
-}
-
-private struct NutritionPrinter {
-    var print: String {
-        var str = ""
-        str += makeLine(.calories, food.calories)
-        str += makeLine(.totalFat, food.totalFat)
-        str += makeLine(.saturatedFat, food.saturatedFat)
-        str += makeLine(.monounsaturatedFat, food.monounsaturatedFat)
-        str += makeLine(.polyunsaturatedFat, food.polyunsaturatedFat)
-        str += makeLine(.transFat, food.transFat)
-        str += makeLine(.cholesterol, food.cholesterol)
-        str += makeLine(.sodium, food.sodium)
-        str += makeLine(.totalCarbohydrate, food.totalCarbohydrate)
-        str += makeLine(.dietaryFiber, food.dietaryFiber)
-        str += makeLine(.sugars, food.sugars)
-        str += makeLine(.protein, food.protein)
-        str += makeLine(.vitaminA, food.vitaminA)
-        str += makeLine(.vitaminB6, food.vitaminB6)
-        str += makeLine(.vitaminB12, food.vitaminB12)
-        str += makeLine(.vitaminC, food.vitaminC)
-        str += makeLine(.vitaminD, food.vitaminD)
-        str += makeLine(.vitaminE, food.vitaminE)
-        str += makeLine(.vitaminK, food.vitaminK)
-        str += makeLine(.calcium, food.calcium)
-        str += makeLine(.iron, food.iron)
-        str += makeLine(.magnesium, food.magnesium)
-        str += makeLine(.potassium, food.potassium)
-        return str == "" ? "No Information\n" : str
-    }
-    private let food: Food
-    private let makeLine: (NutritionKind, Float) -> String
-    
-    init(_ food: Food, _ representation: NutritionKind.ValueRepresentation, _ transform: @escaping (Float) -> Float) {
-        self.food = food
-        switch representation {
-        case .percentage:
-            makeLine = { kind, real in
-                guard real != 0.0 else { return "" }
-                if let percentage = real.dailyValuePercentageFromReal(kind) {
-                    return kind.description+"\t"+transform(percentage).pretty!+"%\n"
-                } else {
-                    return kind.description+"\t"+transform(real).pretty!+kind.unit.suffix+"\n"
-                }
-            }
-        case .real:
-            makeLine = { kind, real in
-                guard real != 0.0 else { return "" }
-                return kind.description+"\t"+transform(real).pretty!+kind.unit.suffix+"\n"
-            }
+        guard let food = food else { return "Error: No Information" }
+        do {
+            let factor = try conversionFactor()
+            return food.makeNutritionText(representation, { $0 * factor })
+        } catch ConversionError.illegal {
+            return "Error: Could not convert from \(measurementUnit) to \(food.servingSizeUnit)"
+        } catch ConversionError.zeroServingSize {
+            return "Error: Serving size can not be 0 \(food.servingSizeUnit)"
+        } catch {
+            fatalError()
         }
     }
 }
 
-extension Food.MeasurementUnit {
-    fileprivate var longSuffix: String {
+extension Food {
+    /// - parameters:
+    ///   - transform: Block to convert nutrition's value per serving
+    fileprivate func makeNutritionText(_ representation: NutritionKind.ValueRepresentation,
+                                       _ transform: @escaping (Float) -> Float) -> String
+    {
+        let makeLine: (NutritionKind) -> String?
+        switch representation {
+        case .percentage:
+            makeLine = {
+                let real = self[keyPath: $0.keyPath]
+                guard real != 0.0 else { return nil }
+                if let percentage = real.dailyValuePercentageFromReal($0) {
+                    return $0.title+"\t"+transform(percentage).pretty!+"%"
+                } else {
+                    return $0.title+"\t"+transform(real).pretty!+$0.unit.suffix
+                }
+            }
+        case .real:
+            makeLine = {
+                let real = self[keyPath: $0.keyPath]
+                guard real != 0.0 else { return nil }
+                return $0.title+"\t"+transform(real).pretty!+$0.unit.suffix
+            }
+        }
+        let str = [NutritionKind.calories, .totalFat, .saturatedFat, .monounsaturatedFat, .polyunsaturatedFat,
+                   .transFat, .cholesterol, .sodium, .totalCarbohydrate, .dietaryFiber, .sugars, .protein, .biotin,
+                   .caffeine, .calcium, .chloride, .chromium, .copper, .folate, .iodine, .iron, .magnesium,
+                   .manganese, .molybdenum, .niacin, .pantothenicAcid, .phosphorus, .potassium, .riboflavin,
+                   .selenium, .thiamin, .vitaminA, .vitaminB6, .vitaminB12, .vitaminC, .vitaminD, .vitaminE,
+                   .vitaminK, .zinc]
+            .compactMap(makeLine).joined(separator: "\n")
+        return str == "" ? "No Information" : str
+    }
+}
+
+extension Food.Unit {
+    fileprivate var detailSuffix: String {
         switch self {
-        case .serving:      return "×"
-        case .milligram:    return " mg"
+        case .none:         return "×"
         case .gram:         return " g"
+        case .milligram:    return " mg"
         case .ounce:        return " oz"
-        case .pound:        return " lb"
+        case .milliliter:   return " mL"
         case .fluidOunce:   return " oz"
         }
     }

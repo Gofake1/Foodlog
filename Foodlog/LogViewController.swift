@@ -9,7 +9,8 @@
 import RealmSwift
 import UIKit
 
-class LogViewController: UIViewController {
+// TODO: Bold title of foods
+final class LogViewController: UIViewController {
     @IBOutlet weak var tableView: UITableView!
     
     private var currentLogTableController: Either<LogTableController>!
@@ -89,7 +90,7 @@ private class LogTableController: NSObject {
     func tearDown() {}
 }
 
-private class DefaultLogTableController: LogTableController {
+private final class DefaultLogTableController: LogTableController {
     private var daysChangeToken: NotificationToken!
     private let sortedDays = DataStore.days.sorted(byKeyPath: #keyPath(Day.startOfDay), ascending: false)
 
@@ -133,7 +134,7 @@ extension DefaultLogTableController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath) as! DetailSubtitleTableViewCell
         let foodEntry = sortedDays[indexPath.section].sortedFoodEntries[indexPath.row]
-        cell.displaysFraction = foodEntry.measurementValueRepresentation == .fraction
+        cell.displaysFraction = foodEntry.measurementRepresentation == .fraction
         cell.titleLabel?.text = foodEntry.food?.name ?? "Unnamed"
         cell.subtitleLabel?.attributedText = ([(foodEntry.date.noDateShortTimeString, UIColor.darkText)] +
             foodEntry.tags.prefix(5).map { ($0.name, $0.color) }).attributedString
@@ -147,8 +148,10 @@ extension DefaultLogTableController: UITableViewDataSource {
         let day = sortedDays[indexPath.section]
         let foodEntry = day.sortedFoodEntries[indexPath.row]
         let (objects, delete) = day.foodEntries.count <= 1 ?
-            ([foodEntry, day], { tableView.deleteSections(.init([indexPath.section]), with: .automatic)}) :
-            ([foodEntry], { tableView.deleteRows(at: [indexPath], with: .automatic )})
+            (foodEntry.objectsToDelete + [day], {
+                tableView.deleteSections(.init([indexPath.section]), with: .automatic)}) :
+            (foodEntry.objectsToDelete, {
+                tableView.deleteRows(at: [indexPath], with: .automatic )})
         let hkIds = [foodEntry.id]
         let ckIds = [foodEntry.ckRecordId]
         DataStore.delete(objects, withoutNotifying: [daysChangeToken]) {
@@ -195,7 +198,7 @@ extension Day {
     }
 }
 
-private class FilteredLogTableController: LogTableController {
+private final class FilteredLogTableController: LogTableController {
     private weak var tableView: UITableView!
     private var tableData = [AnyRandomAccessCollection<AnyFilteredResult>]()
     private var tableDataChangeTokens = [NotificationToken]()
@@ -364,7 +367,7 @@ extension Food: FilteredResultType {
                 if let error = $0 {
                     completionHandler(error)
                 } else {
-                    DataStore.delete(days.filter { $0.foodEntries.count == 0 }) {
+                    DataStore.delete(days.filter { $0.foodEntries.isEmpty }) {
                         if let error = $0 {
                             completionHandler(error)
                         } else {
@@ -396,7 +399,7 @@ extension FoodEntry: FilteredResultType {
         return measurementLabelText ?? "?"
     }
     fileprivate var filteredDetailDisplaysFraction: Bool {
-        return measurementValueRepresentation == .fraction
+        return measurementRepresentation == .fraction
     }
     fileprivate var filteredTitle: String {
         return food!.name
@@ -427,7 +430,7 @@ extension FoodEntry: FilteredResultType {
     }
 }
 
-class DetailSubtitleTableViewCell: UITableViewCell {
+final class DetailSubtitleTableViewCell: UITableViewCell {
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var detailLabel: UILabel! {
         didSet {
@@ -464,19 +467,19 @@ class DetailSubtitleTableViewCell: UITableViewCell {
 
 extension FoodEntry {
     fileprivate var measurementLabelText: String? {
-        guard let food = food, let measurementString = measurementString else { return nil }
-        return measurementString+food.measurementUnit.shortSuffix
+        guard let measurementString = measurementString else { return nil }
+        return measurementString+measurementUnit.shortSuffix
     }
 }
 
-extension Food.MeasurementUnit {
+extension Food.Unit {
     fileprivate var shortSuffix: String {
         switch self {
-        case .serving:      return ""
-        case .milligram:    return " mg"
+        case .none:         return ""
         case .gram:         return " g"
+        case .milligram:    return " mg"
         case .ounce:        return " oz"
-        case .pound:        return " lb"
+        case .milliliter:   return " mL"
         case .fluidOunce:   return " oz"
         }
     }

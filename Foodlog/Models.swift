@@ -9,7 +9,7 @@
 import Foundation
 import RealmSwift
 
-// View controller helpers
+// MARK: - View controller helpers
 
 /// - returns: `Day` instance that is associated with the date. Creates a new instance if it doesn't exist.
 func _correctDay(startOfDay: Date) -> Day {
@@ -24,6 +24,8 @@ func _correctDay(startOfDay: Date) -> Day {
 func _deleteFood(_ food: Food) -> ([FoodEntry], [Object], Set<Day>) {
     return (Array(food.entries), food.objectsToDelete, Set(food.entries.map { $0.day }))
 }
+
+// MARK: -
 
 final class CloudKitRecord: Object {
     enum Kind: Int {
@@ -80,20 +82,20 @@ final class SearchSuggestion: Object {
 
 final class Tag: Object {
     enum ColorCode: Int {
-        case lightGray  = 0
-        case red        = 1
-        case orange     = 2
-        case yellow     = 3
-        case green      = 4
-        case blue       = 5
-        case purple     = 6
+        case gray   = 0
+        case red    = 1
+        case orange = 2
+        case yellow = 3
+        case green  = 4
+        case blue   = 5
+        case purple = 6
     }
     
     @objc dynamic var id = UUID().uuidString
     @objc dynamic var localCKRecord: CloudKitRecord?
     @objc dynamic var searchSuggestion: SearchSuggestion?
     @objc dynamic var name = ""
-    @objc dynamic var colorCodeRaw = ColorCode.lightGray.rawValue
+    @objc dynamic var colorCodeRaw = ColorCode.gray.rawValue
     let foods       = LinkingObjects(fromType: Food.self, property: "tags")
     let foodEntries = LinkingObjects(fromType: FoodEntry.self, property: "tags")
     var colorCode: ColorCode {
@@ -111,12 +113,12 @@ final class Tag: Object {
 }
 
 final class Food: Object {
-    enum MeasurementUnit: Int {
-        case serving    = 0
-        case milligram  = 1
-        case gram       = 2
+    enum Unit: Int {
+        case none       = 0
+        case gram       = 1
+        case milligram  = 2
         case ounce      = 3
-        case pound      = 4
+        case milliliter = 4
         case fluidOunce = 5
     }
     
@@ -124,55 +126,54 @@ final class Food: Object {
     @objc dynamic var localCKRecord: CloudKitRecord?
     @objc dynamic var searchSuggestion: SearchSuggestion?
     @objc dynamic var name = ""
-    @objc dynamic var measurementUnitRaw = MeasurementUnit.serving.rawValue
-    @objc dynamic var calories = Float(0.0)
-    @objc dynamic var totalFat = Float(0.0)
-    @objc dynamic var saturatedFat = Float(0.0)
-    @objc dynamic var monounsaturatedFat = Float(0.0)
-    @objc dynamic var polyunsaturatedFat = Float(0.0)
-    @objc dynamic var transFat = Float(0.0)
-    @objc dynamic var cholesterol = Float(0.0)
-    @objc dynamic var sodium = Float(0.0)
-    @objc dynamic var totalCarbohydrate = Float(0.0)
-    @objc dynamic var dietaryFiber = Float(0.0)
-    @objc dynamic var sugars = Float(0.0)
-    @objc dynamic var protein = Float(0.0)
-    @objc dynamic var vitaminA = Float(0.0)
-    @objc dynamic var vitaminB6 = Float(0.0)
-    @objc dynamic var vitaminB12 = Float(0.0)
-    @objc dynamic var vitaminC = Float(0.0)
-    @objc dynamic var vitaminD = Float(0.0)
-    @objc dynamic var vitaminE = Float(0.0)
-    @objc dynamic var vitaminK = Float(0.0)
-    @objc dynamic var calcium = Float(0.0)
-    @objc dynamic var iron = Float(0.0)
-    @objc dynamic var magnesium = Float(0.0)
-    @objc dynamic var potassium = Float(0.0)
+    @objc dynamic var servingSize = Float(0.0)
+    @objc dynamic var servingSizeUnitRaw = Unit.none.rawValue
+    @objc dynamic var biotin                = Float(0.0)
+    @objc dynamic var caffeine              = Float(0.0)
+    @objc dynamic var calcium               = Float(0.0)
+    @objc dynamic var calories              = Float(0.0)
+    @objc dynamic var chloride              = Float(0.0)
+    @objc dynamic var cholesterol           = Float(0.0)
+    @objc dynamic var chromium              = Float(0.0)
+    @objc dynamic var copper                = Float(0.0)
+    @objc dynamic var dietaryFiber          = Float(0.0)
+    @objc dynamic var folate                = Float(0.0)
+    @objc dynamic var iodine                = Float(0.0)
+    @objc dynamic var iron                  = Float(0.0)
+    @objc dynamic var magnesium             = Float(0.0)
+    @objc dynamic var manganese             = Float(0.0)
+    @objc dynamic var molybdenum            = Float(0.0)
+    @objc dynamic var monounsaturatedFat    = Float(0.0)
+    @objc dynamic var niacin                = Float(0.0)
+    @objc dynamic var pantothenicAcid       = Float(0.0)
+    @objc dynamic var phosphorus            = Float(0.0)
+    @objc dynamic var polyunsaturatedFat    = Float(0.0)
+    @objc dynamic var potassium             = Float(0.0)
+    @objc dynamic var protein               = Float(0.0)
+    @objc dynamic var riboflavin            = Float(0.0)
+    @objc dynamic var saturatedFat          = Float(0.0)
+    @objc dynamic var selenium              = Float(0.0)
+    @objc dynamic var sodium                = Float(0.0)
+    @objc dynamic var sugars                = Float(0.0)
+    @objc dynamic var thiamin               = Float(0.0)
+    @objc dynamic var totalCarbohydrate     = Float(0.0)
+    @objc dynamic var totalFat              = Float(0.0)
+    @objc dynamic var transFat              = Float(0.0)
+    @objc dynamic var vitaminA              = Float(0.0)
+    @objc dynamic var vitaminB6             = Float(0.0)
+    @objc dynamic var vitaminB12            = Float(0.0)
+    @objc dynamic var vitaminC              = Float(0.0)
+    @objc dynamic var vitaminD              = Float(0.0)
+    @objc dynamic var vitaminE              = Float(0.0)
+    @objc dynamic var vitaminK              = Float(0.0)
+    @objc dynamic var zinc                  = Float(0.0)
     let entries      = LinkingObjects(fromType: FoodEntry.self, property: "food")
     let servingPairs = LinkingObjects(fromType: FoodServingPair.self, property: "food")
     let tags         = List<Tag>()
-    var measurementUnit: MeasurementUnit {
-        get { return MeasurementUnit(rawValue: measurementUnitRaw)! }
-        set { measurementUnitRaw = newValue.rawValue }
+    var servingSizeUnit: Unit {
+        get { return Unit(rawValue: servingSizeUnitRaw)! }
+        set { servingSizeUnitRaw = newValue.rawValue }
     }
-    
-    // HealthKit future-proofing, currently unused
-    @objc dynamic var biotin = Float(0.0)
-    @objc dynamic var caffeine = Float(0.0)
-    @objc dynamic var chloride = Float(0.0)
-    @objc dynamic var chromium = Float(0.0)
-    @objc dynamic var copper = Float(0.0)
-    @objc dynamic var folate = Float(0.0)
-    @objc dynamic var iodine = Float(0.0)
-    @objc dynamic var manganese = Float(0.0)
-    @objc dynamic var molybdenum = Float(0.0)
-    @objc dynamic var niacin = Float(0.0)
-    @objc dynamic var pantothenicAcid = Float(0.0)
-    @objc dynamic var phosphorus = Float(0.0)
-    @objc dynamic var riboflavin = Float(0.0)
-    @objc dynamic var selenium = Float(0.0)
-    @objc dynamic var thiamin = Float(0.0)
-    @objc dynamic var zinc = Float(0.0)
     
     override static func indexedProperties() -> [String] {
         return ["name"]
@@ -184,7 +185,12 @@ final class Food: Object {
 }
 
 final class FoodEntry: Object {
-    enum MeasurementValueRepresentation: Int {
+    enum ConversionError: Error {
+        case illegal
+        case zeroServingSize
+    }
+    
+    enum MeasurementRepresentation: Int {
         case decimal    = 0
         case fraction   = 1
     }
@@ -193,27 +199,29 @@ final class FoodEntry: Object {
     @objc dynamic var localCKRecord: CloudKitRecord?
     @objc dynamic var date = Date().roundedToNearestHalfHour
     @objc dynamic var food: Food?
-    @objc dynamic var measurementValueRepresentationRaw = MeasurementValueRepresentation.decimal.rawValue
-    @objc dynamic var measurementValue = Data(Float(0.0))
+    @objc dynamic var measurement = Data(Float(0.0))
+    @objc dynamic var measurementRepresentationRaw = MeasurementRepresentation.decimal.rawValue
+    @objc dynamic var measurementUnitRaw = Food.Unit.none.rawValue
     let days = LinkingObjects(fromType: Day.self, property: "foodEntries")
     let tags = List<Tag>()
     var day: Day {
         return days[0]
     }
-    var measurementValueRepresentation: MeasurementValueRepresentation {
-        get { return MeasurementValueRepresentation(rawValue: measurementValueRepresentationRaw)! }
-        set { measurementValueRepresentationRaw = newValue.rawValue }
-    }
-    var measurementFloat: Float {
-        switch measurementValueRepresentation {
-        case .decimal:  return measurementValue.to(Float.self)
-        case .fraction: return Fraction.decode(from: measurementValue)?.floatValue ?? 0.0
-        }
-    }
     var measurementString: String? {
-        switch measurementValueRepresentation {
-        case .decimal:  return measurementValue.to(Float.self).pretty
-        case .fraction: return Fraction.decode(from: measurementValue)?.description
+        return measurement.string(from: measurementRepresentation)
+    }
+    var measurementRepresentation: MeasurementRepresentation {
+        get { return MeasurementRepresentation(rawValue: measurementRepresentationRaw)! }
+        set { measurementRepresentationRaw = newValue.rawValue }
+    }
+    var measurementUnit: Food.Unit {
+        get { return Food.Unit(rawValue: measurementUnitRaw)! }
+        set { measurementUnitRaw = newValue.rawValue }
+    }
+    private var measurementFloat: Float {
+        switch measurementRepresentation {
+        case .decimal:  return measurement.to(Float.self)
+        case .fraction: return Fraction.decode(from: measurement)?.floatValue ?? 0.0
         }
     }
     
@@ -223,6 +231,31 @@ final class FoodEntry: Object {
     
     override static func primaryKey() -> String? {
         return "id"
+    }
+    
+    func conversionFactor() throws -> Float {
+        if measurementUnit == .none {
+            return measurementFloat
+        }
+        guard food!.servingSize > 0.0 else { throw ConversionError.zeroServingSize }
+        switch (measurementUnit, food!.servingSizeUnit) {
+        case (.gram, .gram):                fallthrough
+        case (.milligram, .milligram):      fallthrough
+        case (.ounce, .ounce):              fallthrough
+        case (.milliliter, .milliliter):    fallthrough
+        case (.fluidOunce, .fluidOunce):
+            return measurementFloat
+        case (.gram, .milligram):           return 1000.0 * measurementFloat
+        case (.gram, .ounce):               return 28.3495 * measurementFloat
+        case (.milligram, .gram):           return 0.001 * measurementFloat
+        case (.milligram, .ounce):          return 0.000035274 * measurementFloat
+        case (.ounce, .gram):               return 0.035274 * measurementFloat
+        case (.ounce, .milligram):          return 28349.5 * measurementFloat
+        case (.milliliter, .fluidOunce):    return 29.5735 * measurementFloat
+        case (.fluidOunce, .milliliter):    return 0.033814 * measurementFloat
+        default:
+            throw ConversionError.illegal
+        }
     }
 }
 
@@ -282,7 +315,8 @@ protocol CascadeDeletable {
 
 extension Food: CascadeDeletable {
     var objectsToDelete: [Object] {
-        return [localCKRecord!, searchSuggestion!, self] + Array(entries) as [Object] + Array(servingPairs) as [Object]
+        return [localCKRecord!, searchSuggestion!, self] + entries.flatMap { $0.objectsToDelete }
+            + Array(servingPairs) as [Object]
     }
 }
 

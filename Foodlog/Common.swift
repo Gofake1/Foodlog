@@ -63,6 +63,13 @@ extension Data {
         var value = value
         self.init(buffer: UnsafeBufferPointer(start: &value, count: 1))
     }
+    
+    func string(from representation: FoodEntry.MeasurementRepresentation) -> String? {
+        switch representation {
+        case .decimal:  return to(Float.self).pretty
+        case .fraction: return Fraction.decode(from: self)?.description
+        }
+    }
         
     func to<T>(_ type: T.Type) -> T {
         return withUnsafeBytes { $0.pointee }
@@ -104,15 +111,15 @@ extension Float {
     }
 }
 
-extension Food.MeasurementUnit {
-    var singular: String {
+extension Food.Unit {
+    var suffix: String {
         switch self {
-        case .serving:      return "Serving"
-        case .milligram:    return "Milligram"
-        case .gram:         return "Gram"
-        case .ounce:        return "Ounce"
-        case .pound:        return "Pound"
-        case .fluidOunce:   return "Fluid Oz."
+        case .none:         return ""
+        case .gram:         return " g"
+        case .milligram:    return " mg"
+        case .ounce:        return " oz"
+        case .milliliter:   return " mL"
+        case .fluidOunce:   return " fl oz"
         }
     }
 }
@@ -191,6 +198,7 @@ final class NetworkReachability {
     }
 }
 
+// TODO: Convert IU to mcg
 enum NutritionKind {
     enum Unit: Int {
         case calorie    = 0
@@ -208,23 +216,42 @@ enum NutritionKind {
         }
     }
     
-    enum ValueRepresentation: Int {
-        case percentage = 0
-        case real       = 1
+    enum ValueRepresentation {
+        case percentage
+        case real
     }
     
+    case biotin
+    case caffeine
+    case calcium
     case calories
-    case totalFat
-    case saturatedFat
-    case monounsaturatedFat
-    case polyunsaturatedFat
-    case transFat
+    case chloride
     case cholesterol
-    case sodium
-    case totalCarbohydrate
+    case chromium
+    case copper
     case dietaryFiber
-    case sugars
+    case folate
+    case iodine
+    case iron
+    case magnesium
+    case manganese
+    case molybdenum
+    case monounsaturatedFat
+    case niacin
+    case pantothenicAcid
+    case phosphorus
+    case polyunsaturatedFat
+    case potassium
     case protein
+    case riboflavin
+    case saturatedFat
+    case selenium
+    case sodium
+    case sugars
+    case thiamin
+    case totalCarbohydrate
+    case totalFat
+    case transFat
     case vitaminA
     case vitaminB6
     case vitaminB12
@@ -232,109 +259,84 @@ enum NutritionKind {
     case vitaminD
     case vitaminE
     case vitaminK
-    case calcium
-    case iron
-    case magnesium
-    case potassium
+    case zinc
     
     var dailyValueReal: Float? {
         switch self {
+        case .biotin:               return 300
+        case .caffeine:             return nil
+        case .calcium:              return 1000
         case .calories:             return 2000
-        case .totalFat:             return 78
-        case .saturatedFat:         return 20
-        case .monounsaturatedFat:   return nil
-        case .polyunsaturatedFat:   return nil
-        case .transFat:             return nil
+        case .chloride:             return 3400
         case .cholesterol:          return 300
-        case .sodium:               return 2300
-        case .totalCarbohydrate:    return 275
-        case .dietaryFiber:         return 28
-        case .sugars:               return 50
-        case .protein:              return 50
-        case .vitaminA:             return 900
-        case .vitaminB6:            return 1.7
-        case .vitaminB12:           return 2.4
-        case .vitaminC:             return 90
-        case .vitaminD:             return 20
-        case .vitaminE:             return 15
-        case .vitaminK:             return 120
-        case .calcium:              return 1300
+        case .chromium:             return 120
+        case .copper:               return 2
+        case .dietaryFiber:         return 25
+        case .folate:               return 400
+        case .iodine:               return 150
         case .iron:                 return 18
-        case .magnesium:            return 420
-        case .potassium:            return 4700
+        case .magnesium:            return 400
+        case .manganese:            return 2
+        case .molybdenum:           return 75
+        case .monounsaturatedFat:   return nil
+        case .niacin:               return 20
+        case .pantothenicAcid:      return 10
+        case .phosphorus:           return 1000
+        case .polyunsaturatedFat:   return nil
+        case .potassium:            return 3500
+        case .protein:              return 50
+        case .riboflavin:           return 1.7
+        case .saturatedFat:         return 20
+        case .selenium:             return 70
+        case .sodium:               return 2400
+        case .sugars:               return 50
+        case .thiamin:              return 1.5
+        case .totalCarbohydrate:    return 300
+        case .totalFat:             return 65
+        case .transFat:             return nil
+        case .vitaminA:             return nil // Was 900 mcg, should be 5000 IU
+        case .vitaminB6:            return 2
+        case .vitaminB12:           return 6
+        case .vitaminC:             return 60
+        case .vitaminD:             return nil // Was 20 mcg, should be 400 IU
+        case .vitaminE:             return nil // Was 15 mcg, should be 30 IU
+        case .vitaminK:             return 80
+        case .zinc:                 return 15
         }
     }
-    var unit: Unit {
+    var title: String {
         switch self {
-        case .calories:             return .calorie
-        case .totalFat:             return .gram
-        case .saturatedFat:         return .gram
-        case .monounsaturatedFat:   return .gram
-        case .polyunsaturatedFat:   return .gram
-        case .transFat:             return .gram
-        case .cholesterol:          return .milligram
-        case .sodium:               return .milligram
-        case .totalCarbohydrate:    return .gram
-        case .dietaryFiber:         return .gram
-        case .sugars:               return .gram
-        case .protein:              return .gram
-        case .vitaminA:             return .microgram
-        case .vitaminB6:            return .milligram
-        case .vitaminB12:           return .microgram
-        case .vitaminC:             return .milligram
-        case .vitaminD:             return .microgram
-        case .vitaminE:             return .milligram
-        case .vitaminK:             return .microgram
-        case .calcium:              return .milligram
-        case .iron:                 return .milligram
-        case .magnesium:            return .milligram
-        case .potassium:            return .milligram
-        }
-    }
-    var keyPath: ReferenceWritableKeyPath<Food, Float> {
-        switch self {
-        case .calories:             return \.calories
-        case .totalFat:             return \.totalFat
-        case .saturatedFat:         return \.saturatedFat
-        case .monounsaturatedFat:   return \.monounsaturatedFat
-        case .polyunsaturatedFat:   return \.polyunsaturatedFat
-        case .transFat:             return \.transFat
-        case .cholesterol:          return \.cholesterol
-        case .sodium:               return \.sodium
-        case .totalCarbohydrate:    return \.totalCarbohydrate
-        case .dietaryFiber:         return \.dietaryFiber
-        case .sugars:               return \.sugars
-        case .protein:              return \.protein
-        case .vitaminA:             return \.vitaminA
-        case .vitaminB6:            return \.vitaminB6
-        case .vitaminB12:           return \.vitaminB12
-        case .vitaminC:             return \.vitaminC
-        case .vitaminD:             return \.vitaminD
-        case .vitaminE:             return \.vitaminE
-        case .vitaminK:             return \.vitaminK
-        case .calcium:              return \.calcium
-        case .iron:                 return \.iron
-        case .magnesium:            return \.magnesium
-        case .potassium:            return \.potassium
-        }
-    }
-}
-
-extension NutritionKind: CustomStringConvertible {
-    var description: String {
-        switch self {
+        case .biotin:               return "Biotin"
+        case .caffeine:             return "Caffeine"
+        case .calcium:              return "Calcium"
         case .calories:             return "Calories"
-        case .totalFat:             return "Total Fat"
-        case .saturatedFat:         return "Saturated Fat"
-        case .monounsaturatedFat:   return "Monounsaturated Fat"
-        case .polyunsaturatedFat:   return "Polyunsaturated Fat"
-        case .transFat:             return "Trans Fat"
+        case .chloride:             return "Chloride"
         case .cholesterol:          return "Cholesterol"
-        case .sodium:               return "Sodium"
-        case .totalCarbohydrate:    return "Total Carbohydrate"
+        case .chromium:             return "Chromium"
+        case .copper:               return "Copper"
         case .dietaryFiber:         return "Dietary Fiber"
-        case .sugars:               return "Sugars"
+        case .folate:               return "Folate"
+        case .iodine:               return "Iodine"
+        case .iron:                 return "Iron"
+        case .magnesium:            return "Magnesium"
+        case .manganese:            return "Manganese"
+        case .molybdenum:           return "Molybdenum"
+        case .monounsaturatedFat:   return "Monounsaturated Fat"
+        case .niacin:               return "Niacin"
+        case .pantothenicAcid:      return "Pantothenic Acid"
+        case .phosphorus:           return "Phosphorus"
+        case .polyunsaturatedFat:   return "Polyunsaturated Fat"
+        case .potassium:            return "Potassium"
         case .protein:              return "Protein"
+        case .riboflavin:           return "Riboflavin"
+        case .saturatedFat:         return "Saturated Fat"
+        case .selenium:             return "Selenium"
+        case .sodium:               return "Sodium"
+        case .sugars:               return "Sugars"
+        case .thiamin:              return "Thiamin"
+        case .totalCarbohydrate:    return "Total Carbohydrate"
+        case .totalFat:             return "Total Fat"
+        case .transFat:             return "Trans Fat"
         case .vitaminA:             return "Vitamin A"
         case .vitaminB6:            return "Vitamin B6"
         case .vitaminB12:           return "Vitamin B12"
@@ -342,10 +344,93 @@ extension NutritionKind: CustomStringConvertible {
         case .vitaminD:             return "Vitamin D"
         case .vitaminE:             return "Vitamin E"
         case .vitaminK:             return "Vitamin K"
-        case .calcium:              return "Calcium"
-        case .iron:                 return "Iron"
-        case .magnesium:            return "Magnesium"
-        case .potassium:            return "Potassium"
+        case .zinc:                 return "Zinc"
+        }
+    }
+    var keyPath: ReferenceWritableKeyPath<Food, Float> {
+        switch self {
+        case .biotin:               return \.biotin
+        case .caffeine:             return \.caffeine
+        case .calcium:              return \.calcium
+        case .calories:             return \.calories
+        case .chloride:             return \.chloride
+        case .cholesterol:          return \.cholesterol
+        case .chromium:             return \.chromium
+        case .copper:               return \.copper
+        case .dietaryFiber:         return \.dietaryFiber
+        case .folate:               return \.folate
+        case .iodine:               return \.iodine
+        case .iron:                 return \.iron
+        case .magnesium:            return \.magnesium
+        case .manganese:            return \.manganese
+        case .molybdenum:           return \.molybdenum
+        case .monounsaturatedFat:   return \.monounsaturatedFat
+        case .niacin:               return \.niacin
+        case .pantothenicAcid:      return \.pantothenicAcid
+        case .phosphorus:           return \.phosphorus
+        case .polyunsaturatedFat:   return \.polyunsaturatedFat
+        case .potassium:            return \.potassium
+        case .protein:              return \.protein
+        case .riboflavin:           return \.riboflavin
+        case .saturatedFat:         return \.saturatedFat
+        case .selenium:             return \.selenium
+        case .sodium:               return \.sodium
+        case .sugars:               return \.sugars
+        case .thiamin:              return \.thiamin
+        case .totalCarbohydrate:    return \.totalCarbohydrate
+        case .totalFat:             return \.totalFat
+        case .transFat:             return \.transFat
+        case .vitaminA:             return \.vitaminA
+        case .vitaminB6:            return \.vitaminB6
+        case .vitaminB12:           return \.vitaminB12
+        case .vitaminC:             return \.vitaminC
+        case .vitaminD:             return \.vitaminD
+        case .vitaminE:             return \.vitaminE
+        case .vitaminK:             return \.vitaminK
+        case .zinc:                 return \.zinc
+        }
+    }
+    var unit: Unit {
+        switch self {
+        case .biotin:               return .microgram
+        case .caffeine:             return .milligram
+        case .calcium:              return .milligram
+        case .calories:             return .calorie
+        case .chloride:             return .milligram
+        case .cholesterol:          return .milligram
+        case .chromium:             return .microgram
+        case .copper:               return .milligram
+        case .dietaryFiber:         return .gram
+        case .folate:               return .microgram
+        case .iodine:               return .microgram
+        case .iron:                 return .milligram
+        case .magnesium:            return .milligram
+        case .manganese:            return .milligram
+        case .molybdenum:           return .microgram
+        case .monounsaturatedFat:   return .gram
+        case .niacin:               return .milligram
+        case .pantothenicAcid:      return .milligram
+        case .phosphorus:           return .milligram
+        case .polyunsaturatedFat:   return .gram
+        case .potassium:            return .milligram
+        case .protein:              return .gram
+        case .riboflavin:           return .milligram
+        case .saturatedFat:         return .gram
+        case .selenium:             return .microgram
+        case .sodium:               return .milligram
+        case .sugars:               return .gram
+        case .thiamin:              return .milligram
+        case .totalCarbohydrate:    return .gram
+        case .totalFat:             return .gram
+        case .transFat:             return .gram
+        case .vitaminA:             return .microgram
+        case .vitaminB6:            return .milligram
+        case .vitaminB12:           return .microgram
+        case .vitaminC:             return .milligram
+        case .vitaminD:             return .microgram
+        case .vitaminE:             return .milligram
+        case .vitaminK:             return .microgram
+        case .zinc:                 return .milligram
         }
     }
 }
@@ -364,8 +449,14 @@ final class Ref<T> {
 }
 
 extension String {
-    var dateFromShortDateShortTime: Date? {
-        return _shortDateShortTime.date(from: self)
+    var isValidForDecimalOrFractionalInput: Bool {
+        for character in self {
+            switch character {
+            case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".", ",", "/": continue
+            default: return false
+            }
+        }
+        return true
     }
     
     init<A: FloatingPoint>(dropDecimalIfZero floatingPoint: A) {

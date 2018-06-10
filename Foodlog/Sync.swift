@@ -6,6 +6,9 @@
 //  Copyright © 2018 Gofake1. All rights reserved.
 //
 
+// Workaround: CloudKit JIT schema can't infer `Food.tags`, `FoodEntry.food`, `FoodEntry.tags` as `CKReference`s.
+// Set up those fields manually in CloudKit dashboard.
+
 import CloudKit
 import HealthKit.HKObject
 import RealmSwift
@@ -26,6 +29,8 @@ final class Sync {
     
     /// - precondition: Must be called on Realm's thread (aka main)
     func process(completion completionHandler: @escaping (Error?) -> ()) {
+        guard recordsToChange.count > 0 || recordIdsToDelete.count > 0 else { return }
+        
         func tagToChangeForRecord(_ record: CKRecord) -> Object {
             let tag: Tag
             if let _tag = DataStore.object(Tag.self, primaryKey: record.recordID.recordName) {
@@ -100,7 +105,7 @@ final class Sync {
                 hkObjects.append(contentsOf: [foodEntry.hkObject].compactMap { $0 })
             }
             var days = Array(dayObjectsForStartOfDay.values)
-            let partition = days.partition { $0.foodEntries.count == 0 }
+            let partition = days.partition { $0.foodEntries.isEmpty }
             return (Array(days[..<partition]), Array(days[partition...]), hkIds, hkObjects)
         }
         
@@ -251,7 +256,6 @@ extension Food: Syncable {
         case "lastUsed":            searchSuggestion!.lastUsed = value as! Date
         case "magnesium":           magnesium = value as! Float
         case "manganese":           manganese = value as! Float
-        case "measurementUnitRaw":  measurementUnitRaw = value as! Int
         case "molybdenum":          molybdenum = value as! Float
         case "monounsaturatedFat":  monounsaturatedFat = value as! Float
         case "name":                name = value as! String; searchSuggestion!.text = value as! String
@@ -264,6 +268,8 @@ extension Food: Syncable {
         case "riboflavin":          riboflavin = value as! Float
         case "saturatedFat":        saturatedFat = value as! Float
         case "selenium":            selenium = value as! Float
+        case "servingSize":         servingSize = value as! Float
+        case "servingSizeUnitRaw":  servingSizeUnitRaw = value as! Int
         case "sodium":              sodium = value as! Float
         case "sugars":              sugars = value as! Float
         case "tags":
@@ -277,8 +283,8 @@ extension Food: Syncable {
         case "totalFat":            totalFat = value as! Float
         case "transFat":            transFat = value as! Float
         case "vitaminA":            vitaminA = value as! Float
-        case "vitaminB12":          vitaminB12 = value as! Float
         case "vitaminB6":           vitaminB6 = value as! Float
+        case "vitaminB12":          vitaminB12 = value as! Float
         case "vitaminC":            vitaminC = value as! Float
         case "vitaminD":            vitaminD = value as! Float
         case "vitaminE":            vitaminE = value as! Float
@@ -309,10 +315,12 @@ extension FoodEntry: Syncable {
             if let food = DataStore.object(Food.self, primaryKey: (value as! CKReference).recordID.recordName) {
                 self.food = food
             }
-        case "measurementValue":
-            measurementValue = value as! Data
-        case "measurementValueRepresentationRaw":
-            measurementValueRepresentationRaw = value as! Int
+        case "measurement":
+            measurement = value as! Data
+        case "measurementRepresentationRaw":
+            measurementRepresentationRaw = value as! Int
+        case "measurementUnitRaw":
+            measurementUnitRaw = value as! Int
         case "tags":
             tags.removeAll()
             for recordName in (value as! [CKReference]).map({ $0.recordID.recordName }) {
@@ -482,7 +490,6 @@ extension PartialKeyPath where Root: Syncable {
         case \Food.lastUsed:                                    return "lastUsed"
         case \Food.magnesium:                                   return "magnesium"
         case \Food.manganese:                                   return "manganese"
-        case \Food.measurementUnitRaw:                          return "measurementUnitRaw"
         case \Food.molybdenum:                                  return "molybdenum"
         case \Food.monounsaturatedFat:                          return "monounsaturatedFat"
         case \Food.name:                                        return "name"
@@ -495,6 +502,8 @@ extension PartialKeyPath where Root: Syncable {
         case \Food.riboflavin:                                  return "riboflavin"
         case \Food.saturatedFat:                                return "saturatedFat"
         case \Food.selenium:                                    return "selenium"
+        case \Food.servingSize:                                 return "servingSize"
+        case \Food.servingSizeUnitRaw:                          return "servingSizeUnitRaw"
         case \Food.sodium:                                      return "sodium"
         case \Food.sugars:                                      return "sugars"
         case \Food.tagsCKReferences:                            return "tags"
@@ -503,8 +512,8 @@ extension PartialKeyPath where Root: Syncable {
         case \Food.totalFat:                                    return "totalFat"
         case \Food.transFat:                                    return "transFat"
         case \Food.vitaminA:                                    return "vitaminA"
-        case \Food.vitaminB12:                                  return "vitaminB12"
         case \Food.vitaminB6:                                   return "vitaminB6"
+        case \Food.vitaminB12:                                  return "vitaminB12"
         case \Food.vitaminC:                                    return "vitaminC"
         case \Food.vitaminD:                                    return "vitaminD"
         case \Food.vitaminE:                                    return "vitaminE"
@@ -512,8 +521,9 @@ extension PartialKeyPath where Root: Syncable {
         case \Food.zinc:                                        return "zinc"
         case \FoodEntry.date:                                   return "date"
         case \FoodEntry.foodCKReference:                        return "food"
-        case \FoodEntry.measurementValue:                       return "measurementValue"
-        case \FoodEntry.measurementValueRepresentationRaw:      return "measurementValueRepresentationRaw"
+        case \FoodEntry.measurement:                            return "measurement"
+        case \FoodEntry.measurementRepresentationRaw:           return "measurementRepresentationRaw"
+        case \FoodEntry.measurementUnitRaw:                     return "measurementUnitRaw"
         case \FoodEntry.tagsCKReferences:                       return "tags"
 //        case \FoodGroupingTemplate.lastUsed:                    return "lastUsed"
 //        case \FoodGroupingTemplate.name:                        return "name"
