@@ -263,10 +263,15 @@ final class Day: Object {
     @objc dynamic var id = UUID().uuidString
     @objc dynamic var startOfDay = Date()
     let foodEntries = List<FoodEntry>()
+    lazy var sortedFoodEntries = foodEntries.sorted(byKeyPath: #keyPath(FoodEntry.date), ascending: false)
     
     convenience init(startOfDay: Date) {
         self.init()
         self.startOfDay = startOfDay
+    }
+    
+    override static func ignoredProperties() -> [String] {
+        return ["sortedFoodEntries"]
     }
     
     override static func indexedProperties() -> [String] {
