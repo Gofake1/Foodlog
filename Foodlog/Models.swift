@@ -237,22 +237,22 @@ final class FoodEntry: Object {
         if measurementUnit == .none {
             return measurementFloat
         }
-        guard food!.servingSize > 0.0 else { throw ConversionError.zeroServingSize }
+        guard let servingSize = food?.servingSize, servingSize > 0.0 else { throw ConversionError.zeroServingSize }
         switch (measurementUnit, food!.servingSizeUnit) {
         case (.gram, .gram):                fallthrough
         case (.milligram, .milligram):      fallthrough
         case (.ounce, .ounce):              fallthrough
         case (.milliliter, .milliliter):    fallthrough
         case (.fluidOunce, .fluidOunce):
-            return measurementFloat
-        case (.gram, .milligram):           return 1000.0 * measurementFloat
-        case (.gram, .ounce):               return 28.3495 * measurementFloat
-        case (.milligram, .gram):           return 0.001 * measurementFloat
-        case (.milligram, .ounce):          return 0.000035274 * measurementFloat
-        case (.ounce, .gram):               return 0.035274 * measurementFloat
-        case (.ounce, .milligram):          return 28349.5 * measurementFloat
-        case (.milliliter, .fluidOunce):    return 29.5735 * measurementFloat
-        case (.fluidOunce, .milliliter):    return 0.033814 * measurementFloat
+            return measurementFloat / servingSize
+        case (.gram, .milligram):           return 1000.0 * measurementFloat / servingSize
+        case (.gram, .ounce):               return 28.3495 * measurementFloat / servingSize
+        case (.milligram, .gram):           return 0.001 * measurementFloat / servingSize
+        case (.milligram, .ounce):          return 0.000035274 * measurementFloat / servingSize
+        case (.ounce, .gram):               return 0.035274 * measurementFloat / servingSize
+        case (.ounce, .milligram):          return 28349.5 * measurementFloat / servingSize
+        case (.milliliter, .fluidOunce):    return 29.5735 * measurementFloat / servingSize
+        case (.fluidOunce, .milliliter):    return 0.033814 * measurementFloat / servingSize
         default:
             throw ConversionError.illegal
         }

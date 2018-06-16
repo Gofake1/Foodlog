@@ -164,7 +164,7 @@ extension Food.Unit {
     fileprivate var buttonTitle: String {
         switch self {
         case .none:         return "Servings"
-        case .gram:         return "Grans"
+        case .gram:         return "Grams"
         case .milligram:    return "Milligrams"
         case .ounce:        return "Ounces"
         case .milliliter:   return "Milliliters"
