@@ -58,7 +58,7 @@ final class AddOrSearchViewController: PulleyDrawerViewController {
     func drawerPositionDidChange(drawer: PulleyViewController, bottomSafeArea: CGFloat) {
         switch drawer.drawerPosition {
         case .closed:
-            fatalError("`drawerPosition` can not be `closed`")
+            fatalError()
         case .collapsed:
             searchBar.resignFirstResponder()
         case .open:
@@ -141,7 +141,7 @@ final class SuggestionTableController: NSObject {
         if searchText == "" {
             let suggestions = DataStore.searchSuggestions
                 .sorted(byKeyPath: #keyPath(SearchSuggestion.lastUsed), ascending: false)
-            let suggestionResults = suggestions.map { $0.suggestion }
+            let suggestionResults = suggestions.map { $0.suggestee }
             tableData = [AnyRandomAccessCollection(suggestionResults)]
             suggestionsChangeToken = observe(suggestions, section: 0) { [weak self] in self!.tableData[0] = $0 }
         } else {
@@ -149,11 +149,24 @@ final class SuggestionTableController: NSObject {
             let suggestions = DataStore.searchSuggestions
                 .filter("text CONTAINS[cd] %@", searchText)
                 .sorted(byKeyPath: #keyPath(SearchSuggestion.lastUsed), ascending: false)
-            let suggestionResults = suggestions.map { $0.suggestion }
+            let suggestionResults = suggestions.map { $0.suggestee }
             tableData = [AnyRandomAccessCollection(newSuggestion), AnyRandomAccessCollection(suggestionResults)]
             suggestionsChangeToken = observe(suggestions, section: 1) { [weak self] in self!.tableData[1] = $0 }
         }
         tableView.reloadData()
+    }
+    
+    @IBAction func didLongPress(_ sender: MyLongPressGestureRecognizer) {
+        guard [UIGestureRecognizer.State.began, .ended, .cancelled].contains(sender.state),
+            let indexPath = tableView.indexPathForRow(at: sender.location(in: tableView)),
+            let cell = tableView.cellForRow(at: indexPath) else { return }
+        if sender.state == .began {
+            tableData[indexPath.section][AnyIndex(indexPath.row)].onLongPressBegin(cell)
+        } else if sender.state == .cancelled {
+            tableData[indexPath.section][AnyIndex(indexPath.row)].onLongPressCancel(cell)
+        } else if sender.state == .ended {
+            tableData[indexPath.section][AnyIndex(indexPath.row)].onLongPressEnd(cell)
+        }
     }
     
     private func observe(_ results: Results<SearchSuggestion>, section: Int,
@@ -164,7 +177,7 @@ final class SuggestionTableController: NSObject {
             case .initial:
                 break
             case .update(_, let deletes, let inserts, let reloads):
-                updateTableData(AnyRandomAccessCollection(results.map { $0.suggestion }))
+                updateTableData(AnyRandomAccessCollection(results.map { $0.suggestee }))
                 tableView!.performBatchUpdates({
                     tableView!.deleteRows(at: deletes.map { .init(row: $0, section: section) }, with: .automatic)
                     tableView!.insertRows(at: inserts.map { .init(row: $0, section: section) }, with: .automatic)
@@ -223,6 +236,33 @@ extension SuggestionTableController: UITableViewDelegate {
     }
 }
 
+// https://stackoverflow.com/questions/13146412/allowablemovement-seems-to-be-ignored
+final class MyLongPressGestureRecognizer: UILongPressGestureRecognizer {
+    var allowableMovementAfterBegan: CGFloat = 10.0
+    private var initialPoint: CGPoint = .zero
+    
+    override func reset() {
+        super.reset()
+        initialPoint = .zero
+    }
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent) {
+        super.touchesBegan(touches, with: event)
+        initialPoint = location(in: view)
+    }
+    
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent) {
+        super.touchesMoved(touches, with: event)
+        if initialPoint != .zero {
+            let currentPoint = location(in: view)
+            let distance = hypot(initialPoint.x - currentPoint.x, initialPoint.y - currentPoint.y)
+            if distance > allowableMovementAfterBegan {
+                state = .failed
+            }
+        }
+    }
+}
+
 final class DefaultSuggestionTableViewCell: UITableViewCell {
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var subtitleLabel: UILabel!
@@ -245,6 +285,9 @@ private protocol SuggestionType {
     var canBeSearched: Bool { get }
     func dequeueCell(from tableView: UITableView, for indexPath: IndexPath) -> UITableViewCell
     func onDelete(completion completionHandler: @escaping (Error?) -> ())
+    func onLongPressBegin(_ cell: UITableViewCell)
+    func onLongPressCancel(_ cell: UITableViewCell)
+    func onLongPressEnd(_ cell: UITableViewCell)
     func onSearch()
 }
 
@@ -273,6 +316,18 @@ extension SuggestionTableController {
         
         func onDelete(completion completionHandler: @escaping (Error?) -> ()) {
             fatalError()
+        }
+        
+        func onLongPressBegin(_ cell: UITableViewCell) {
+            // Do nothing
+        }
+        
+        func onLongPressCancel(_ cell: UITableViewCell) {
+            // Do nothing
+        }
+        
+        func onLongPressEnd(_ cell: UITableViewCell) {
+            // Do nothing
         }
         
         func onSearch() {
@@ -341,6 +396,25 @@ extension Food: SuggestionType {
         }
     }
     
+    fileprivate func onLongPressBegin(_ cell: UITableViewCell) {
+        guard let cell = cell as? DefaultSuggestionTableViewCell else { fatalError() }
+        cell.addButton.setTitle("Edit", for: .normal)
+        cell.addButton.isEnabled = false
+    }
+    
+    fileprivate func onLongPressCancel(_ cell: UITableViewCell) {
+        guard let cell = cell as? DefaultSuggestionTableViewCell else { fatalError() }
+        cell.addButton.setTitle("Add", for: .normal)
+        cell.addButton.isEnabled = true
+    }
+    
+    fileprivate func onLongPressEnd(_ cell: UITableViewCell) {
+        guard let cell = cell as? DefaultSuggestionTableViewCell else { fatalError() }
+        cell.addButton.setTitle("Add", for: .normal)
+        cell.addButton.isEnabled = true
+        VCController.editFood(self)
+    }
+    
     fileprivate func onSearch() {
         VCController.filterLog(self)
     }
@@ -355,7 +429,7 @@ extension FoodGroupingTemplate: SuggestionType {
     }
     
     fileprivate func dequeueCell(from tableView: UITableView, for indexPath: IndexPath) -> UITableViewCell {
-        fatalError("TODO: FoodGroupingTemplate")
+        fatalError()
     }
     
     fileprivate func onDelete(completion completionHandler: @escaping (Error?) -> ()) {
@@ -367,6 +441,18 @@ extension FoodGroupingTemplate: SuggestionType {
                 CloudStore.delete(ckIds, completion: completionHandler)
             }
         }
+    }
+    
+    fileprivate func onLongPressBegin(_ cell: UITableViewCell) {
+        // TODO
+    }
+    
+    fileprivate func onLongPressCancel(_ cell: UITableViewCell) {
+        // TODO
+    }
+    
+    fileprivate func onLongPressEnd(_ cell: UITableViewCell) {
+        // TODO
     }
     
     fileprivate func onSearch() {
@@ -401,13 +487,25 @@ extension Tag: SuggestionType {
         }
     }
     
+    fileprivate func onLongPressBegin(_ cell: UITableViewCell) {
+        // TODO
+    }
+    
+    fileprivate func onLongPressCancel(_ cell: UITableViewCell) {
+        // TODO
+    }
+    
+    fileprivate func onLongPressEnd(_ cell: UITableViewCell) {
+        // TODO: Edit name and color
+    }
+    
     fileprivate func onSearch() {
         VCController.filterLog(self)
     }
 }
 
 extension SearchSuggestion {
-    fileprivate var suggestion: SuggestionType {
+    fileprivate var suggestee: SuggestionType {
         switch kind {
         case .food:     return foods.first!
         case .group:    return groups.first!

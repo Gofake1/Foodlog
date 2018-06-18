@@ -105,7 +105,7 @@ final class AddOrEditFoodViewController: PulleyDrawerViewController {
     func drawerPositionDidChange(drawer: PulleyViewController, bottomSafeArea: CGFloat) {
         switch drawer.drawerPosition {
         case .closed:
-            fatalError("`drawerPosition` can not be `closed`")
+            fatalError()
         case .collapsed:
             view.endEditing(false)
         case .open:

@@ -59,7 +59,8 @@ final class VCController {
     }
     
     static func editFood(_ food: Food) {
-        assert(drawerStack.last!.state == .detail)
+        let validStates = Set(arrayLiteral: DrawerState.addOrSearch, .detail)
+        assert(validStates.contains(drawerStack.last!.state))
         let vc: AddOrEditFoodViewController = makeVC(.addOrEditFood)
         vc.context = EditFoodContext(food)
         push(vc, .editFood)

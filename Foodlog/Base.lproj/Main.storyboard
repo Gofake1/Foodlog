@@ -304,6 +304,7 @@
                                 <connections>
                                     <outlet property="dataSource" destination="gQb-oc-Mcp" id="u82-Ti-jI3"/>
                                     <outlet property="delegate" destination="gQb-oc-Mcp" id="vYE-Z5-obH"/>
+                                    <outletCollection property="gestureRecognizers" destination="sVy-CP-myI" appends="YES" id="hKs-pN-DNT"/>
                                 </connections>
                             </tableView>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="I9v-jX-8zu">
@@ -349,6 +350,11 @@
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="MoG-Kn-GOt" userLabel="First Responder" sceneMemberID="firstResponder"/>
+                <pongPressGestureRecognizer allowableMovement="10" minimumPressDuration="0.5" id="sVy-CP-myI" customClass="MyLongPressGestureRecognizer" customModule="Foodlog" customModuleProvider="target">
+                    <connections>
+                        <action selector="didLongPress:" destination="gQb-oc-Mcp" id="3mK-1Q-Kzb"/>
+                    </connections>
+                </pongPressGestureRecognizer>
                 <customObject id="gQb-oc-Mcp" customClass="SuggestionTableController" customModule="Foodlog" customModuleProvider="target">
                     <connections>
                         <outlet property="tableView" destination="GaF-W9-zaw" id="AsS-Fk-2Qu"/>
