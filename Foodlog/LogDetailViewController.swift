@@ -44,7 +44,7 @@ final class LogDetailViewController: PulleyDrawerViewController {
     
     @IBAction func cancel() {
         VCController.clearLogSelection()
-        VCController.pop()
+        VCController.dismissDetail()
     }
     
     @IBAction func toggleValueRepresentation(_ sender: UITapGestureRecognizer) {

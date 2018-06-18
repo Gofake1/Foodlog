@@ -45,6 +45,7 @@ final class LogViewController: UIViewController {
     }
     
     func clearFilter() {
+        assert(currentLogTableController.current === filteredLogTableController)
         currentLogTableController.change(to: .a)
     }
 }
@@ -175,8 +176,7 @@ extension DefaultLogTableController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
         if tableView.cellForRow(at: indexPath)!.isSelected {
             tableView.deselectRow(at: indexPath, animated: true)
-            assert(VCController.drawerStack.last?.state == .detail)
-            VCController.pop()
+            VCController.dismissDetail()
             return nil
         } else {
             return indexPath
@@ -239,12 +239,15 @@ private final class FilteredLogTableController: LogTableController {
             case .initial:
                 break
             case .update(_, let deletes, let inserts, let reloads):
-                updateTableData(AnyRandomAccessCollection(results.map(AnyFilteredResult.init)))
-                tableView!.performBatchUpdates({
-                    tableView!.deleteRows(at: deletes.map { .init(row: $0, section: section) }, with: .automatic)
-                    tableView!.insertRows(at: inserts.map { .init(row: $0, section: section) }, with: .automatic)
-                    tableView!.reloadRows(at: reloads.map { .init(row: $0, section: section) }, with: .automatic)
-                })
+                // Keep `tableView` consistent if more than one `tableData` section is being modified
+                DispatchQueue.main.async {
+                    updateTableData(AnyRandomAccessCollection(results.map(AnyFilteredResult.init)))
+                    tableView!.performBatchUpdates({
+                        tableView!.deleteRows(at: deletes.map { .init(row: $0, section: section) }, with: .automatic)
+                        tableView!.insertRows(at: inserts.map { .init(row: $0, section: section) }, with: .automatic)
+                        tableView!.reloadRows(at: reloads.map { .init(row: $0, section: section) }, with: .automatic)
+                    })
+                }
             case .error(let error):
                 UIApplication.shared.alert(error: error)
             }
@@ -280,8 +283,7 @@ extension FilteredLogTableController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
         if tableView.cellForRow(at: indexPath)!.isSelected {
             tableView.deselectRow(at: indexPath, animated: true)
-            assert(VCController.drawerStack.last?.state == .detail)
-            VCController.pop()
+            VCController.dismissDetail()
             return nil
         } else {
             return indexPath

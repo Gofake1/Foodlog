@@ -12,6 +12,9 @@ import UIKit
 // TODO: iPhone X UI
 final class AddOrSearchViewController: PulleyDrawerViewController {
     @IBOutlet weak var suggestionTableController: SuggestionTableController!
+    @IBOutlet weak var filterBar: UIView!
+    @IBOutlet weak var filterLabel: UILabel!
+    @IBOutlet weak var pillView: PillView!
     @IBOutlet weak var searchBar: UISearchBar!
     @IBOutlet weak var tableView: UITableView!
     
@@ -27,6 +30,31 @@ final class AddOrSearchViewController: PulleyDrawerViewController {
                                                name: .UIKeyboardWillHide, object: nil)
     }
     
+    func filter(_ food: Food) {
+        filterBar.isHidden = false
+        filterLabel.text = food.name
+        pillView.fillColor = .white
+        pillView.setNeedsDisplay()
+    }
+    
+    func filter(_ tag: Tag) {
+        filterBar.isHidden = false
+        filterLabel.text = tag.name
+        pillView.fillColor = .white
+        pillView.setNeedsDisplay()
+    }
+    
+    func clearFilter() {
+        assert(!filterBar.isHidden)
+        assert(filterBar.alpha == 1.0)
+        pillView!.fillColor = UIColor(named: "Gray")
+        pillView!.setNeedsDisplay()
+        UIView.animate(withDuration: 0.2, animations: { [filterBar] in filterBar!.alpha = 0.0 }) { [filterBar] _ in
+            filterBar!.isHidden = true
+            filterBar!.alpha = 1.0
+        }
+    }
+    
     func drawerPositionDidChange(drawer: PulleyViewController, bottomSafeArea: CGFloat) {
         switch drawer.drawerPosition {
         case .closed:
@@ -38,6 +66,14 @@ final class AddOrSearchViewController: PulleyDrawerViewController {
         case .partiallyRevealed:
             searchBar.resignFirstResponder()
         }
+    }
+    
+    @IBAction func doneFiltering() {
+        VCController.clearLogFilter()
+        if let indexPath = tableView.indexPathForSelectedRow {
+            tableView.deselectRow(at: indexPath, animated: true)
+        }
+        clearFilter()
     }
     
     @objc private func keyboardWasShown(_ aNotification: NSNotification) {
@@ -62,7 +98,6 @@ final class AddOrSearchViewController: PulleyDrawerViewController {
 
 extension AddOrSearchViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        VCController.clearLogFilter()
         guard let searchText = searchBar.text else { return }
         suggestionTableController.searchText = searchText
     }
@@ -71,7 +106,6 @@ extension AddOrSearchViewController: UISearchBarDelegate {
         VCController.pulleyVC.setDrawerPosition(position: .open, animated: true)
         searchBar.setShowsCancelButton(true, animated: true)
         if tableView.isHidden {
-            tableView.alpha = 1.0
             tableView.isHidden = false
         }
     }
@@ -80,8 +114,9 @@ extension AddOrSearchViewController: UISearchBarDelegate {
         searchBar.text = ""
         searchBar.resignFirstResponder()
         searchBar.setShowsCancelButton(false, animated: true)
-        UIView.animate(withDuration: 0.2, animations: { [tableView] in tableView!.alpha = 0.0 }) {
-            [tableView] _ in tableView!.isHidden = true
+        UIView.animate(withDuration: 0.2, animations: { [tableView] in tableView!.alpha = 0.0 }) { [tableView] _ in
+            tableView!.isHidden = true
+            tableView!.alpha = 1.0
         }
     }
     
@@ -160,7 +195,8 @@ extension SuggestionTableController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle,
-                   forRowAt indexPath: IndexPath) {
+                   forRowAt indexPath: IndexPath)
+    {
         guard editingStyle == .delete else { return }
         tableData[indexPath.section][AnyIndex(indexPath.row)].onDelete {
             if let error = $0 {
@@ -175,6 +211,7 @@ extension SuggestionTableController: UITableViewDelegate {
         if tableView.cellForRow(at: indexPath)!.isSelected {
             tableView.deselectRow(at: indexPath, animated: true)
             VCController.clearLogFilter()
+            VCController.clearAddOrSearchFilter()
             return nil
         } else {
             return tableData[indexPath.section][AnyIndex(indexPath.row)].canBeDeleted ? indexPath : nil

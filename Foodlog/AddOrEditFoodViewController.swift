@@ -92,14 +92,14 @@ final class AddOrEditFoodViewController: PulleyDrawerViewController {
             }
         }) {
             let warning = "Editing this food item will affect \(count) entries. This cannot be undone."
-            UIApplication.shared.alert(warning: warning, confirm: { onConfirm(); VCController.pop() })
+            UIApplication.shared.alert(warning: warning, confirm: { onConfirm(); VCController.dismissAddOrEdit() })
         } else {
-            VCController.pop()
+            VCController.dismissAddOrEdit()
         }
     }
     
     @IBAction func cancel() {
-        VCController.pop()
+        VCController.dismissAddOrEdit()
     }
     
     func drawerPositionDidChange(drawer: PulleyViewController, bottomSafeArea: CGFloat) {

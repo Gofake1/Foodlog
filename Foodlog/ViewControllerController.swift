@@ -27,12 +27,22 @@ final class VCController {
     
     static let pulleyVC: PulleyViewController = {
         defer { drawerStack.append((addOrSearchVC, .addOrSearch)) }
-        return PulleyViewController(contentViewController: logVC, drawerViewController: addOrSearchVC)
+        let pulleyVC = PulleyViewController(contentViewController: logVC, drawerViewController: addOrSearchVC)
+        pulleyVC.drawerBackgroundVisualEffectView = nil
+        return pulleyVC
     }()
-    private(set) static var drawerStack = [(vc: PulleyDrawerViewController, state: DrawerState)]()
+    private static var drawerStack = [(vc: PulleyDrawerViewController, state: DrawerState)]()
     private static let addOrSearchVC: AddOrSearchViewController = makeVC(.addOrSearch)
     private static let logVC: LogViewController = makeVC(.log)
     private static let storyboard = UIStoryboard(name: "Main", bundle: nil)
+    
+    // MARK: - Add or search drawer
+    
+    static func clearAddOrSearchFilter() {
+        addOrSearchVC.clearFilter()
+    }
+    
+    // MARK: - Add or edit drawer
     
     static func addEntryForExistingFood(_ foodEntry: FoodEntry) {
         assert(drawerStack.last!.state == .addOrSearch)
@@ -62,6 +72,14 @@ final class VCController {
         push(vc, .editFoodEntry)
     }
     
+    static func dismissAddOrEdit() {
+        let validStates = Set(arrayLiteral: DrawerState.addFoodEntry, .editFood, .editFoodEntry)
+        assert(validStates.contains(drawerStack.last!.state))
+        pop()
+    }
+    
+    // MARK: - Detail drawer
+    
     static func showDetail(_ presentable: LogDetailPresentable) {
         let logDetailVC: LogDetailViewController = makeVC(.logDetail)
         logDetailVC.detailPresentable = presentable
@@ -74,13 +92,22 @@ final class VCController {
         }
     }
     
+    static func dismissDetail() {
+        assert(drawerStack.last!.state == .detail)
+        pop()
+    }
+    
+    // MARK: - Log
+    
     // TODO: Filter by date
     
     static func filterLog(_ food: Food) {
+        addOrSearchVC.filter(food)
         logVC.filter(food)
     }
     
     static func filterLog(_ tag: Tag) {
+        addOrSearchVC.filter(tag)
         logVC.filter(tag)
     }
     
@@ -92,12 +119,14 @@ final class VCController {
         logVC.clearTableSelection()
     }
     
+    // MARK: - Drawer
+    
     private static func push(_ newDrawerVC: PulleyDrawerViewController, _ newDrawerState: DrawerState) {
         drawerStack.append((newDrawerVC, newDrawerState))
         pulleyVC.setDrawerContentViewController(controller: newDrawerVC)
     }
     
-    static func pop() {
+    private static func pop() {
         drawerStack.removeLast()
         pulleyVC.setDrawerContentViewController(controller: drawerStack.last!.vc)
     }
@@ -108,10 +137,14 @@ final class VCController {
         pulleyVC.setDrawerContentViewController(controller: newDrawerVC)
     }
     
+    // MARK: -
+    
     static func makeVC<A: UIViewController>(_ kind: Kind) -> A {
         return storyboard.instantiateViewController(withIdentifier: kind.rawValue) as! A
     }
 }
+
+// MARK: -
 
 class PulleyDrawerViewController: UIViewController {}
 
