@@ -43,7 +43,7 @@ final class ServingSizeController: NSObject {
     }
     
     @IBAction func showUnitMenu() {
-        context.presentUnitMenu(unitPicker)
+        VCController.presentUnitPicker(unitPicker)
     }
 }
 
@@ -78,22 +78,22 @@ extension ServingSizeController {
     final class ExistingFood {
         private let changes: Changes<Food>
         private let food: Food
-        private weak var viewController: UIViewController!
+        private let oldServingSize: Float
+        private let oldUnit: Food.Unit
         
-        init(_ food: Food, _ changes: Changes<Food>, _ viewController: UIViewController) {
-            self.food = food
+        init(_ food: Food, _ changes: Changes<Food>) {
             self.changes = changes
-            self.viewController = viewController
+            self.food = food
+            oldServingSize = food.servingSize
+            oldUnit = food.servingSizeUnit
         }
     }
     
     final class NewFood {
         private let food: Food
-        private weak var viewController: UIViewController!
         
-        init(_ food: Food, _ viewController: UIViewController) {
+        init(_ food: Food) {
             self.food = food
-            self.viewController = viewController
         }
     }
 }
@@ -101,13 +101,13 @@ extension ServingSizeController {
 protocol ServingSizeControllerContext {
     var servingSize: Float { get set }
     var unit: Food.Unit { get set }
-    func presentUnitMenu(_ menu: UIAlertController)
 }
 
 extension ServingSizeController.ExistingFood: ServingSizeControllerContext {
     var servingSize: Float {
         get { return food.servingSize }
         set {
+            guard newValue != oldServingSize else { return }
             changes.insert(change: \Food.servingSize)
             food.servingSize = newValue
         }
@@ -115,13 +115,10 @@ extension ServingSizeController.ExistingFood: ServingSizeControllerContext {
     var unit: Food.Unit {
         get { return food.servingSizeUnit }
         set {
+            guard newValue != oldUnit else { return }
             changes.insert(change: \Food.servingSizeUnitRaw)
             food.servingSizeUnit = newValue
         }
-    }
-    
-    func presentUnitMenu(_ menu: UIAlertController) {
-        viewController.present(menu, animated: true)
     }
 }
 
@@ -133,10 +130,6 @@ extension ServingSizeController.NewFood: ServingSizeControllerContext {
     var unit: Food.Unit {
         get { return food.servingSizeUnit }
         set { food.servingSizeUnit = newValue }
-    }
-    
-    func presentUnitMenu(_ menu: UIAlertController) {
-        viewController.present(menu, animated: true)
     }
 }
 

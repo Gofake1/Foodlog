@@ -77,9 +77,7 @@ final class PillView: UIView {
 
 extension UIApplication {
     func alert(error: Error) {
-        let alert = UIAlertController(title: "Error", message: error.localizedDescription, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-        keyWindow!.rootViewController!.present(alert, animated: true, completion: nil)
+        keyWindow!.rootViewController!.alert(error: error)
     }
     
     func alert(warning warningString: String, confirm userConfirmationHandler: @escaping () throws -> ()) {
@@ -104,5 +102,13 @@ extension UIView {
                                      bottomAnchor.constraint(equalTo: view.bottomAnchor),
                                      leadingAnchor.constraint(equalTo: view.leadingAnchor),
                                      trailingAnchor.constraint(equalTo: view.trailingAnchor)])
+    }
+}
+
+extension UIViewController {
+    func alert(error: Error) {
+        let alert = UIAlertController(title: "Error", message: error.localizedDescription, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        present(alert, animated: true)
     }
 }

@@ -112,6 +112,18 @@ final class Tag: Object {
     }
 }
 
+enum TagError: LocalizedError {
+    case alreadyExists
+    case illegalName
+    
+    var errorDescription: String? {
+        switch self {
+        case .alreadyExists:    return "A tag with this name already exists."
+        case .illegalName:      return "This name is not valid."
+        }
+    }
+}
+
 final class Food: Object {
     enum Unit: Int {
         case none       = 0

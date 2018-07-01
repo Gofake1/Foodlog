@@ -92,10 +92,16 @@ extension AmountController {
     final class ExistingFoodEntry {
         private let changes: Changes<FoodEntry>
         private let foodEntry: FoodEntry
+        private let oldAmount: Data
+        private let oldRepresentation: FoodEntry.MeasurementRepresentation
+        private let oldUnit: Food.Unit
         
         init(_ foodEntry: FoodEntry, _ changes: Changes<FoodEntry>) {
-            self.foodEntry = foodEntry
             self.changes = changes
+            self.foodEntry = foodEntry
+            oldAmount = foodEntry.measurement
+            oldRepresentation = foodEntry.measurementRepresentation
+            oldUnit = foodEntry.measurementUnit
         }
     }
     
@@ -119,6 +125,7 @@ extension AmountController.ExistingFoodEntry: AmountControllerContext {
     var amount: Data {
         get { return foodEntry.measurement }
         set {
+            guard newValue != oldAmount else { return }
             changes.insert(change: \FoodEntry.measurement)
             foodEntry.measurement = newValue
         }
@@ -129,6 +136,7 @@ extension AmountController.ExistingFoodEntry: AmountControllerContext {
     var representation: FoodEntry.MeasurementRepresentation {
         get { return foodEntry.measurementRepresentation }
         set {
+            guard newValue != oldRepresentation else { return }
             changes.insert(change: \FoodEntry.measurementRepresentationRaw)
             foodEntry.measurementRepresentation = newValue
         }
@@ -136,6 +144,7 @@ extension AmountController.ExistingFoodEntry: AmountControllerContext {
     var unit: Food.Unit {
         get { return foodEntry.measurementUnit }
         set {
+            guard newValue != oldUnit else { return }
             changes.insert(change: \FoodEntry.measurementUnitRaw)
             foodEntry.measurementUnit = newValue
         }

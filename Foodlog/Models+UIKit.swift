@@ -10,21 +10,27 @@ import UIKit
 
 extension Tag {
     var color: UIColor {
-        switch ColorCode(rawValue: colorCodeRaw)! {
-        case .gray:         return .lightGray
-        case .red:          return .red
-        case .orange:       return .orange
-        case .yellow:       return .yellow
-        case .green:        return .green
-        case .blue:         return .blue
-        case .purple:       return .purple
-        }
+        return colorCode.color
     }
     var activeButton: UIButton {
         return UIButton(pillFilled: name, color: color)
     }
     var disabledButton: UIButton {
         return UIButton(pillBordered: name, color: color)
+    }
+}
+
+extension Tag.ColorCode {
+    var color: UIColor {
+        switch self {
+        case .gray:         return .lightGray
+        case .red:          return .init(red: 0.86, green: 0.0, blue: 0.0, alpha: 1.0)
+        case .orange:       return .init(red: 0.91, green: 0.55, blue: 0.01, alpha: 1.0)
+        case .yellow:       return .init(red: 0.88, green: 0.79, blue: 0.0, alpha: 1.0)
+        case .green:        return .init(red: 0.0, green: 0.53, blue: 0.02, alpha: 1.0)
+        case .blue:         return .init(red: 0.14, green: 0.16, blue: 0.8, alpha: 1.0)
+        case .purple:       return .init(red: 0.44, green: 0.0, blue: 0.93, alpha: 1.0)
+        }
     }
 }
 

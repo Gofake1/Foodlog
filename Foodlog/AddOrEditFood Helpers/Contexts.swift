@@ -9,7 +9,7 @@
 import CloudKit.CKRecord
 import HealthKit.HKObject
 
-protocol AddOrEditContextType: class {
+protocol AddOrEditFoodContextType: class {
     var name: String { get set }
     func configure(_ vc: AddOrEditFoodViewController)
     /// - postcondition: Writes to data store, cloud store, and HealthKit
@@ -17,7 +17,7 @@ protocol AddOrEditContextType: class {
     func save(completionHandler: @escaping (Error?) -> ()) -> (Int, () -> ())?
 }
 
-final class AddEntryForExistingFoodContext: AddOrEditContextType {    
+final class AddEntryForExistingFoodContext: AddOrEditFoodContextType {    
     var name: String {
         get { return foodEntry.food!.name }
         set { fatalError() }
@@ -51,7 +51,7 @@ final class AddEntryForExistingFoodContext: AddOrEditContextType {
     }
 }
 
-final class AddEntryForNewFoodContext: AddOrEditContextType {
+final class AddEntryForNewFoodContext: AddOrEditFoodContextType {
     var name: String {
         get { return foodEntry.food!.name }
         set { foodEntry.food!.name = newValue }
@@ -71,7 +71,7 @@ final class AddEntryForNewFoodContext: AddOrEditContextType {
         vc.foodEntryTagController.setup(TagController.NewFoodEntry(foodEntry))
         vc.foodTagController.setup(TagController.EnabledNewFood(foodEntry.food!))
         vc.nutritionController.setup(NutritionController.EnabledNewFood(foodEntry.food!))
-        vc.servingSizeController.setup(ServingSizeController.NewFood(foodEntry.food!, vc))
+        vc.servingSizeController.setup(ServingSizeController.NewFood(foodEntry.food!))
     }
     
     func save(completionHandler: @escaping (Error?) -> ()) -> (Int, () -> ())? {
@@ -91,21 +91,26 @@ final class AddEntryForNewFoodContext: AddOrEditContextType {
     }
 }
 
-final class EditFoodContext: AddOrEditContextType {
+final class EditFoodContext: AddOrEditFoodContextType {
     var name: String {
         get { return food.name }
         set {
+            guard newValue != oldFood.name else { return }
             foodChanges.insert(change: \Food.name)
             food.name = newValue
+            food.searchSuggestion!.text = newValue
         }
     }
     private let food: Food
     private let foodChanges = Changes<Food>()
     private let foodEntriesCount: Int
+    private let oldFood: Food
     
     init(_ food: Food) {
         self.food = Food(value: food)
+        self.food.searchSuggestion = SearchSuggestion(value: food.searchSuggestion!)
         foodEntriesCount = food.entries.count
+        oldFood = food
     }
     
     func configure(_ vc: AddOrEditFoodViewController) {
@@ -115,8 +120,8 @@ final class EditFoodContext: AddOrEditContextType {
         
         foodChanges.onInsertOnce { [weak vc] in vc?.addToLogButton.isEnabled = true }
         vc.foodTagController.setup(TagController.EnabledExistingFood(food, foodChanges))
-        vc.nutritionController.setup(NutritionController.EnabledExistingFood(food, foodChanges))
-        vc.servingSizeController.setup(ServingSizeController.ExistingFood(food, foodChanges, vc))
+        vc.nutritionController.setup(NutritionController.EnabledExistingFood(food, oldFood, foodChanges))
+        vc.servingSizeController.setup(ServingSizeController.ExistingFood(food, foodChanges))
     }
     
     func save(completionHandler: @escaping (Error?) -> ()) -> (Int, () -> ())? {
@@ -141,7 +146,7 @@ final class EditFoodContext: AddOrEditContextType {
     }
 }
 
-final class EditFoodEntryContext: AddOrEditContextType {
+final class EditFoodEntryContext: AddOrEditFoodContextType {
     var name: String {
         get { return foodEntry.food!.name }
         set { fatalError() }
@@ -169,9 +174,9 @@ final class EditFoodEntryContext: AddOrEditContextType {
     }
     
     func save(completionHandler: @escaping (Error?) -> ()) -> (Int, () -> ())? {
-        func saveLocally(completion completionHandler: @escaping (Error?) -> ()) {
-            let oldDay = oldFoodEntry.day
-            
+        let oldDay = oldFoodEntry.day
+        
+        func saveLocally(completion completionHandler: @escaping (Error?) -> ()) {            
             func updateOldDay(completion completionHandler: @escaping (Error?) -> ()) {
                 let _oldDay = Day(value: oldDay)
                 _oldDay.remove(foodEntry: oldFoodEntry)

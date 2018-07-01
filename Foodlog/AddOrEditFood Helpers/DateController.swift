@@ -46,12 +46,14 @@ extension DateController: UITextFieldDelegate {
 
 extension DateController {
     final class ExistingFoodEntry {
-        private let foodEntry: FoodEntry
         private let changes: Changes<FoodEntry>
+        private let foodEntry: FoodEntry
+        private let oldDate: Date
         
         init(_ foodEntry: FoodEntry, _ changes: Changes<FoodEntry>) {
-            self.foodEntry = foodEntry
             self.changes = changes
+            self.foodEntry = foodEntry
+            oldDate = foodEntry.date
         }
     }
     
@@ -72,6 +74,7 @@ extension DateController.ExistingFoodEntry: DateControllerContext {
     var date: Date {
         get { return foodEntry.date }
         set {
+            guard newValue != oldDate else { return }
             changes.insert(change: \FoodEntry.date)
             foodEntry.date = newValue
         }

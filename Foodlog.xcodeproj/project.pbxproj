@@ -26,6 +26,7 @@
 		6385AF281FE0A435009E8483 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6385AF271FE0A435009E8483 /* AppDelegate.swift */; };
 		6385AF2A1FE0A436009E8483 /* LogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6385AF291FE0A436009E8483 /* LogViewController.swift */; };
 		6385AF2F1FE0A436009E8483 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6385AF2E1FE0A436009E8483 /* Assets.xcassets */; };
+		638B256820DDC1BC0014BAAF /* AddOrEditTagViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 638B256720DDC1BC0014BAAF /* AddOrEditTagViewController.swift */; };
 		638D2E8C20C2303A00BF24D8 /* ServingSizeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 638D2E8B20C2303A00BF24D8 /* ServingSizeController.swift */; };
 		63A8345620634ADE001214B4 /* Contexts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63A8345520634ADE001214B4 /* Contexts.swift */; };
 		63AACA9C1FF329C600FE805F /* Realm.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63D970A11FE4B1E200AA0168 /* Realm.framework */; };
@@ -113,6 +114,7 @@
 		6385AF2E1FE0A436009E8483 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		6385AF311FE0A436009E8483 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		6385AF331FE0A436009E8483 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		638B256720DDC1BC0014BAAF /* AddOrEditTagViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddOrEditTagViewController.swift; sourceTree = "<group>"; };
 		638D2E8B20C2303A00BF24D8 /* ServingSizeController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServingSizeController.swift; sourceTree = "<group>"; };
 		63A8345520634ADE001214B4 /* Contexts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Contexts.swift; sourceTree = "<group>"; };
 		63AB78D41FE77267009F9383 /* Foodlog.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Foodlog.entitlements; sourceTree = "<group>"; };
@@ -237,6 +239,7 @@
 			children = (
 				6339CFB9200DDF8200481E0D /* AddOrEditFood Helpers */,
 				633E0BFF1FF87A4500290B61 /* AddOrEditFoodViewController.swift */,
+				638B256720DDC1BC0014BAAF /* AddOrEditTagViewController.swift */,
 				635972371FF479A500D5CC97 /* AddOrSearchViewController.swift */,
 				6385AF271FE0A435009E8483 /* AppDelegate.swift */,
 				630C97EE20703D9C00B9279E /* CloudStore.swift */,
@@ -381,6 +384,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				633E0C001FF87A4500290B61 /* AddOrEditFoodViewController.swift in Sources */,
+				638B256820DDC1BC0014BAAF /* AddOrEditTagViewController.swift in Sources */,
 				635972381FF479A500D5CC97 /* AddOrSearchViewController.swift in Sources */,
 				6385AF281FE0A435009E8483 /* AppDelegate.swift in Sources */,
 				630C97EF20703D9C00B9279E /* CloudStore.swift in Sources */,

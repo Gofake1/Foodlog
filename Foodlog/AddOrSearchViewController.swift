@@ -278,6 +278,7 @@ final class DefaultSuggestionTableViewCell: UITableViewCell {
 final class TagSuggestionTableViewCell: UITableViewCell {
     @IBOutlet weak var padderView: UIView!
     @IBOutlet weak var label: UILabel!
+    @IBOutlet weak var editLabel: UILabel!
 }
 
 private protocol SuggestionType {
@@ -488,15 +489,23 @@ extension Tag: SuggestionType {
     }
     
     fileprivate func onLongPressBegin(_ cell: UITableViewCell) {
-        // TODO
+        guard let cell = cell as? TagSuggestionTableViewCell else { fatalError() }
+        cell.editLabel.alpha = 0.0
+        cell.editLabel.isHidden = false
+        UIView.animate(withDuration: 0.2, animations: { cell.editLabel.alpha = 1.0 })
     }
     
     fileprivate func onLongPressCancel(_ cell: UITableViewCell) {
-        // TODO
+        guard let cell = cell as? TagSuggestionTableViewCell else { fatalError() }
+        UIView.animate(withDuration: 0.2, animations: { cell.editLabel.alpha = 0.0 }) { _ in
+            cell.editLabel.isHidden = true
+        }
     }
     
     fileprivate func onLongPressEnd(_ cell: UITableViewCell) {
-        // TODO: Edit name and color
+        guard let cell = cell as? TagSuggestionTableViewCell else { fatalError() }
+        cell.editLabel.isHidden = true
+        VCController.editTag(self)
     }
     
     fileprivate func onSearch() {

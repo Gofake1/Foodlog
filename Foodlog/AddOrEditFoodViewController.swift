@@ -36,12 +36,20 @@ final class AddOrEditFoodViewController: PulleyDrawerViewController {
     @IBOutlet weak var cView:                       UIView!
     @IBOutlet weak var cServingSizeField:           UITextField!
 
-    var context: AddOrEditContextType!
+    var context: AddOrEditFoodContextType!
     
     override func viewDidLoad() {
         foodTagController.tagsView = foodTagsView
         context.configure(self)
-        scrollController.setup()
+        scrollController.enable()
+    }
+    
+    override func modalDidShow() {
+        scrollController.disable()
+    }
+    
+    override func modalDidDismiss() {
+        scrollController.enable()
     }
     
     func useLabelForName(_ name: String) {
@@ -119,26 +127,30 @@ final class AddOrEditFoodViewController: PulleyDrawerViewController {
 class ScrollController: NSObject {
     @IBOutlet weak var scrollView: MyScrollView!
     
-    private var targetFrame: CGRect? = .zero
+    private var targetFrame = CGRect.zero
     
-    func setup() {
+    /// - precondition: `frame` must be in `scrollView`'s coordinate space
+    func scroll(to frame: CGRect) {
+        targetFrame = frame
+        scrollToFrame()
+    }
+    
+    fileprivate func enable() {
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWasShown(_:)),
                                                name: .UIKeyboardDidShow, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillBeHidden(_:)),
                                                name: .UIKeyboardWillHide, object: nil)
     }
     
-    /// - precondition: `frame` must be in `scrollView`'s coordinate space
-    func scroll(to frame: CGRect?) {
-        targetFrame = frame
-        scrollToFrame()
+    fileprivate func disable() {
+        NotificationCenter.default.removeObserver(self)
     }
     
     @objc private func keyboardWasShown(_ aNotification: NSNotification) {
-        VCController.pulleyVC.setDrawerPosition(position: .open, animated: true)
         guard let userInfo = aNotification.userInfo,
             let keyboardFrame = userInfo[UIKeyboardFrameEndUserInfoKey] as? CGRect
             else { return }
+        VCController.pulleyVC.setDrawerPosition(position: .open, animated: true)
         let insets = UIEdgeInsets(top: 0.0, left: 0.0, bottom: keyboardFrame.height, right: 0.0)
         scrollView.contentInset = insets
         scrollView.scrollIndicatorInsets = insets
@@ -151,7 +163,6 @@ class ScrollController: NSObject {
     }
     
     private func scrollToFrame() {
-        guard let targetFrame = targetFrame else { return }
         // Workaround: View's frame is translated down by Pulley
         let fixedViewFrame = scrollView.superview!.convert(targetFrame, to: nil)
         // Workaround: `UIScrollView` scrolls to incorrect first responder frame
@@ -169,8 +180,7 @@ final class MyScrollView: UIScrollView {
     var shouldScroll = false
     
     override func setContentOffset(_ contentOffset: CGPoint, animated: Bool) {
-        if shouldScroll {
-            super.setContentOffset(contentOffset, animated: animated)
-        }
+        guard shouldScroll else { return }
+        super.setContentOffset(contentOffset, animated: animated)
     }
 }

@@ -243,12 +243,14 @@ extension NutritionController {
     }
     
     final class EnabledExistingFood {
-        private let food: Food
         private let changes: Changes<Food>
+        private let food: Food
+        private let oldFood: Food
         
-        init(_ food: Food, _ changes: Changes<Food>) {
-            self.food = food
+        init(_ food: Food, _ oldFood: Food, _ changes: Changes<Food>) {
             self.changes = changes
+            self.food = food
+            self.oldFood = oldFood
         }
     }
     
@@ -285,6 +287,7 @@ extension NutritionController.EnabledExistingFood: FoodNutritionControllerContex
     subscript(kind: NutritionKind) -> Float {
         get { return food[keyPath: kind.keyPath] }
         set {
+            guard newValue != oldFood[keyPath: kind.keyPath] else { return }
             changes.insert(change: kind.keyPath)
             food[keyPath: kind.keyPath] = newValue
         }

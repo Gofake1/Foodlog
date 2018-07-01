@@ -8,10 +8,7 @@
 
 import UIKit
 
-// TODO: UI to choose tag color
 final class TagController: NSObject {
-    @IBOutlet weak var scrollController: ScrollController!
-    
     var tagsView: FlowContainerView!
     private static let shadowDuration = 0.4
     private static let shadowRelativeDuration = shadowDuration / animationDuration
@@ -93,14 +90,7 @@ final class TagController: NSObject {
     }
     
     @objc private func tagPressed() {
-        // Workaround: Disable scroll behavior when creating new tag
-        scrollController.scroll(to: nil)
-        
-        let tagVC: TagViewController = VCController.makeVC(.tag)
-        tagVC.context = context
-        tagVC.modalPresentationStyle = .overCurrentContext
-        tagVC.transitioningDelegate = self
-        UIApplication.shared.keyWindow!.rootViewController!.present(tagVC, animated: true)
+        VCController.showTags(context: context, transitioning: self)
     }
 }
 
@@ -133,7 +123,7 @@ extension TagController: UIViewControllerAnimatedTransitioning {
                     view.centerYAnchor.constraint(equalTo: view2.centerYAnchor, constant: centerY))
         }
         
-        if let toVC = transitionContext.viewController(forKey: .to) as? TagViewController {
+        if let toVC = transitionContext.viewController(forKey: .to) as? TagsViewController {
             let animatedView = makeAnimatedView()
             animatedView.alpha = 0.0
             transitionContext.containerView.addSubview(animatedView)
@@ -164,7 +154,7 @@ extension TagController: UIViewControllerAnimatedTransitioning {
                 transitionContext.completeTransition(true)
             }
             
-        } else if let fromVC = transitionContext.viewController(forKey: .from) as? TagViewController {
+        } else if let fromVC = transitionContext.viewController(forKey: .from) as? TagsViewController {
             transitionContext.containerView.subviews.forEach { $0.removeFromSuperview() }
             
             let animatedView = makeAnimatedView()
@@ -389,13 +379,12 @@ extension FoodEntry {
     }
 }
 
-final class TagViewController: UIViewController {
-    @IBOutlet weak var addNewTagNameField: UITextField!
-    @IBOutlet weak var addNewTagView: UIView!
-    @IBOutlet weak var centerYConstraint: NSLayoutConstraint!
+final class TagsViewController: UIViewController {
+    @IBOutlet weak var addTagContainerView: UIView!
+    @IBOutlet weak var bottomConstraint: NSLayoutConstraint!
     @IBOutlet weak var tagsView: FlowContainerView!
     
-    fileprivate var context: TagControllerContext!
+    var context: TagControllerContext!
     private var statusForTag = [String: Tag.Change]()
     
     override func viewDidLoad() {
@@ -417,73 +406,44 @@ final class TagViewController: UIViewController {
                                                name: .UIKeyboardWillHide, object: nil)
     }
     
-    @IBAction func cancelAddNewTag() {
-        addNewTagNameField.resignFirstResponder()
-        UIView.animate(withDuration: 0.5, animations: { [addNewTagView] in addNewTagView!.alpha = 0.0 },
-                       completion: { [addNewTagView] _ in addNewTagView!.isHidden = true })
+    func showAddTag(view addTagView: UIView) {
+        addTagView.layer.cornerRadius = 16.0
+        addTagContainerView.embedSubview(addTagView)
+        addTagContainerView.alpha = 0.0
+        addTagContainerView.isHidden = false
+        UIView.animate(withDuration: 0.2, animations: { [addTagContainerView] in addTagContainerView!.alpha = 1.0 })
     }
     
-    @IBAction func finishAddNewTag() {
-        func addTag(_ name: String, completion completionHandler: @escaping (Error?) -> ()) {
-            let tag = Tag()
-            tag.name = name
-            tag.localCKRecord = CloudKitRecord()
-            tag.localCKRecord!.kind = .tag
-            tag.localCKRecord!.recordName = tag.id
-            tag.searchSuggestion = SearchSuggestion()
-            tag.searchSuggestion!.kind = .tag
-            tag.searchSuggestion!.lastUsed = Date()
-            tag.searchSuggestion!.text = name
-            let ckRecords = [tag.ckRecord(from: Tag.changedAll)]
-            DataStore.update([tag]) { [tagsView, weak self] in
-                if let error = $0 {
-                    completionHandler(error)
-                } else {
-                    // TODO: Animate creation of new tag
-                    tagsView!.addSubview(tag.makeControlButton(toggled: false, self!, #selector(self!.toggleTag(_:))))
-                    CloudStore.save(ckRecords, completion: completionHandler)
-                }
-            }
+    func dismissAddTag(view addTagView: UIView, newTag: Tag?) {
+        if let tag = newTag {
+            tagsView.addSubview(tag.makeControlButton(toggled: false, self, #selector(toggleTag(_:))))
         }
-        
-        func dismissView() {
-            addNewTagNameField.resignFirstResponder()
-            UIView.animate(withDuration: 0.5, animations: { [addNewTagView] in addNewTagView!.alpha = 0.0}) {
-                [addNewTagNameField, addNewTagView] _ in
-                addNewTagNameField!.text = nil
-                addNewTagView!.isHidden = true
-            }
-        }
-        
-        guard let name = addNewTagNameField.text?.trimmingCharacters(in: .whitespaces), name != "" else { return }
-        if DataStore.object(Tag.self, primaryKey: name) != nil {
-            UIApplication.shared.alert(error: TagError.alreadyExists)
-        } else {
-            addTag(name) {
-                if let error = $0 {
-                    UIApplication.shared.alert(error: error)
-                }
-            }
-            dismissView()
+        UIView.animate(withDuration: 0.2,
+                       animations: { [addTagContainerView] in addTagContainerView!.alpha = 0.0 })
+        { [addTagContainerView, view] _ in
+            addTagView.removeFromSuperview()
+            addTagContainerView!.isHidden = true
+            addTagContainerView!.alpha = 1.0
+            UIView.animate(withDuration: 0.2, animations: { view!.layoutIfNeeded() })
         }
     }
     
     @IBAction func dismiss() {
         context.updatedTags(statusForTag.filter { $0.1 != .unchanged })
-        presentingViewController!.dismiss(animated: true)
+        VCController.dismissTags()
     }
     
     @objc private func keyboardWasShown(_ aNotification: NSNotification) {
         guard let userInfo = aNotification.userInfo,
             let keyboardFrame = userInfo[UIKeyboardFrameEndUserInfoKey] as? CGRect
             else { return }
-        centerYConstraint.constant -= keyboardFrame.height/2
+        bottomConstraint.constant = 16.0 + keyboardFrame.height
         UIView.animate(withDuration: 0.3) { [view] in view!.layoutIfNeeded() }
     }
     
     @objc private func keyboardWillBeHidden() {
-        centerYConstraint.constant = -23
-        UIView.animate(withDuration: 0.5) { [view] in view!.layoutIfNeeded() }
+        bottomConstraint.constant = 0.0
+        UIView.animate(withDuration: 0.3) { [view] in view!.layoutIfNeeded() }
     }
     
     @objc private func toggleTag(_ sender: DualLabelButton) {
@@ -505,24 +465,11 @@ final class TagViewController: UIViewController {
     }
     
     @objc private func startAddNewTag() {
-        addNewTagView.alpha = 0.0
-        addNewTagView.isHidden = false
-        UIView.animate(withDuration: 0.5, animations: { [addNewTagView] in addNewTagView!.alpha = 1.0 },
-                       completion: { [addNewTagNameField] _ in addNewTagNameField!.becomeFirstResponder() })
+        VCController.addTag(parent: self)
     }
     
     deinit {
         NotificationCenter.default.removeObserver(self)
-    }
-}
-
-enum TagError: LocalizedError {
-    case alreadyExists
-    
-    var localizedDescription: String {
-        switch self {
-        case .alreadyExists: return "A tag with this name already exists."
-        }
     }
 }
 
@@ -531,13 +478,6 @@ extension Tag {
         case added
         case removed
         case unchanged
-    }
-    
-    fileprivate static var changedAll: Changes<Tag> {
-        let keyPaths = Set(arrayLiteral: \Tag.colorCodeRaw,
-                           \Tag.lastUsed,
-                           \Tag.name)
-        return Changes(keyPaths)
     }
     
     fileprivate func makeControlButton(toggled: Bool, _ target: Any, _ action: Selector) -> DualLabelButton {
