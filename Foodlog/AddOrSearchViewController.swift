@@ -157,7 +157,7 @@ final class SuggestionTableController: NSObject {
     }
     
     @IBAction func didLongPress(_ sender: MyLongPressGestureRecognizer) {
-        guard [UIGestureRecognizer.State.began, .ended, .cancelled].contains(sender.state),
+        guard [UIGestureRecognizerState.began, .ended, .cancelled].contains(sender.state),
             let indexPath = tableView.indexPathForRow(at: sender.location(in: tableView)),
             let cell = tableView.cellForRow(at: indexPath) else { return }
         if sender.state == .began {
