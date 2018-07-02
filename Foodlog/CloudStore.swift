@@ -61,9 +61,7 @@ final class CloudStore {
                         if let error = $0 {
                             accountChangeHandler(error)
                         } else {
-                            working.fetchChanges {
-                                accountChangeHandler($0)
-                            }
+                            working.fetchChanges(completion: accountChangeHandler)
                         }
                     }
                     impl = working
@@ -84,7 +82,7 @@ extension CloudStore {
         case restricted
         case noAccount
         
-        var localizedDescription: String {
+        var errorDescription: String? {
             switch self {
             case .restricted:   return "The iCloud account is restricted."
             case .noAccount:    return "No iCloud account was found."
@@ -237,10 +235,11 @@ extension CloudStore.WorkingImpl: CloudStoreImplType {
             queue.async { sync.delete(recordType, recordId) }
         }
         operation.recordZoneChangeTokensUpdatedBlock = { [weak self] in
-            // Note: During testing, this block has never been called.
             assert($0 == zoneId)
             if let token = self!.zoneChangeToken {
-                assert($2 == NSKeyedArchiver.archivedData(withRootObject: token))
+                if let lastClientToken = $2 {
+                    assert(lastClientToken == NSKeyedArchiver.archivedData(withRootObject: token))
+                }
             } else {
                 assert($2 == nil)
             }

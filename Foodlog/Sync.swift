@@ -69,13 +69,17 @@ final class Sync {
             return food
         }
         
-        /// - returns: `Day`s to update, `Day`s to delete, HealthKit IDs to delete, and `HKObject`s to save
-        func processFoodEntryRecords(_ records: [CKRecord]) -> ([Object], [Object], [String], [HKObject]) {
+        /// - returns: `Day`s to update, `Day`s to delete, HealthKit IDs to delete, `HKObject`s to save, and
+        //    invalid `CKRecord`s
+        func processFoodEntryRecords(_ records: [CKRecord]) -> ([Object], [Object], [String], [HKObject], [CKRecord])
+        {
             var dayObjectsForStartOfDay = [Date: Day]()
             var hkIds = [String]()
             var hkObjects = [HKObject]()
+            var invalidRecords = [CKRecord]()
             for record in records {
-                let startOfDay = (record["date"] as! Date).startOfDay
+                guard let startOfDay = (record["date"] as? Date)?.startOfDay else {
+                    invalidRecords.append(record); continue }
                 if dayObjectsForStartOfDay[startOfDay] == nil {
                     dayObjectsForStartOfDay[startOfDay] = _correctDay(startOfDay: startOfDay)
                 }
@@ -106,7 +110,7 @@ final class Sync {
             }
             var days = Array(dayObjectsForStartOfDay.values)
             let partition = days.partition { $0.foodEntries.isEmpty }
-            return (Array(days[..<partition]), Array(days[partition...]), hkIds, hkObjects)
+            return (Array(days[..<partition]), Array(days[partition...]), hkIds, hkObjects, invalidRecords)
         }
         
         // TODO
@@ -144,6 +148,7 @@ final class Sync {
         // 3. Save `Day`s and `FoodGroupingTemplate`s
         // 4. Delete models that were deleted and prune `Day`s
         // 5. Delete HealthKit IDs whose models were deleted or updated, and save new `HKObject`s
+        // 6. Delete invalid records
         let tagObjectsToChange = tagRecords.map(tagToChangeForRecord)
         DataStore.update(tagObjectsToChange) { [recordIdsToDelete] in
             if let error = $0 {
@@ -154,7 +159,7 @@ final class Sync {
                     if let error = $0 {
                         completionHandler(error)
                     } else {
-                        let (dayObjectsToChange, dayObjectsToDelete, hkIds, hkObjects) =
+                        let (dayObjectsToChange, dayObjectsToDelete, hkIds, hkObjects, invalidRecords) =
                             processFoodEntryRecords(foodEntryRecords)
                         let groupObjectsToChange = groupRecords.map(groupToChangeForRecord)
                         DataStore.update(dayObjectsToChange + groupObjectsToChange) {
@@ -167,8 +172,14 @@ final class Sync {
                                     if let error = $0 {
                                         completionHandler(error)
                                     } else {
-                                        HealthKitStore.update(ids: hkIds + deletedHkIds, hkObjects: hkObjects,
-                                                              completion: completionHandler)
+                                        HealthKitStore.update(ids: hkIds + deletedHkIds, hkObjects: hkObjects) {
+                                            if let error = $0 {
+                                                completionHandler(error)
+                                            } else {
+                                                CloudStore.delete(invalidRecords.map { $0.recordID },
+                                                                  completion: completionHandler)
+                                            }
+                                        }
                                     }
                                 }
                             }
