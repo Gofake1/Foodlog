@@ -8,6 +8,7 @@
 
 import RealmSwift
 import UIKit
+import UIKit.UIGestureRecognizerSubclass
 
 // TODO: iPhone X UI
 final class AddOrSearchViewController: PulleyDrawerViewController {
@@ -184,7 +185,7 @@ final class SuggestionTableController: NSObject {
                     tableView!.reloadRows(at: reloads.map { .init(row: $0, section: section) }, with: .automatic)
                 })
             case .error(let error):
-                UIApplication.shared.alert(error: error)
+                GlobalAlerts.append(error: error)
             }
         }
     }
@@ -213,7 +214,7 @@ extension SuggestionTableController: UITableViewDataSource {
         guard editingStyle == .delete else { return }
         tableData[indexPath.section][AnyIndex(indexPath.row)].onDelete {
             if let error = $0 {
-                UIApplication.shared.alert(error: error)
+                GlobalAlerts.append(error: error)
             }
         }
     }
@@ -391,7 +392,7 @@ extension Food: SuggestionType {
         let (foodEntries, objects, days) = _deleteFood(self)
         if foodEntries.count > 0 {
             let warning = "Deleting this food item will also delete \(foodEntries.count) entries. This cannot be undone."
-            UIApplication.shared.alert(warning: warning, confirm: { delete(foodEntries, objects, prune: days ) })
+            GlobalAlerts.append(warning: warning, onConfirm: { delete(foodEntries, objects, prune: days ) })
         } else {
             delete(foodEntries, objects, prune: days)
         }

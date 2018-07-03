@@ -150,7 +150,7 @@
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cN3-cf-0EK">
                                         <rect key="frame" x="276" y="18" width="30" height="30"/>
                                         <constraints>
-                                            <constraint firstAttribute="width" constant="30" id="srp-yx-TrT"/>
+                                            <constraint firstAttribute="width" priority="999" constant="30" id="srp-yx-TrT"/>
                                             <constraint firstAttribute="height" constant="30" id="weB-C7-GJ2"/>
                                         </constraints>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
@@ -162,7 +162,7 @@
                                 </subviews>
                                 <color key="backgroundColor" name="Green"/>
                                 <constraints>
-                                    <constraint firstItem="cN3-cf-0EK" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="OgT-EG-QLe" secondAttribute="trailing" constant="8" symbolic="YES" id="Gdh-ZQ-8gl"/>
+                                    <constraint firstItem="cN3-cf-0EK" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="OgT-EG-QLe" secondAttribute="trailing" priority="999" constant="8" symbolic="YES" id="Gdh-ZQ-8gl"/>
                                     <constraint firstItem="OgT-EG-QLe" firstAttribute="top" secondItem="22o-uk-iNX" secondAttribute="top" constant="23" id="Mou-EU-gYG"/>
                                     <constraint firstItem="cN3-cf-0EK" firstAttribute="top" secondItem="22o-uk-iNX" secondAttribute="top" constant="18" id="Rfq-pu-PZf"/>
                                     <constraint firstAttribute="height" constant="64" id="ZR6-We-xpJ"/>
@@ -329,9 +329,9 @@
                         <constraints>
                             <constraint firstItem="GaF-W9-zaw" firstAttribute="leading" secondItem="FbL-5G-hY4" secondAttribute="leading" id="3Ce-63-9ce"/>
                             <constraint firstItem="Bp7-zS-1Cq" firstAttribute="top" secondItem="FbL-5G-hY4" secondAttribute="top" constant="7" id="6gU-c6-olE"/>
-                            <constraint firstItem="FbL-5G-hY4" firstAttribute="trailing" secondItem="Bp7-zS-1Cq" secondAttribute="trailing" constant="3" id="9BG-Vn-UeZ"/>
+                            <constraint firstItem="FbL-5G-hY4" firstAttribute="trailing" secondItem="Bp7-zS-1Cq" secondAttribute="trailing" priority="999" constant="3" id="9BG-Vn-UeZ"/>
                             <constraint firstItem="FbL-5G-hY4" firstAttribute="trailing" secondItem="22o-uk-iNX" secondAttribute="trailing" id="A2Y-SI-2Qy"/>
-                            <constraint firstItem="UHz-ef-vcg" firstAttribute="bottom" secondItem="FbL-5G-hY4" secondAttribute="bottom" id="CZe-X2-SW7"/>
+                            <constraint firstItem="UHz-ef-vcg" firstAttribute="bottom" secondItem="FbL-5G-hY4" secondAttribute="bottom" priority="999" id="CZe-X2-SW7"/>
                             <constraint firstItem="22o-uk-iNX" firstAttribute="leading" secondItem="FbL-5G-hY4" secondAttribute="leading" id="IT8-bV-pEI"/>
                             <constraint firstItem="22o-uk-iNX" firstAttribute="top" secondItem="FbL-5G-hY4" secondAttribute="top" id="MGH-jx-Z5S"/>
                             <constraint firstItem="ndq-l0-xxC" firstAttribute="top" secondItem="FbL-5G-hY4" secondAttribute="top" constant="6" id="PHs-WN-9VP"/>
@@ -340,7 +340,7 @@
                             <constraint firstItem="GaF-W9-zaw" firstAttribute="trailing" secondItem="FbL-5G-hY4" secondAttribute="trailing" id="dtq-Vl-pLN"/>
                             <constraint firstItem="UHz-ef-vcg" firstAttribute="trailing" secondItem="FbL-5G-hY4" secondAttribute="trailing" id="g7M-Ad-lNE"/>
                             <constraint firstItem="GaF-W9-zaw" firstAttribute="top" secondItem="FbL-5G-hY4" secondAttribute="top" constant="64" id="iBM-wC-wBQ"/>
-                            <constraint firstItem="GaF-W9-zaw" firstAttribute="bottom" secondItem="FbL-5G-hY4" secondAttribute="bottom" id="jzw-rx-5tG"/>
+                            <constraint firstItem="GaF-W9-zaw" firstAttribute="bottom" secondItem="FbL-5G-hY4" secondAttribute="bottom" priority="999" id="jzw-rx-5tG"/>
                             <constraint firstAttribute="trailing" secondItem="I9v-jX-8zu" secondAttribute="trailing" id="kqC-PN-RCX"/>
                             <constraint firstItem="UHz-ef-vcg" firstAttribute="top" secondItem="FbL-5G-hY4" secondAttribute="top" constant="64" id="lTU-4z-ofQ"/>
                             <constraint firstItem="Bp7-zS-1Cq" firstAttribute="leading" secondItem="FbL-5G-hY4" secondAttribute="leading" constant="3" id="onf-83-fSs"/>
@@ -1092,7 +1092,7 @@
                                                 <rect key="frame" x="6" y="0.0" width="308" height="44"/>
                                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <constraints>
-                                                    <constraint firstAttribute="height" constant="44" id="sRs-5y-fnq"/>
+                                                    <constraint firstAttribute="height" constant="44" placeholder="YES" id="sRs-5y-fnq"/>
                                                 </constraints>
                                             </view>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="2jl-ek-n0Y">

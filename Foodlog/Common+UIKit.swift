@@ -8,6 +8,41 @@
 
 import UIKit
 
+final class GlobalAlerts {
+    fileprivate enum Alert {
+        case error(Error)
+        case warning(String, onConfirm: () throws -> ())
+    }
+    
+    private static var queue = [Alert]()
+    
+    static func append(error: Error) {
+        DispatchQueue.main.async {
+            queue.append(.error(error))
+            tryPresentingNext()
+        }
+    }
+    
+    static func append(warning: String, onConfirm: @escaping () throws -> ()) {
+        DispatchQueue.main.async {
+            queue.append(.warning(warning, onConfirm: onConfirm))
+            tryPresentingNext()
+        }
+    }
+    
+    private static func tryPresentingNext() {
+        guard let alert = queue.first else { return }
+        let vc = UIApplication.shared.keyWindow!.rootViewController!
+        if vc.presentedViewController == nil {
+            let alert = UIAlertController(alert: alert) {
+                queue = Array(queue.dropFirst())
+                tryPresentingNext()
+            }
+            vc.present(alert, animated: true)
+        }
+    }
+}
+
 extension Array where Element == (String, UIColor) {
     var attributedString: NSAttributedString {
         guard count > 0 else { return NSAttributedString() }
@@ -75,22 +110,34 @@ final class PillView: UIView {
     }
 }
 
-extension UIApplication {
-    func alert(error: Error) {
-        keyWindow!.rootViewController!.alert(error: error)
+extension UIAlertController {
+    fileprivate convenience init(alert: GlobalAlerts.Alert, onDismissal dismissalHandler: @escaping () -> ()) {
+        switch alert {
+        case .error(let error):
+            self.init(error: error, onDismissal: dismissalHandler)
+        case .warning(let warning, let onConfirm):
+            self.init(warning: warning, onConfirm: onConfirm, onDismissal: dismissalHandler)
+        }
     }
     
-    func alert(warning warningString: String, confirm userConfirmationHandler: @escaping () throws -> ()) {
-        let alert = UIAlertController(title: "Warning", message: warningString, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "Confirm", style: .destructive, handler: { [unowned self] _ in
+    fileprivate convenience init(error: Error, onDismissal dismissalHandler: @escaping () -> () = {}) {
+        self.init(title: "Error", message: error.localizedDescription, preferredStyle: .alert)
+        addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in dismissalHandler() }))
+    }
+    
+    fileprivate convenience init(warning: String, onConfirm confirmationHandler: @escaping () throws -> (),
+                                 onDismissal dismissalHandler: @escaping () -> () = {})
+    {
+        self.init(title: "Warning", message: warning, preferredStyle: .alert)
+        addAction(UIAlertAction(title: "Confirm", style: .destructive, handler: { _ in
             do {
-                try userConfirmationHandler()
+                try confirmationHandler()
             } catch {
-                self.alert(error: error)
+                GlobalAlerts.append(error: error)
             }
+            dismissalHandler()
         }))
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-        keyWindow!.rootViewController!.present(alert, animated: true, completion: nil)
+        addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in dismissalHandler() }))
     }
 }
 
@@ -107,8 +154,12 @@ extension UIView {
 
 extension UIViewController {
     func alert(error: Error) {
-        let alert = UIAlertController(title: "Error", message: error.localizedDescription, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        let alert = UIAlertController(error: error)
+        present(alert, animated: true)
+    }
+    
+    func alert(warning: String, onConfirm: @escaping () throws -> ()) {
+        let alert = UIAlertController(warning: warning, onConfirm: onConfirm)
         present(alert, animated: true)
     }
 }

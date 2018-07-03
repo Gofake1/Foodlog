@@ -23,14 +23,14 @@ extension AppDelegate: UIApplicationDelegate {
         application.registerForRemoteNotifications()
         CloudStore.setup(onAccountChange: {
             if let error = $0 {
-                UIApplication.shared.alert(error: error)
+                GlobalAlerts.append(error: error)
             }
         })
         return true
     }
     
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
-        UIApplication.shared.alert(error: error)
+        GlobalAlerts.append(error: error)
     }
     
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any],
@@ -39,7 +39,7 @@ extension AppDelegate: UIApplicationDelegate {
         CloudStore.received(remoteNotificationInfo: userInfo) {
             if let error = $0 {
                 completionHandler(.failed)
-                UIApplication.shared.alert(error: error)
+                GlobalAlerts.append(error: error)
             } else {
                 completionHandler(.newData)
             }
