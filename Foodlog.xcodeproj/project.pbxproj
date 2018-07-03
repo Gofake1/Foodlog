@@ -284,6 +284,7 @@
 				6385AF211FE0A435009E8483 /* Frameworks */,
 				6385AF221FE0A435009E8483 /* Resources */,
 				63AACA9E1FF329C700FE805F /* Embed Frameworks */,
+				630F2C7D20EB0F3700595637 /* Run Script - Strip Architectures from Realm */,
 			);
 			buildRules = (
 			);
@@ -377,6 +378,23 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		630F2C7D20EB0F3700595637 /* Run Script - Strip Architectures from Realm */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Run Script - Strip Architectures from Realm";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "bash \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/Realm.framework/strip-frameworks.sh\"";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		6385AF201FE0A435009E8483 /* Sources */ = {
