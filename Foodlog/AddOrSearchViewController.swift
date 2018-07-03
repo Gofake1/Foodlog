@@ -106,19 +106,19 @@ extension AddOrSearchViewController: UISearchBarDelegate {
     func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
         VCController.pulleyVC.setDrawerPosition(position: .open, animated: true)
         searchBar.setShowsCancelButton(true, animated: true)
-        if tableView.isHidden {
-            tableView.isHidden = false
-        }
+//        if tableView.isHidden {
+//            tableView.isHidden = false
+//        }
     }
     
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         searchBar.text = ""
         searchBar.resignFirstResponder()
         searchBar.setShowsCancelButton(false, animated: true)
-        UIView.animate(withDuration: 0.2, animations: { [tableView] in tableView!.alpha = 0.0 }) { [tableView] _ in
-            tableView!.isHidden = true
-            tableView!.alpha = 1.0
-        }
+//        UIView.animate(withDuration: 0.2, animations: { [tableView] in tableView!.alpha = 0.0 }) { [tableView] _ in
+//            tableView!.isHidden = true
+//            tableView!.alpha = 1.0
+//        }
     }
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
