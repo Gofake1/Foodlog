@@ -94,13 +94,13 @@ final class AddOrEditFoodViewController: PulleyDrawerViewController {
     @IBAction func addFoodEntryToLog() {
         view.endEditing(false)
         
-        if let (count, onConfirm) = context.save(completionHandler: { [weak self] in
+        if let (count, onConfirm) = context.save(completionHandler: {
             if let error = $0 {
-                self!.alert(error: error)
+                GlobalAlerts.append(error: error)
             }
         }) {
             let warning = "Editing this food item will affect \(count) entries. This cannot be undone."
-        alert(warning: warning, onConfirm: { onConfirm(); VCController.dismissAddOrEdit() })
+            alert(warning: warning, onConfirm: { onConfirm(); VCController.dismissAddOrEdit() })
         } else {
             VCController.dismissAddOrEdit()
         }

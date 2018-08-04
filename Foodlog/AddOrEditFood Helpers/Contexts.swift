@@ -63,7 +63,7 @@ final class AddEntryForNewFoodContext: AddOrEditFoodContextType {
     }
     
     func configure(_ vc: AddOrEditFoodViewController) {
-        vc.useLabelForName(name)
+        vc.useFieldForName(name)
         vc.useAView()
         
         vc.amountController.setup(AmountController.NewFoodEntry(foodEntry))
@@ -161,7 +161,7 @@ final class EditFoodEntryContext: AddOrEditFoodContextType {
     }
     
     func configure(_ vc: AddOrEditFoodViewController) {
-        vc.useFieldForName(name)
+        vc.useLabelForName(name)
         vc.configureAddToLogButton(title: "Update Log", isEnabled: false)
         vc.useBView()
         

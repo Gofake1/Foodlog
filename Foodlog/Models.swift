@@ -258,13 +258,13 @@ final class FoodEntry: Object {
         case (.fluidOunce, .fluidOunce):
             return measurementFloat / servingSize
         case (.gram, .milligram):           return 1000.0 * measurementFloat / servingSize
-        case (.gram, .ounce):               return 28.3495 * measurementFloat / servingSize
+        case (.gram, .ounce):               return 0.035274 * measurementFloat / servingSize
         case (.milligram, .gram):           return 0.001 * measurementFloat / servingSize
         case (.milligram, .ounce):          return 0.000035274 * measurementFloat / servingSize
-        case (.ounce, .gram):               return 0.035274 * measurementFloat / servingSize
+        case (.ounce, .gram):               return 28.3495 * measurementFloat / servingSize
         case (.ounce, .milligram):          return 28349.5 * measurementFloat / servingSize
-        case (.milliliter, .fluidOunce):    return 29.5735 * measurementFloat / servingSize
-        case (.fluidOunce, .milliliter):    return 0.033814 * measurementFloat / servingSize
+        case (.milliliter, .fluidOunce):    return 0.033814 * measurementFloat / servingSize
+        case (.fluidOunce, .milliliter):    return 29.5735 * measurementFloat / servingSize
         default:
             throw ConversionError.illegal
         }

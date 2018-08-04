@@ -250,7 +250,7 @@ extension CloudStore.WorkingImpl: CloudStoreImplType {
             if let error = $4 {
                 // TODO: Handle errors
                 print(error) //*
-                fatalError() //*
+                fatalError(error.localizedDescription) //*
             } else {
                 self!.zoneChangeToken = $1
             }
